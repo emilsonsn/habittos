@@ -1,0 +1,12 @@
+{
+    "name": "habittos",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "format": "prettier --write \"public/css/*.css\" public/app.js",
+        "format:check": "prettier --check \"public/css/*.css\" public/app.js"
+    },
+    "devDependencies": {
+        "prettier": "^3.6.0"
+    }
+}
