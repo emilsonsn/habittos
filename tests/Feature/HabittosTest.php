@@ -126,9 +126,10 @@ class HabittosTest extends TestCase
         $workspace->budgets()->create(['month' => '2026-10', 'reserve_cents' => 3000, 'weekly_limit_cents' => 10000]);
         $summary = app(FinancialSummary::class)->forMonth($workspace, '2026-10');
         $this->assertSame(85000, $summary['balance']);
+        $this->assertSame(82000, $summary['available']);
         $this->assertSame(100000, $summary['projected']);
         $this->assertSame(2000, $summary['pending']);
-        $this->assertCount(5, $summary['weeks']);
+        $this->assertCount(4, $summary['weeks']);
         $this->assertSame(2000, $summary['weeks']->last()['spent']);
         $this->assertSame(2000, $summary['weeks']->sum('spent'));
     }
@@ -216,7 +217,7 @@ class HabittosTest extends TestCase
         foreach (['2026-12' => '200', '2027-01' => '300'] as $month => $limit) {
             $this->put(route('budget.update', $workspace), ['month' => $month, 'weekly_limit' => $limit, 'reserve' => '50'])->assertRedirect();
         }
-        $this->assertDatabaseHas('budgets', ['workspace_id' => $workspace->id, 'month' => '2026-12', 'weekly_limit_cents' => 20000]);
-        $this->assertDatabaseHas('budgets', ['workspace_id' => $workspace->id, 'month' => '2027-01', 'weekly_limit_cents' => 30000]);
+        $this->assertDatabaseHas('budgets', ['workspace_id' => $workspace->id, 'month' => '2026-12', 'reserve_cents' => 5000, 'weekly_limit_cents' => 0]);
+        $this->assertDatabaseHas('budgets', ['workspace_id' => $workspace->id, 'month' => '2027-01', 'reserve_cents' => 5000, 'weekly_limit_cents' => 0]);
     }
 }

@@ -2,6 +2,11 @@
 <svg {{ $attributes->merge(['width' => 19, 'height' => 19, 'viewBox' => '0 0 24 24', 'fill' => 'none', 'stroke' => 'currentColor', 'stroke-width' => 1.6, 'stroke-linecap' => 'round', 'stroke-linejoin' => 'round']) }}
     aria-hidden="true">
     @switch($name)
+        @case('pencil')
+            <path d="m16 3 5 5L9 20l-6 1 1-6Z" />
+            <path d="m14 5 5 5" />
+        @break
+
         @case('finance')
             <rect x="3" y="4" width="18" height="16" rx="4" />
             <path d="M3 10h18M8 15h3" />

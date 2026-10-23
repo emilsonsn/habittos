@@ -158,7 +158,7 @@ class InteractiveFrontendTest extends TestCase
         $this->actingAs($user);
         Livewire::test(FinanceDashboard::class, ['workspaceId' => $workspace->id, 'month' => '2026-10'])
             ->set('month', '2026-11')->assertSet('selectedMonth', '2026-11')
-            ->assertSet('weeklyLimitInput', '123.45')->assertSet('reserveInput', '600');
+            ->assertSet('reserveInput', '600')->assertViewHas('weeklyLimit', 0);
         $this->assertDatabaseCount('financial_months', 0);
     }
 

@@ -61,15 +61,15 @@ A data de referência determina o mês do lançamento. Não há uma segunda data
 | Receitas | Todas as receitas, recebidas ou pendentes |
 | Despesas | Todas as despesas, pagas ou pendentes |
 | Investimentos | Todos os aportes, efetivados ou pendentes |
-| Saldo realizado | Receitas efetivadas − despesas efetivadas − investimentos efetivados |
+| Saldo disponível (indicador principal) | Receitas recebidas − despesas pagas − aportes efetivados − reserva separada |
 | Saldo projetado | Todas as receitas − todas as despesas − todos os investimentos − reserva planejada |
 | Saídas pendentes | Despesas e investimentos ainda não efetivados |
 | Compromissos fixos | Despesas marcadas como fixas |
 | Despesas semanais | Despesas variáveis, efetivadas ou pendentes, agrupadas pela data |
 
-O saldo realizado representa **o movimento líquido do mês**, não um saldo bancário conciliado ou acumulado. Não há contas bancárias nem saldo inicial nesta versão. A reserva planejada não é uma saída realizada e não é criada como investimento automaticamente. Para evitar contar o mesmo dinheiro duas vezes, registre como reserva apenas o valor que ainda será separado além dos aportes já lançados.
+O indicador principal é o saldo disponível, que desconta a reserva do resultado efetivado do mês. Receitas pendentes não aumentam esse valor, e saídas pendentes só entram na projeção. A reserva é tratada como dinheiro separado e indisponível para gastos. O cálculo ainda é baseado nos registros do mês, sem conciliação bancária ou acumulação entre meses. Não há contas bancárias nem saldo inicial nesta versão. A reserva é descontada do saldo disponível e da projeção, mas não cria um lançamento de investimento automaticamente. Para evitar contar o mesmo dinheiro duas vezes, registre como reserva apenas o valor que ainda será separado além dos aportes já lançados.
 
-As faixas semanais são dias 1–7, 8–14, 15–21, 22–28 e 29 até o fim do mês. Fevereiro pode ter quatro ou cinco faixas. A planilha dividia o mês em quatro blocos; o sistema cobre todos os dias explicitamente. O limite semanal é informado por mês e aplicado a cada faixa, sem desconto automático do saldo projetado, porque não representa uma despesa.
+O mês sempre tem quatro faixas semanais contadas a partir do dia 1: as três primeiras têm sete dias e a quarta cobre o restante. O limite mensal é o orçamento para gastos variáveis: todas as receitas menos despesas fixas, aportes e reserva planejada, incluindo registros pendentes. O limite por semana é esse orçamento dividido por 4 e não diminui com os gastos variáveis. O limite ajustado desconta também todas as despesas variáveis e divide o saldo restante pelas semanas restantes, incluindo a atual; os gastos da semana vigente já estão descontados e não são subtraídos novamente. Os dois limites ficam juntos no rodapé do gráfico. As divisões são feitas em centavos e arredondadas para baixo; saldos negativos resultam em limite zero. Meses futuros começam com quatro semanas disponíveis e meses encerrados mostram “Mês encerrado” no limite ajustado. O saldo acumulado investido não é subtraído, pois é patrimônio, não um aporte do mês.
 
 Metas têm progresso manual, independente dos lançamentos. A meta pode ultrapassar 100%; a barra visual termina em 100%, mas o valor integral fica registrado. A criação de uma meta mensal exige o mês. Os gastos fixos são registros independentes por mês. Ao navegar para um mês pela primeira vez, o sistema copia as receitas e despesas fixas do mês imediatamente anterior, preservando descrição, valor, categoria e observações. As cópias começam pendentes; o vencimento mantém o dia quando possível ou usa o último dia do mês (por exemplo, 31 de janeiro vira 28 ou 29 de fevereiro). A alteração ou exclusão de uma cópia não modifica os demais meses.
 
@@ -176,10 +176,16 @@ O planejamento mensal também aceita o saldo acumulado investido. Esse valor é 
 
 Uma carga pontual da planilha pode usar datas provisórias quando a origem não possui datas completas. Nesses casos, a origem e o critério ficam nas observações de cada lançamento. Valores consolidados e seus detalhes não devem ser importados como saídas simultaneamente. Relatórios e cópias privadas de segurança ficam em `storage/app/private/imports`, ignorado pelo Git. Não há importador XLSX genérico na interface.
 
+## Indicadores de planejamento
+
+A seção “Planos para o mês” mostra limite mensal, reserva planejada para investimento e saldo acumulado investido. O lápis abre a edição de um único indicador, com Salvar e Cancelar; Escape cancela. A ação grava apenas aquele valor no ambiente e mês selecionados. Trocar de período descarta a edição ainda não salva. A permissão `budget.manage` é exigida no servidor e controla a exibição do lápis.
+
+Os limites mensal e semanal são automáticos e não possuem edição manual, inclusive no servidor. Os antigos valores cadastrados permanecem no banco para preservar dados históricos, mas não participam dos cálculos. A reserva permanece editável e descontada do saldo disponível; o saldo acumulado investido permanece editável e não é tratado como aporte.
+
 ## Formulário simplificado e valores monetários
 
 Novo lançamento mostra descrição, valor e categoria. O painel “Avançado” reúne tipo, data, pagamento, recorrência e observações. Os padrões de criação são despesa, data de hoje no fuso da aplicação, pago, não fixo e observações nulas. Abrir o formulário a partir de outro mês não altera a data de hoje. A edição preserva os dados já existentes; observações vazias ou compostas apenas de espaços são salvas como null. Erros nos campos avançados abrem o painel para correção.
 
-Todos os campos monetários usam `x-money-input`: lançamentos e metas/progresso. A tela apresenta separador de milhar e vírgula decimal, enquanto o estado Livewire permanece decimal com ponto. O componente usa Alpine, suporta colar moeda com R$, preserva centavos e aplica a formatação completa ao sair do campo. O backend continua validando limites e precisão antes de converter para centavos inteiros. Os scripts locais de máscara são carregados antes do Livewire registrar o Alpine.
+Todos os campos monetários usam `x-money-input`: lançamentos, metas/progresso e indicadores do planejamento. A tela apresenta separador de milhar e vírgula decimal, enquanto o estado Livewire permanece decimal com ponto. O componente usa Alpine, suporta colar moeda com R$, preserva centavos e aplica a formatação completa ao sair do campo. O backend continua validando limites e precisão antes de converter para centavos inteiros. Os scripts locais de máscara são carregados antes do Livewire registrar o Alpine.
 
 Execute `npm test` para verificar a máscara, além de `composer test` para os fluxos e regras de persistência.

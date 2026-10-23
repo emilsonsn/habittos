@@ -267,6 +267,23 @@ h2 {
 .week strong {
     color: #545371;
 }
+.weekly-limits {
+    column-gap: 24px;
+    row-gap: 12px;
+}
+.weekly-limits > span {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 7px;
+}
+.weekly-limits small {
+    font-size: 10px;
+}
+.weekly-limits .weekly-limits-note {
+    flex-basis: 100%;
+    margin-left: 0;
+}
 .projection {
     font-size: 34px;
     color: #39329e;
@@ -977,6 +994,105 @@ textarea:focus {
 .fixed-empty small {
     line-height: 1.8;
     display: block;
+}
+.planning-indicators .section-heading {
+    margin-bottom: 8px;
+}
+.planning-indicator {
+    border-top: 1px solid var(--line);
+    padding: 18px 0;
+}
+.planning-indicator:last-child {
+    padding-bottom: 0;
+}
+.planning-indicator-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 25px;
+    font-size: 11px;
+    color: #5e5d7d;
+}
+.planning-indicator-value {
+    display: block;
+    margin: 5px 0 8px;
+    font-size: 25px;
+    font-weight: 500;
+    letter-spacing: -0.7px;
+    color: #39329e;
+}
+.planning-indicator-value.not-set {
+    font-size: 20px;
+    color: #8584a4;
+    font-weight: 400;
+}
+.planning-indicator > small {
+    display: block;
+    color: #7f7e9f;
+    font-size: 10px;
+    line-height: 1.7;
+}
+.indicator-pencil {
+    display: inline-grid;
+    place-items: center;
+    border: 0;
+    border-radius: 7px;
+    width: 29px;
+    height: 29px;
+    flex-shrink: 0;
+    background: #e9e9f4;
+    color: #6a698e;
+    transition: background 0.15s;
+}
+.indicator-pencil svg {
+    width: 14px;
+    height: 14px;
+}
+.indicator-pencil:hover {
+    background: #d0cfec;
+    color: #2921b8;
+}
+.indicator-editor {
+    display: grid;
+    gap: 10px;
+    margin: 9px 0;
+}
+.indicator-input {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid #9492c1;
+    border-radius: 9px;
+    padding: 0 12px;
+    background: #f8f8fd;
+}
+.indicator-input:focus-within {
+    box-shadow: 0 0 0 3px #6664ab16;
+}
+.indicator-input > span {
+    font-size: 12px;
+    color: #79779b;
+}
+.indicator-input input {
+    border: 0;
+    padding: 12px 0;
+    background: transparent;
+    width: 100%;
+    box-shadow: none;
+}
+.indicator-input input:focus {
+    box-shadow: none;
+}
+.indicator-edit-actions {
+    display: flex;
+    align-items: center;
+    gap: 17px;
+}
+.indicator-edit-actions .button {
+    min-height: 33px;
+    padding: 8px 15px;
+    font-size: 11px;
 }
 
 .entry-advanced {

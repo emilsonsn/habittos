@@ -68,10 +68,9 @@ class FinanceController extends Controller
     {
         $data = $request->validate([
             'month' => ['required', 'date_format:Y-m'],
-            'weekly_limit' => ['required', 'numeric', 'decimal:0,2', 'min:0', 'max:999999999.99'],
             'reserve' => ['required', 'numeric', 'decimal:0,2', 'min:0', 'max:999999999.99'],
         ]);
-        $workspace->budgets()->updateOrCreate(['month' => $data['month']], ['weekly_limit_cents' => Money::cents($data['weekly_limit']), 'reserve_cents' => Money::cents($data['reserve'])]);
+        $workspace->budgets()->updateOrCreate(['month' => $data['month']], ['reserve_cents' => Money::cents($data['reserve'])]);
 
         return back()->with('success', 'Planejamento salvo.');
     }

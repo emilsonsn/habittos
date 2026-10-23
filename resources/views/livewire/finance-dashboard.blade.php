@@ -26,8 +26,8 @@
     @include('finance.month-navigation')
     <div class="metrics">
         <div class="metric balance">
-            <div class="metric-label">Saldo realizado <span>↗</span></div>
-            <strong>{{ $money($balance) }}</strong><small>Entradas e saídas efetivadas no mês</small>
+            <div class="metric-label">Saldo disponível <span>↗</span></div>
+            <strong>{{ $money($available) }}</strong><small>Após pagamentos e reserva separada</small>
         </div>
         <div class="metric">
             <div class="metric-label">Receitas <span class="green">↙</span></div>
@@ -58,42 +58,25 @@
                                 style="height: {{ max(3, min(100, ($week['spent'] / max(1, $weeklyLimit, $weeks->max('spent'))) * 100)) }}%">
                             </div>
                         </div><strong>{{ $money($week['spent']) }}</strong><span>Semana
-                            {{ $week['number'] }}</span><small>{{ ($week['number'] - 1) * 7 + 1 }}–{{ min($week['number'] * 7, \Carbon\Carbon::parse($month . '-01')->daysInMonth) }}</small>
+                            {{ $week['number'] }}</span><small>{{ $week['dateLabel'] }}</small>
                     </div>
                 @endforeach
             </div>
-            <div class="panel-footer">Limite por semana <strong>{{ $money($weeklyLimit) }}</strong><span
-                    class="muted">Inclui despesas pendentes; exclui fixos.</span></div>
-        </section>
-        <section class="panel">
-            <div class="section-heading">
-                <div><span class="eyebrow">OLHANDO PARA FRENTE</span>
-                    <h2>Como o mês termina?</h2>
-                </div><span class="round-icon">◎</span>
+            <div class="panel-footer weekly-limits">
+                <span title="Todas as receitas menos despesas fixas, aportes e reserva planejada, dividido por 4.">
+                    Limite por semana <strong>{{ $money($weeklyLimit) }}</strong>
+                </span>
+                <span title="Saldo restante do mês dividido pelas semanas restantes, incluindo a atual.">
+                    Limite ajustado
+                    <strong>{{ $weeklyPlan['adjustedLimit'] !== null ? $money($weeklyPlan['adjustedLimit']) : 'Mês encerrado' }}</strong>
+                    @if ($weeklyPlan['remainingWeeks'] > 0)
+                        <small>({{ $weeklyPlan['remainingWeeks'] }} {{ $weeklyPlan['remainingWeeks'] === 1 ? 'semana restante' : 'semanas restantes' }})</small>
+                    @endif
+                </span>
+                <small class="weekly-limits-note">Base: receitas − fixos − investimentos. O ajustado desconta os gastos variáveis.</small>
             </div>
-            <div class="projection {{ $projected < 0 ? 'negative' : '' }}">{{ $money($projected) }}</div>
-            <p class="muted">Saldo projetado após despesas, investimentos e reserva planejada.</p>
-            <div class="summary-row"><span>Reserva planejada</span><strong>{{ $money($reserve) }}</strong></div>
-            <div class="summary-row"><span>Saídas ainda pendentes</span><strong>{{ $money($pending) }}</strong></div>
-            @can('budget.manage', $workspace)
-                <details class="budget-details">
-                    <summary>Ajustar planejamento</summary>
-                    <form wire:submit="saveBudget" class="form-stack">
-                        <label>Limite semanal (R$)<input type="number" wire:model="weeklyLimitInput" min="0"
-                                step="0.01" required></label>
-                        @error('weeklyLimitInput')
-                            <span class="field-error">{{ $message }}</span>
-                        @enderror
-                        <label>Reserva planejada (R$)<input type="number" wire:model="reserveInput" min="0"
-                                step="0.01" required></label>
-                        @error('reserveInput')
-                            <span class="field-error">{{ $message }}</span>
-                        @enderror
-                        <button class="button" wire:loading.attr="disabled">Salvar planejamento</button>
-                    </form>
-                </details>
-            @endcan
         </section>
+        @include('finance.planning-indicators')
     </div>
     @include('finance.fixed-expenses')
     <div class="dashboard-grid lower-grid">

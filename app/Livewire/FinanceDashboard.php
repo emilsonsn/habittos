@@ -23,8 +23,6 @@ class FinanceDashboard extends Component
 
     public string $selectedMonth = '';
 
-    public string $weeklyLimitInput = '0';
-
     public string $reserveInput = '0';
 
     public string $investmentBalanceInput = '';
@@ -32,6 +30,57 @@ class FinanceDashboard extends Component
     public string $categoryName = '';
 
     public string $message = '';
+
+    #[Locked]
+    public ?string $editingIndicator = null;
+
+    public string $indicatorValue = '';
+
+    protected function indicatorColumns(): array
+    {
+        return [
+            'reserve' => 'reserve_cents',
+            'investment_balance' => 'investment_balance_cents',
+        ];
+    }
+
+    public function startEditingIndicator(string $indicator): void
+    {
+        $workspace = $this->workspace();
+        Gate::authorize(Permission::BudgetManage->value, $workspace);
+        $column = $this->indicatorColumns()[$indicator] ?? null;
+        abort_unless($column, 422);
+        $this->validate(['month' => ['required', 'date_format:Y-m']]);
+        $value = $workspace->budgets()->where('month', $this->month)->value($column);
+        $this->resetValidation();
+        $this->message = '';
+        $this->editingIndicator = $indicator;
+        $this->indicatorValue = $value !== null ? number_format($value / 100, 2, '.', '') : '';
+    }
+
+    public function cancelIndicator(): void
+    {
+        $this->reset('editingIndicator', 'indicatorValue');
+        $this->resetValidation();
+    }
+
+    public function saveIndicator(): void
+    {
+        $workspace = $this->workspace();
+        Gate::authorize(Permission::BudgetManage->value, $workspace);
+        $column = $this->indicatorColumns()[$this->editingIndicator] ?? null;
+        abort_unless($column, 422);
+        $optional = $this->editingIndicator === 'investment_balance';
+        $this->validate([
+            'month' => ['required', 'date_format:Y-m'],
+            'indicatorValue' => [$optional ? 'nullable' : 'required', 'numeric', 'decimal:0,2', 'min:0', 'max:999999999.99'],
+        ], attributes: ['indicatorValue' => 'valor']);
+        $value = $this->indicatorValue !== '' ? Money::cents($this->indicatorValue) : null;
+        $workspace->budgets()->updateOrCreate(['month' => $this->month], [$column => $value]);
+        $this->cancelIndicator();
+        $this->loadBudget();
+        $this->message = 'Indicador atualizado.';
+    }
 
     public function mount(int $workspaceId, string $month): void
     {
@@ -52,8 +101,8 @@ class FinanceDashboard extends Component
 
     protected function loadBudget(): void
     {
+        $this->cancelIndicator();
         $budget = $this->workspace()->budgets()->where('month', $this->month)->first();
-        $this->weeklyLimitInput = (string) (($budget?->weekly_limit_cents ?? 0) / 100);
         $this->reserveInput = (string) (($budget?->reserve_cents ?? 0) / 100);
         $this->investmentBalanceInput = $budget?->investment_balance_cents !== null
             ? (string) ($budget->investment_balance_cents / 100) : '';
@@ -92,12 +141,10 @@ class FinanceDashboard extends Component
         Gate::authorize(Permission::BudgetManage->value, $workspace);
         $this->validate([
             'month' => ['required', 'date_format:Y-m'],
-            'weeklyLimitInput' => ['required', 'numeric', 'decimal:0,2', 'min:0', 'max:999999999.99'],
             'reserveInput' => ['required', 'numeric', 'decimal:0,2', 'min:0', 'max:999999999.99'],
             'investmentBalanceInput' => ['nullable', 'numeric', 'decimal:0,2', 'min:0', 'max:999999999.99'],
         ]);
         $workspace->budgets()->updateOrCreate(['month' => $this->month], [
-            'weekly_limit_cents' => Money::cents($this->weeklyLimitInput),
             'reserve_cents' => Money::cents($this->reserveInput),
             'investment_balance_cents' => $this->investmentBalanceInput !== '' ? Money::cents($this->investmentBalanceInput) : null,
         ]);
