@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#243a32">
+    <meta name="theme-color" content="#1d1b4b">
     <title>@yield('title', 'Seu espaço') · habittos</title>
     <link rel="stylesheet" href="{{ asset('css/app.css') }}" data-navigate-track>
     <link rel="stylesheet" href="{{ asset('css/interface.css') }}" data-navigate-track>

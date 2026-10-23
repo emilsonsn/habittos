@@ -146,7 +146,7 @@ A exclusão de lançamentos e metas é definitiva após a confirmação da inter
 
 A navegação entre páginas usa `wire:navigate`. O framework atualiza o conteúdo e a URL sem um carregamento completo. Livewire entrega Alpine.js junto de seus assets locais; não adicione outra instância de Alpine nem uma dependência de CDN. Não há Bootstrap no projeto.
 
-A identidade visual usa tons de verde, superfícies quentes e acentos suaves. Os estilos estão separados entre fundamentos (`app.css`) e identidade/componentes (`interface.css`). O carregamento de ações, as mensagens de resultado e os estados vazios fazem parte dos componentes.
+A identidade visual usa índigo como cor principal, navegação em azul profundo e superfícies claras. Os estilos estão separados entre fundamentos (`app.css`) e identidade/componentes (`interface.css`). O carregamento de ações, as mensagens de resultado e os estados vazios fazem parte dos componentes.
 
 ### Ambientes
 

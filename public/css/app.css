@@ -2,7 +2,7 @@
     --bg: #f6f7fb;
     --ink: #272739;
     --muted: #858594;
-    --purple: #7160d8;
+    --purple: #2921b8;
     --line: #eeeef4;
     --green: #22866c;
     --soft: #eeebfc;
@@ -48,7 +48,7 @@ button {
 a:focus-visible,
 button:focus-visible,
 summary:focus-visible {
-    outline: 3px solid #c2b8f8;
+    outline: 3px solid #aaa9ef;
     outline-offset: 4px;
 }
 h1,
@@ -89,7 +89,7 @@ small {
     color: var(--purple);
 }
 .orange {
-    color: #d28c49;
+    color: #716ac4;
 }
 .negative,
 .danger {
@@ -208,7 +208,7 @@ small {
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background: #9d8ee0;
+    background: #8584dc;
     margin-right: 6px;
 }
 .profile {
@@ -222,11 +222,11 @@ small {
 .avatar {
     display: grid;
     place-items: center;
-    background: #f6e9de;
+    background: #e7eaff;
     border-radius: 50%;
     width: 34px;
     height: 34px;
-    color: #a26b42;
+    color: #4f49a4;
 }
 .text-button {
     background: none;
@@ -303,7 +303,7 @@ small {
     min-height: 39px;
 }
 .button:hover {
-    background: #6150c9;
+    background: #211994;
     text-decoration: none;
 }
 .button.secondary {
@@ -425,7 +425,7 @@ small {
     overflow: hidden;
 }
 .week-bar {
-    background: #aba0e5;
+    background: #8584dc;
     width: 100%;
     border-radius: 6px;
     min-height: 3px;
@@ -581,11 +581,11 @@ progress::-webkit-progress-bar {
     background: #f1eef9;
 }
 progress::-webkit-progress-value {
-    background: #a79add;
+    background: #8584dc;
     border-radius: 6px;
 }
 progress::-moz-progress-bar {
-    background: #a79add;
+    background: #8584dc;
     border-radius: 6px;
 }
 .empty-state {
@@ -641,7 +641,7 @@ input:focus,
 select:focus,
 textarea:focus {
     border-color: var(--purple);
-    box-shadow: 0 0 0 3px #7160d812;
+    box-shadow: 0 0 0 3px #2921b812;
 }
 input[type="month"] {
     width: auto;
