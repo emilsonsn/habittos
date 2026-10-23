@@ -22,8 +22,7 @@
                         <span class="field-error">{{ $message }}</span>
                     @enderror
                 </label>
-                <label>Valor (R$)<input type="number" wire:model="form.amount" min="0.01" max="999999999.99"
-                        step="0.01" placeholder="0,00" required>
+                <label>Valor (R$)<x-money-input model="form.amount" required />
                     @error('form.amount')
                         <span class="field-error">{{ $message }}</span>
                     @enderror

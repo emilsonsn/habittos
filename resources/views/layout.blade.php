@@ -81,8 +81,9 @@
             </div>
         </main>
     @endauth
-    @livewireScripts
+    <script src="{{ asset('money.js') }}" data-navigate-once></script>
     <script src="{{ asset('app.js') }}" data-navigate-once></script>
+    @livewireScripts
 </body>
 
 </html>

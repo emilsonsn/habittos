@@ -28,9 +28,10 @@
                             Progresso informado manualmente</p>
                         @can('goals.manage', $workspace)
                             <form wire:submit="updateProgress({{ $goal->id }})" class="inline-form">
-                                <label>Valor alcançado (R$)<input type="number" wire:model="progress.{{ $goal->id }}"
-                                        min="0" step="0.01" placeholder="{{ $goal->current_cents / 100 }}"
-                                        required></label><button class="button secondary"
+                                <label>Valor alcançado (R$)<x-money-input model="progress.{{ $goal->id }}"
+                                        required />id }}"
+                                    min="0" step="0.01" placeholder="{{ $goal->current_cents / 100 }}"
+                                    required></label><button class="button secondary"
                                     wire:loading.attr="disabled">Atualizar</button>
                             </form>
                             @error('progress.' . $goal->id)
@@ -76,8 +77,7 @@
                     @error('year')
                         <span class="field-error">{{ $message }}</span>
                     @enderror
-                    <label>Valor desejado (R$)<input type="number" wire:model="target" min="0.01" step="0.01"
-                            required></label>
+                    <label>Valor desejado (R$)<x-money-input model="target" required /></label>
                     @error('target')
                         <span class="field-error">{{ $message }}</span>
                     @enderror

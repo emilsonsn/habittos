@@ -167,3 +167,9 @@ Metas e pessoas também usam componentes Livewire. Criar metas, atualizar progre
 Configurações mostra os dados do ambiente. Somente o proprietário pode renomear ou excluir, inclusive nas ações Livewire chamadas diretamente. O modal de exclusão explica os dados que serão removidos e exige o nome exato. Exclusão é definitiva e transacional; não execute em dados reais para testar a interface.
 
 Cada componente revalida autenticação, participação e permissão em suas ações. IDs de ambiente e registros são propriedades `#[Locked]`; parâmetros recebidos em ações sempre passam por consultas limitadas ao ambiente. Isso é necessário porque o endpoint de atualização Livewire é diferente da rota inicial da página.
+
+## Valores monetários
+
+Todos os campos monetários usam `x-money-input`: lançamentos e metas/progresso. A tela apresenta separador de milhar e vírgula decimal, enquanto o estado Livewire permanece decimal com ponto. O componente usa Alpine, suporta colar moeda com R$, preserva centavos e aplica a formatação completa ao sair do campo. O backend continua validando limites e precisão antes de converter para centavos inteiros. Os scripts locais de máscara são carregados antes do Livewire registrar o Alpine.
+
+Execute `npm test` para verificar a máscara, além de `composer test` para os fluxos e regras de persistência.
