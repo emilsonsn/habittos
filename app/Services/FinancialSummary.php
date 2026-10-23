@@ -9,8 +9,10 @@ class FinancialSummary
 {
     public function forMonth(Workspace $workspace, string $month): array
     {
-        $start = CarbonImmutable::createFromFormat('!Y-m', $month);
-        $end = $start->addMonth();
+        $period = app(FinancialCalendar::class)->period($workspace, $month);
+        $start = $period['start'];
+        $end = $period['end'];
+        // Short transition cycles still have four non-overlapping ranges.
         $weekLength = min(7, max(1, intdiv((int) $start->diffInDays($end), 3)));
         $entries = $workspace->entries()->with('category')->where('date', '>=', $start->toDateString())->where('date', '<', $end->toDateString())->orderByDesc('date')->orderByDesc('id')->get();
         $income = $entries->where('type', 'income')->sum('amount_cents');
@@ -34,7 +36,7 @@ class FinancialSummary
         $weeklyPlan = $this->weeklyPlan($start, $end, $weekLength, $remainingBalance);
         $byCategory = $entries->where('type', 'expense')->groupBy(fn ($entry) => $entry->category?->name ?? 'Sem categoria')->map(fn ($items) => $items->sum('amount_cents'))->sortDesc();
 
-        return compact('entries', 'income', 'expenses', 'invested', 'balance', 'reserve', 'weeklyLimit', 'weeks', 'weeklyPlan', 'monthlyLimit', 'byCategory') + [
+        return compact('entries', 'income', 'expenses', 'invested', 'balance', 'reserve', 'weeklyLimit', 'weeks', 'weeklyPlan', 'monthlyLimit', 'byCategory', 'period') + [
             'available' => $balance - $reserve,
             'investmentBalance' => $budget?->investment_balance_cents,
             'fixedIncome' => $entries->where('type', 'income')->where('is_fixed', true)->sum('amount_cents'),

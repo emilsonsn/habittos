@@ -26,21 +26,25 @@ class OpenFinancialMonth
             }
 
             $start = CarbonImmutable::createFromFormat('!Y-m', $month);
-            $previous = $start->subMonth();
+            $calendar = app(FinancialCalendar::class);
+            $period = $calendar->period($workspace, $month);
+            $previous = $calendar->period($workspace, $start->subMonth()->format('Y-m'));
             $fixedEntries = $workspace->entries()
                 ->whereIn('type', ['income', 'expense'])
                 ->where('is_fixed', true)
-                ->where('date', '>=', $previous->toDateString())
-                ->where('date', '<', $start->toDateString())
+                ->where('date', '>=', $previous['start']->toDateString())
+                ->where('date', '<', $previous['end']->toDateString())
                 ->get();
 
             foreach ($fixedEntries as $entry) {
+                $dueDate = CarbonImmutable::instance($entry->date)->addMonthNoOverflow()
+                    ->max($period['start'])->min($period['end']->subDay());
                 $workspace->entries()->create([
                     'category_id' => $entry->category_id,
                     'description' => $entry->description,
                     'type' => $entry->type,
                     'amount_cents' => $entry->amount_cents,
-                    'date' => $start->day(min($entry->date->day, $start->daysInMonth))->toDateString(),
+                    'date' => $dueDate->toDateString(),
                     'paid' => false,
                     'is_fixed' => true,
                     'notes' => $entry->notes,

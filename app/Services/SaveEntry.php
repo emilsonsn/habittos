@@ -22,7 +22,7 @@ class SaveEntry
 
             return $entry;
         }
-        app(OpenFinancialMonth::class)->handle($workspace, substr($data['date'], 0, 7));
+        app(OpenFinancialMonth::class)->handle($workspace, app(FinancialCalendar::class)->monthForDate($workspace, $data['date']));
 
         return $workspace->entries()->create($data);
     }

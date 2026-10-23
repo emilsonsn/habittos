@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\Workspace;
 use App\Services\EntryRules;
+use App\Services\FinancialCalendar;
 use App\Services\Money;
 use App\Services\SaveEntry;
 use Illuminate\Support\Facades\Gate;
@@ -59,7 +60,7 @@ class EntryForm extends Component
         unset($validated['amount']);
         $entry = app(SaveEntry::class)->handle($workspace, $validated, $this->entryId);
         session()->flash('success', $this->entryId ? 'Lançamento atualizado.' : 'Lançamento registrado.');
-        $this->redirect(route('finance.index', [$workspace, 'month' => $entry->date->format('Y-m')]), navigate: true);
+        $this->redirect(route('finance.index', [$workspace, 'month' => app(FinancialCalendar::class)->monthForDate($workspace, $entry->date->toDateString())]), navigate: true);
     }
 
     public function render()

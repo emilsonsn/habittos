@@ -22,7 +22,7 @@ class SelectWorkspace
                 continue;
             }
             if ($candidate === 'finance') {
-                $month ??= now()->format('Y-m');
+                $month ??= app(FinancialCalendar::class)->monthForDate($workspace, now()->toDateString());
                 if ($workspace->allows($user, Permission::FinanceCreate)) {
                     app(OpenFinancialMonth::class)->handle($workspace, $month);
                 }

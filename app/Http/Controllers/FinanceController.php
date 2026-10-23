@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\EntryRequest;
 use App\Models\Workspace;
+use App\Services\FinancialCalendar;
 use App\Services\Money;
 use App\Services\OpenFinancialMonth;
 use App\Services\SaveEntry;
@@ -15,7 +16,7 @@ class FinanceController extends Controller
     public function index(Request $request, Workspace $workspace)
     {
         $request->validate(['month' => ['nullable', 'date_format:Y-m']]);
-        $month = $request->input('month') ?? now()->format('Y-m');
+        $month = $request->input('month') ?? app(FinancialCalendar::class)->monthForDate($workspace, now()->toDateString());
 
         return view('finance.index', compact('workspace', 'month'));
     }
@@ -42,7 +43,7 @@ class FinanceController extends Controller
     {
         app(SaveEntry::class)->handle($workspace, $request->entryData());
 
-        return redirect()->route('finance.index', [$workspace, 'month' => substr($request->validated('date'), 0, 7)])->with('success', 'Lançamento registrado.');
+        return redirect()->route('finance.index', [$workspace, 'month' => app(FinancialCalendar::class)->monthForDate($workspace, $request->validated('date'))])->with('success', 'Lançamento registrado.');
     }
 
     public function edit(Workspace $workspace, int $entry)
@@ -54,7 +55,7 @@ class FinanceController extends Controller
     {
         app(SaveEntry::class)->handle($workspace, $request->entryData(), $entry);
 
-        return redirect()->route('finance.index', [$workspace, 'month' => substr($request->validated('date'), 0, 7)])->with('success', 'Lançamento atualizado.');
+        return redirect()->route('finance.index', [$workspace, 'month' => app(FinancialCalendar::class)->monthForDate($workspace, $request->validated('date'))])->with('success', 'Lançamento atualizado.');
     }
 
     public function destroy(Workspace $workspace, int $entry)

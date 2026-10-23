@@ -4,9 +4,11 @@ namespace App\Livewire;
 
 use App\Enums\Permission;
 use App\Models\Workspace;
+use App\Services\FinancialCalendar;
 use App\Services\FinancialSummary;
 use App\Services\Money;
 use App\Services\OpenFinancialMonth;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Locked;
@@ -32,9 +34,44 @@ class FinanceDashboard extends Component
     public string $message = '';
 
     #[Locked]
+    public bool $editingCycle = false;
+
+    public string $cycleStartInput = '';
+
+    #[Locked]
     public ?string $editingIndicator = null;
 
     public string $indicatorValue = '';
+
+    public function startEditingCycle(): void
+    {
+        $workspace = $this->workspace();
+        Gate::authorize(Permission::BudgetManage->value, $workspace);
+        $this->validate(['month' => ['required', 'date_format:Y-m']]);
+        $this->resetValidation();
+        $this->cycleStartInput = app(FinancialCalendar::class)->startsOn($workspace, $this->month)->toDateString();
+        $this->editingCycle = true;
+    }
+
+    public function cancelCycle(): void
+    {
+        $this->reset('editingCycle', 'cycleStartInput');
+        $this->resetValidation();
+    }
+
+    public function saveCycle(): void
+    {
+        $workspace = $this->workspace();
+        Gate::authorize(Permission::BudgetManage->value, $workspace);
+        $this->validate(['month' => ['required', 'date_format:Y-m']]);
+        $firstDay = CarbonImmutable::createFromFormat('!Y-m', $this->month);
+        $this->validate([
+            'cycleStartInput' => ['required', 'date_format:Y-m-d', 'after_or_equal:'.$firstDay->toDateString(), 'before_or_equal:'.$firstDay->endOfMonth()->toDateString()],
+        ], attributes: ['cycleStartInput' => 'início do mês financeiro']);
+        $workspace->budgets()->updateOrCreate(['month' => $this->month], ['starts_on' => $this->cycleStartInput]);
+        $this->cancelCycle();
+        $this->message = 'Início do mês atualizado. O ciclo anterior termina na véspera desta data. As datas dos lançamentos foram preservadas.';
+    }
 
     protected function indicatorColumns(): array
     {
@@ -102,6 +139,7 @@ class FinanceDashboard extends Component
     protected function loadBudget(): void
     {
         $this->cancelIndicator();
+        $this->cancelCycle();
         $budget = $this->workspace()->budgets()->where('month', $this->month)->first();
         $this->reserveInput = (string) (($budget?->reserve_cents ?? 0) / 100);
         $this->investmentBalanceInput = $budget?->investment_balance_cents !== null

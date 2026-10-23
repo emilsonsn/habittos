@@ -244,6 +244,45 @@ h2 {
     color: #737297;
     font-size: 10px;
 }
+.cycle-dates {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 9px;
+    margin-top: 12px;
+    color: #656482;
+    font-size: 11px;
+}
+.cycle-dates .indicator-pencil {
+    width: 25px;
+    height: 25px;
+}
+.cycle-editor {
+    display: flex;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 14px;
+    flex-basis: 100%;
+    order: 2;
+    padding: 18px 0 3px;
+    border-top: 1px solid #d8dbee;
+}
+.cycle-editor label {
+    display: grid;
+    gap: 8px;
+    font-size: 11px;
+    color: var(--ink);
+}
+.cycle-editor > small {
+    flex-basis: 100%;
+    max-width: 720px;
+    line-height: 1.8;
+    color: #656482;
+    font-size: 11px;
+}
+.month-navigation > small {
+    order: 3;
+}
 .month-step.button {
     background: #f0f0f8;
     border-color: transparent;
