@@ -209,10 +209,10 @@ class HabittosTest extends TestCase
         $this->assertSame(2, $workspace->entries()->count());
     }
 
-    public function test_new_entry_defaults_to_selected_month_and_budget_is_independent(): void
+    public function test_new_entry_defaults_to_today_and_budget_is_independent(): void
     {
         [$owner, $workspace] = $this->environment();
-        $this->actingAs($owner)->get(route('entries.create', [$workspace, 'month' => '2027-02']))->assertOk()->assertSee('2027-02-');
+        $this->actingAs($owner)->get(route('entries.create', [$workspace, 'month' => '2027-02']))->assertOk()->assertSee(now()->toDateString());
         foreach (['2026-12' => '200', '2027-01' => '300'] as $month => $limit) {
             $this->put(route('budget.update', $workspace), ['month' => $month, 'weekly_limit' => $limit, 'reserve' => '50'])->assertRedirect();
         }

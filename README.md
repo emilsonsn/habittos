@@ -168,7 +168,9 @@ Configurações mostra os dados do ambiente. Somente o proprietário pode renome
 
 Cada componente revalida autenticação, participação e permissão em suas ações. IDs de ambiente e registros são propriedades `#[Locked]`; parâmetros recebidos em ações sempre passam por consultas limitadas ao ambiente. Isso é necessário porque o endpoint de atualização Livewire é diferente da rota inicial da página.
 
-## Valores monetários
+## Formulário simplificado e valores monetários
+
+Novo lançamento mostra descrição, valor e categoria. O painel “Avançado” reúne tipo, data, pagamento, recorrência e observações. Os padrões de criação são despesa, data de hoje no fuso da aplicação, pago, não fixo e observações nulas. Abrir o formulário a partir de outro mês não altera a data de hoje. A edição preserva os dados já existentes; observações vazias ou compostas apenas de espaços são salvas como null. Erros nos campos avançados abrem o painel para correção.
 
 Todos os campos monetários usam `x-money-input`: lançamentos e metas/progresso. A tela apresenta separador de milhar e vírgula decimal, enquanto o estado Livewire permanece decimal com ponto. O componente usa Alpine, suporta colar moeda com R$, preserva centavos e aplica a formatação completa ao sair do campo. O backend continua validando limites e precisão antes de converter para centavos inteiros. Os scripts locais de máscara são carregados antes do Livewire registrar o Alpine.
 

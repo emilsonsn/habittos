@@ -13,6 +13,9 @@ class SaveEntry
     {
         abort_unless($workspace->members()->whereKey(auth()->id())->exists(), 404);
         Gate::authorize($entryId ? Permission::FinanceUpdate->value : Permission::FinanceCreate->value, $workspace);
+        if (isset($data['notes']) && is_string($data['notes'])) {
+            $data['notes'] = trim($data['notes']) !== '' ? trim($data['notes']) : null;
+        }
         if ($entryId) {
             $entry = $workspace->entries()->findOrFail($entryId);
             $entry->update($data);

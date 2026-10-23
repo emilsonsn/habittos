@@ -29,7 +29,7 @@ class EntryForm extends Component
         return $workspace;
     }
 
-    public function mount(int $workspaceId, ?int $entryId = null, ?string $defaultDate = null): void
+    public function mount(int $workspaceId, ?int $entryId = null): void
     {
         $this->workspaceId = $workspaceId;
         $this->entryId = $entryId;
@@ -39,11 +39,11 @@ class EntryForm extends Component
             'description' => $entry?->description ?? '',
             'type' => $entry?->type ?? 'expense',
             'amount' => $entry ? (string) ($entry->amount_cents / 100) : '',
-            'date' => $entry?->date->format('Y-m-d') ?? $defaultDate ?? now()->toDateString(),
+            'date' => $entry?->date->format('Y-m-d') ?? now()->toDateString(),
             'category_id' => $entry?->category_id,
-            'paid' => $entry?->paid ?? false,
+            'paid' => $entry?->paid ?? true,
             'is_fixed' => $entry?->is_fixed ?? false,
-            'notes' => $entry?->notes ?? '',
+            'notes' => $entry?->notes,
         ];
     }
 

@@ -7,7 +7,6 @@ use App\Models\Workspace;
 use App\Services\Money;
 use App\Services\OpenFinancialMonth;
 use App\Services\SaveEntry;
-use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -35,11 +34,8 @@ class FinanceController extends Controller
     public function create(Request $request, Workspace $workspace)
     {
         $request->validate(['month' => ['nullable', 'date_format:Y-m']]);
-        $month = $request->input('month') ?? now()->format('Y-m');
-        $start = CarbonImmutable::createFromFormat('!Y-m', $month);
-        $defaultDate = $start->day(min(now()->day, $start->daysInMonth))->toDateString();
 
-        return view('finance.form', ['defaultDate' => $defaultDate, 'workspace' => $workspace, 'entry' => null, 'categories' => $workspace->categories()->orderBy('name')->get()]);
+        return view('finance.form', ['workspace' => $workspace, 'entry' => null]);
     }
 
     public function store(EntryRequest $request, Workspace $workspace)
