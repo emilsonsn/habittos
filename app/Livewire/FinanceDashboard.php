@@ -27,6 +27,8 @@ class FinanceDashboard extends Component
 
     public string $reserveInput = '0';
 
+    public string $investmentBalanceInput = '';
+
     public string $categoryName = '';
 
     public string $message = '';
@@ -53,6 +55,8 @@ class FinanceDashboard extends Component
         $budget = $this->workspace()->budgets()->where('month', $this->month)->first();
         $this->weeklyLimitInput = (string) (($budget?->weekly_limit_cents ?? 0) / 100);
         $this->reserveInput = (string) (($budget?->reserve_cents ?? 0) / 100);
+        $this->investmentBalanceInput = $budget?->investment_balance_cents !== null
+            ? (string) ($budget->investment_balance_cents / 100) : '';
     }
 
     public function openMonth(?string $month = null): void
@@ -65,7 +69,7 @@ class FinanceDashboard extends Component
         if ($workspace->allows(auth()->user(), Permission::FinanceCreate)) {
             $copied = app(OpenFinancialMonth::class)->handle($workspace, $target);
             if ($copied > 0) {
-                $this->message = $copied.' gasto(s) fixo(s) copiado(s) como pendentes.';
+                $this->message = $copied.' lançamento(s) fixo(s) copiado(s) como pendentes.';
             }
         }
         $this->month = $target;
@@ -90,10 +94,12 @@ class FinanceDashboard extends Component
             'month' => ['required', 'date_format:Y-m'],
             'weeklyLimitInput' => ['required', 'numeric', 'decimal:0,2', 'min:0', 'max:999999999.99'],
             'reserveInput' => ['required', 'numeric', 'decimal:0,2', 'min:0', 'max:999999999.99'],
+            'investmentBalanceInput' => ['nullable', 'numeric', 'decimal:0,2', 'min:0', 'max:999999999.99'],
         ]);
         $workspace->budgets()->updateOrCreate(['month' => $this->month], [
             'weekly_limit_cents' => Money::cents($this->weeklyLimitInput),
             'reserve_cents' => Money::cents($this->reserveInput),
+            'investment_balance_cents' => $this->investmentBalanceInput !== '' ? Money::cents($this->investmentBalanceInput) : null,
         ]);
         $this->message = 'Planejamento salvo.';
     }

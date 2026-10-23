@@ -71,9 +71,9 @@ O saldo realizado representa **o movimento líquido do mês**, não um saldo ban
 
 As faixas semanais são dias 1–7, 8–14, 15–21, 22–28 e 29 até o fim do mês. Fevereiro pode ter quatro ou cinco faixas. A planilha dividia o mês em quatro blocos; o sistema cobre todos os dias explicitamente. O limite semanal é informado por mês e aplicado a cada faixa, sem desconto automático do saldo projetado, porque não representa uma despesa.
 
-Metas têm progresso manual, independente dos lançamentos. A meta pode ultrapassar 100%; a barra visual termina em 100%, mas o valor integral fica registrado. A criação de uma meta mensal exige o mês. Os gastos fixos são registros independentes por mês. Ao navegar para um mês pela primeira vez, o sistema copia as despesas fixas do mês imediatamente anterior, preservando descrição, valor, categoria e observações. As cópias começam pendentes; o vencimento mantém o dia quando possível ou usa o último dia do mês (por exemplo, 31 de janeiro vira 28 ou 29 de fevereiro). A alteração ou exclusão de uma cópia não modifica os demais meses.
+Metas têm progresso manual, independente dos lançamentos. A meta pode ultrapassar 100%; a barra visual termina em 100%, mas o valor integral fica registrado. A criação de uma meta mensal exige o mês. Os gastos fixos são registros independentes por mês. Ao navegar para um mês pela primeira vez, o sistema copia as receitas e despesas fixas do mês imediatamente anterior, preservando descrição, valor, categoria e observações. As cópias começam pendentes; o vencimento mantém o dia quando possível ou usa o último dia do mês (por exemplo, 31 de janeiro vira 28 ou 29 de fevereiro). A alteração ou exclusão de uma cópia não modifica os demais meses.
 
-A inicialização é transacional e marcada por uma chave única de ambiente e mês. Reabrir o mês não duplica nem recria gastos excluídos. Alterações posteriores na origem não são propagadas a meses já abertos. Se o mês imediatamente anterior não possuir gastos fixos, nada é copiado; o sistema não preenche lacunas nem busca meses mais antigos. Meses que já possuíam dados antes desta funcionalidade são preservados pela migration.
+A inicialização é transacional e marcada por uma chave única de ambiente e mês. Reabrir o mês não duplica nem recria gastos excluídos. Alterações posteriores na origem não são propagadas a meses já abertos. Se o mês imediatamente anterior não possuir receitas ou despesas fixas, nada é copiado; o sistema não preenche lacunas nem busca meses mais antigos. Meses que já possuíam dados antes desta funcionalidade são preservados pela migration.
 
 A navegação oferece mês/ano anterior e seguinte, além do seletor de mês e ano. Para quem pode criar lançamentos, a abertura acontece por POST com CSRF; consultas GET e usuários com apenas leitura nunca criam registros. O primeiro lançamento em um mês também inicializa seus fixos antes de salvar. Um acesso direto por URL GET é apenas consulta; use “Ver mês” para inicializar um mês ainda não aberto. Orçamentos e reservas também são independentes por mês e não são copiados automaticamente.
 
@@ -156,7 +156,7 @@ A troca lista somente ambientes autorizados e revalida a participação no servi
 
 ### Financeiro
 
-O dashboard é um componente Livewire: navegação de mês/ano, planejamento, criação de categorias, exclusão e alternância de status atualizam os dados na mesma página. O período aparece na URL e é informado ao seletor de ambientes. Gastos fixos mantêm a inicialização idempotente e a independência entre meses.
+O dashboard é um componente Livewire: navegação de mês/ano, planejamento, criação de categorias, exclusão e alternância de status atualizam os dados na mesma página. O período aparece na URL e é informado ao seletor de ambientes. Receitas e despesas fixas mantêm a inicialização idempotente e a independência entre meses.
 
 O formulário de lançamento usa Livewire, validação de campos, estado de salvamento e seleção visual entre receita, despesa e investimento. A validação e a persistência são compartilhadas com os endpoints HTTP existentes. Não há gravação automática de rascunhos.
 
@@ -167,6 +167,14 @@ Metas e pessoas também usam componentes Livewire. Criar metas, atualizar progre
 Configurações mostra os dados do ambiente. Somente o proprietário pode renomear ou excluir, inclusive nas ações Livewire chamadas diretamente. O modal de exclusão explica os dados que serão removidos e exige o nome exato. Exclusão é definitiva e transacional; não execute em dados reais para testar a interface.
 
 Cada componente revalida autenticação, participação e permissão em suas ações. IDs de ambiente e registros são propriedades `#[Locked]`; parâmetros recebidos em ações sempre passam por consultas limitadas ao ambiente. Isso é necessário porque o endpoint de atualização Livewire é diferente da rota inicial da página.
+
+## Receitas fixas, despesas fixas e saldo investido
+
+O financeiro mostra receitas fixas e gastos fixos em seções de largura inteira, uma abaixo da outra, com totais e status separados. As listas têm altura máxima de 360 px e rolagem interna, mantendo os títulos e totais visíveis. A área de rolagem também pode ser acessada pelo teclado. Para registrar salário, escolha Receita e marque “Lançamento fixo mensal”. A abertura do próximo mês copia receitas e despesas fixas uma única vez como pendentes, preservando os meses anteriores. Investimentos não são copiados pelo marcador de fixo.
+
+O planejamento mensal também aceita o saldo acumulado investido. Esse valor é um retrato do patrimônio informado para o mês, separado dos aportes. Quando informado, o cartão de investimentos destaca o saldo acumulado e identifica os aportes do mês. O saldo acumulado nunca é subtraído do saldo realizado ou projetado; apenas lançamentos de aporte representam saídas. Ele não é copiado automaticamente aos meses seguintes.
+
+Uma carga pontual da planilha pode usar datas provisórias quando a origem não possui datas completas. Nesses casos, a origem e o critério ficam nas observações de cada lançamento. Valores consolidados e seus detalhes não devem ser importados como saídas simultaneamente. Relatórios e cópias privadas de segurança ficam em `storage/app/private/imports`, ignorado pelo Git. Não há importador XLSX genérico na interface.
 
 ## Formulário simplificado e valores monetários
 

@@ -54,10 +54,9 @@
                     <div class="check-group">
                         <label class="checkbox"><input type="checkbox" wire:model="form.paid">Já foi recebido, pago ou
                             investido</label>
-                        <label class="checkbox"><input type="checkbox" wire:model="form.is_fixed">Compromisso
-                            fixo</label>
-                        <small>Este gasto pertence ao mês da data informada. Ele será copiado como pendente ao abrir o
-                            mês seguinte.</small>
+                        <label class="checkbox"><input type="checkbox" wire:model="form.is_fixed">Lançamento fixo
+                            mensal</label>
+                        <small>Receitas e despesas fixas são copiadas como pendentes ao abrir o mês seguinte.</small>
                         @error('form.paid')
                             <span class="field-error">{{ $message }}</span>
                         @enderror

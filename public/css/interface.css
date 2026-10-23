@@ -907,6 +907,78 @@ textarea:focus {
     outline-offset: 2px;
 }
 
+.fixed-cashflow-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+    margin-bottom: 24px;
+    align-items: start;
+}
+.fixed-cashflow {
+    min-width: 0;
+}
+.fixed-expense-list {
+    max-height: 360px;
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
+    scrollbar-color: #b7b5dc transparent;
+    overscroll-behavior-y: contain;
+}
+.fixed-expense-list:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 4px;
+    border-radius: 4px;
+}
+.fixed-cashflow > p {
+    font-size: 11px;
+    color: #757398;
+}
+.fixed-cashflow .section-heading {
+    flex-wrap: wrap;
+}
+.fixed-cashflow-total {
+    font-size: 20px;
+    font-weight: 500;
+    letter-spacing: -0.6px;
+}
+.fixed-income .fixed-cashflow-total {
+    color: #6f8d48;
+}
+.fixed-outgoing .fixed-cashflow-total {
+    color: #aa825f;
+}
+.fixed-cashflow .fixed-expense {
+    flex-wrap: wrap;
+    gap: 12px;
+}
+.fixed-cashflow .fixed-expense > div {
+    flex-basis: 35%;
+    min-width: 100px;
+}
+.fixed-cashflow .fixed-expense > div > strong {
+    overflow-wrap: anywhere;
+}
+.fixed-cashflow .fixed-expense a {
+    font-size: 10px;
+}
+.fixed-empty {
+    padding: 25px 0 12px;
+}
+.fixed-empty > span {
+    font-size: 24px;
+    color: #8786a6;
+}
+.fixed-empty p {
+    margin: 12px 0 6px;
+    font-size: 12px;
+    color: #626083;
+}
+.fixed-empty small {
+    line-height: 1.8;
+    display: block;
+}
+
 .entry-advanced {
     margin-top: 3px;
     padding-top: 0;

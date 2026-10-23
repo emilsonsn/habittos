@@ -16,6 +16,7 @@ $navigation = [['label' => 'Ano anterior', 'text' => '« Ano', 'month' => $selec
                 wire:loading.attr="disabled" aria-label="{{ $item['label'] }}">{{ $item['text'] }}</button>
         @endforeach
     </div>
-    <small>Fixos separados por mês. Ao abrir um mês pela primeira vez, os fixos do mês anterior são copiados como
+    <small>Fixos separados por mês. Ao abrir um mês pela primeira vez, as receitas e despesas fixas do mês anterior são
+        copiadas como
         pendentes.</small>
 </div>

@@ -27,6 +27,8 @@ class FinancialSummary
         $byCategory = $entries->where('type', 'expense')->groupBy(fn ($entry) => $entry->category?->name ?? 'Sem categoria')->map(fn ($items) => $items->sum('amount_cents'))->sortDesc();
 
         return compact('entries', 'income', 'expenses', 'invested', 'balance', 'reserve', 'weeklyLimit', 'weeks', 'byCategory') + [
+            'investmentBalance' => $budget?->investment_balance_cents,
+            'fixedIncome' => $entries->where('type', 'income')->where('is_fixed', true)->sum('amount_cents'),
             'projected' => $income - $expenses - $invested - $reserve,
             'fixed' => $entries->where('type', 'expense')->where('is_fixed', true)->sum('amount_cents'),
             'pending' => $entries->where('paid', false)->whereIn('type', ['expense', 'investment'])->sum('amount_cents'),
