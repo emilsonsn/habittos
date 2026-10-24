@@ -21,8 +21,7 @@ class FixedCashflowTest extends TestCase
             $workspace->entries()->create(['description' => $type, 'type' => $type, 'amount_cents' => 100000, 'date' => '2027-01-31', 'paid' => true, 'is_fixed' => true]);
         }
         $opener = app(OpenFinancialMonth::class);
-        $this->assertSame(2, $opener->handle($workspace, '2027-02'));
-        $this->assertSame(0, $opener->handle($workspace, '2027-02'));
+        $this->assertSame(2, $opener->handle($workspace, '2027-02', '2027-02-05', '2027-02-28'));
         $summary = app(FinancialSummary::class)->forMonth($workspace, '2027-02');
         $this->assertSame(100000, $summary['fixedIncome']);
         $this->assertSame(100000, $summary['fixed']);
@@ -31,7 +30,7 @@ class FixedCashflowTest extends TestCase
         $this->assertCount(2, $summary['entries']);
         foreach ($summary['entries'] as $entry) {
             $this->assertFalse($entry->paid);
-            $this->assertSame('2027-02-28', $entry->date->format('Y-m-d'));
+            $this->assertSame('2027-02-05', $entry->date->format('Y-m-d'));
         }
         $summary['entries']->firstWhere('type', 'income')->update(['amount_cents' => 120000]);
         $january = app(FinancialSummary::class)->forMonth($workspace, '2027-01');

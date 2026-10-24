@@ -81,7 +81,7 @@ class FinancialCalendarTest extends TestCase
         $this->assertSame($summary['period']['start']->toDateString(), $september['period']['end']->toDateString());
     }
 
-    public function test_editing_the_start_is_scoped_validated_and_preserves_entries_and_budget(): void
+    public function test_editing_the_cycle_is_scoped_validated_and_preserves_entries_and_budget(): void
     {
         $workspace = $this->workspace();
         $workspace->budgets()->create(['month' => '2026-10', 'reserve_cents' => 12345]);
@@ -102,6 +102,22 @@ class FinancialCalendarTest extends TestCase
             ->call('startEditingCycle')->assertSet('cycleStartInput', '2026-11-01');
     }
 
+    public function test_cycle_editor_saves_start_and_inclusive_end_preserving_neighbor_budget_values(): void
+    {
+        $workspace = $this->workspace();
+        $workspace->budgets()->create(['month' => '2026-11', 'reserve_cents' => 12345]);
+        Livewire::test(FinanceDashboard::class, ['workspaceId' => $workspace->id, 'month' => '2026-10'])
+            ->call('startEditingCycle')->assertSet('cycleEndInput', '2026-10-31')
+            ->set('cycleStartInput', '2026-10-05')->set('cycleEndInput', '2026-11-03')
+            ->call('saveCycle')->assertHasNoErrors()->assertSet('editingCycle', false)
+            ->assertSee('05/10/2026 a 03/11/2026');
+        $calendar = app(FinancialCalendar::class);
+        $this->assertSame('2026-10-05', $calendar->startsOn($workspace, '2026-10')->toDateString());
+        $this->assertSame('2026-11-04', $calendar->startsOn($workspace, '2026-11')->toDateString());
+        $this->assertSame(12345, $workspace->budgets()->where('month', '2026-11')->first()->reserve_cents);
+        $this->assertSame('2026-10-05', $calendar->period($workspace, '2026-09')['end']->toDateString());
+    }
+
     public function test_cycle_permissions_are_enforced_on_every_action(): void
     {
         $workspace = $this->workspace();
@@ -109,7 +125,7 @@ class FinancialCalendarTest extends TestCase
         $workspace->members()->attach($reader, ['permissions' => ['finance.view']]);
         $this->actingAs($reader);
         Livewire::test(FinanceDashboard::class, ['workspaceId' => $workspace->id, 'month' => '2026-10'])
-            ->assertDontSee('Alterar início do mês financeiro')->call('startEditingCycle')->assertForbidden();
+            ->assertDontSee('Alterar ciclo financeiro')->call('startEditingCycle')->assertForbidden();
         Livewire::test(FinanceDashboard::class, ['workspaceId' => $workspace->id, 'month' => '2026-10'])
             ->set('cycleStartInput', '2026-10-05')->call('saveCycle')->assertForbidden();
         $workspace->members()->updateExistingPivot($reader, ['permissions' => ['finance.view', 'budget.manage']]);
@@ -130,11 +146,11 @@ class FinancialCalendarTest extends TestCase
             ->assertRedirect(route('finance.index', [$workspace, 'month' => '2026-10']));
         $this->post(route('entries.store', $workspace), ['description' => 'Outra', 'amount' => '5.00', 'type' => 'expense', 'date' => '2026-11-02'])
             ->assertRedirect(route('finance.index', [$workspace, 'month' => '2026-10']));
-        $this->assertDatabaseHas('financial_months', ['workspace_id' => $workspace->id, 'month' => '2026-10']);
+        $this->assertDatabaseMissing('financial_months', ['workspace_id' => $workspace->id, 'month' => '2026-10']);
         $this->assertDatabaseMissing('financial_months', ['workspace_id' => $workspace->id, 'month' => '2026-11']);
     }
 
-    public function test_fixed_entries_are_copied_from_previous_cycle_once_and_keep_independent_dates(): void
+    public function test_sync_uses_previous_cycle_and_selected_start_without_changing_source_dates(): void
     {
         $workspace = $this->workspace();
         $this->configure($workspace);
@@ -142,11 +158,10 @@ class FinancialCalendarTest extends TestCase
         $this->entry($workspace, '2026-11-02', 2000, ['is_fixed' => true]);
         $this->entry($workspace, '2026-10-04', 5000, ['is_fixed' => true]);
         $opener = app(OpenFinancialMonth::class);
-        $this->assertSame(2, $opener->handle($workspace, '2026-11'));
-        $this->assertSame(0, $opener->handle($workspace, '2026-11'));
-        $this->assertDatabaseHas('entries', ['workspace_id' => $workspace->id, 'date' => '2026-11-05 00:00:00', 'amount_cents' => 10000, 'paid' => false]);
-        // A due date beyond the next boundary is clamped to the last day of this cycle.
-        $this->assertDatabaseHas('entries', ['workspace_id' => $workspace->id, 'date' => '2026-11-30 00:00:00', 'amount_cents' => 2000, 'paid' => false]);
+        $this->assertSame(2, $opener->handle($workspace, '2026-11', '2026-11-03', '2026-11-30'));
+        $this->assertDatabaseHas('entries', ['workspace_id' => $workspace->id, 'date' => '2026-11-03 00:00:00', 'amount_cents' => 10000, 'paid' => false]);
+        // All copied fixed entries use the selected cycle start.
+        $this->assertDatabaseHas('entries', ['workspace_id' => $workspace->id, 'date' => '2026-11-03 00:00:00', 'amount_cents' => 2000, 'paid' => false]);
         $this->assertDatabaseHas('entries', ['workspace_id' => $workspace->id, 'date' => '2026-11-02 00:00:00', 'amount_cents' => 2000, 'paid' => true]);
         $this->assertCount(2, app(FinancialSummary::class)->forMonth($workspace, '2026-11')['entries']);
     }

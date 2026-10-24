@@ -23,8 +23,8 @@ class FinanceController extends Controller
 
     public function openMonth(Request $request, Workspace $workspace, OpenFinancialMonth $opener)
     {
-        $data = $request->validate(['month' => ['required', 'date_format:Y-m']]);
-        $copied = $opener->handle($workspace, $data['month']);
+        $data = $request->validate(['month' => ['required', 'date_format:Y-m'], 'cycleStartInput' => ['required', 'date_format:Y-m-d'], 'cycleEndInput' => ['required', 'date_format:Y-m-d']]);
+        $copied = $opener->handle($workspace, $data['month'], $data['cycleStartInput'], $data['cycleEndInput']);
         $redirect = redirect()->route('finance.index', [$workspace, 'month' => $data['month']]);
 
         return $copied > 0

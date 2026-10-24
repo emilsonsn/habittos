@@ -24,6 +24,7 @@
         <p class="field-error" role="alert">{{ $message }}</p>
     @enderror
     @include('finance.month-navigation')
+    @include('finance.synchronize-month')
     <div class="metrics">
         <div class="metric balance">
             <div class="metric-label">Saldo disponível <span>↗</span></div>

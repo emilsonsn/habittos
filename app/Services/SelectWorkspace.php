@@ -23,9 +23,6 @@ class SelectWorkspace
             }
             if ($candidate === 'finance') {
                 $month ??= app(FinancialCalendar::class)->monthForDate($workspace, now()->toDateString());
-                if ($workspace->allows($user, Permission::FinanceCreate)) {
-                    app(OpenFinancialMonth::class)->handle($workspace, $month);
-                }
 
                 return route('finance.index', [$workspace, 'month' => $month]);
             }

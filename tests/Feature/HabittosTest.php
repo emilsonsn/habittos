@@ -157,30 +157,31 @@ class HabittosTest extends TestCase
         }
     }
 
-    public function test_month_switch_copies_fixed_expenses_once_and_preserves_history(): void
+    public function test_explicit_month_sync_copies_fixed_expenses_and_preserves_history(): void
     {
         [$owner, $workspace] = $this->environment();
         $expense = $workspace->entries()->create(['description' => 'Aluguel', 'type' => 'expense', 'amount_cents' => 100000, 'date' => '2026-12-31', 'paid' => true, 'is_fixed' => true, 'notes' => 'Contrato']);
         $workspace->entries()->create(['description' => 'Passeio', 'type' => 'expense', 'amount_cents' => 5000, 'date' => '2026-12-15', 'paid' => true, 'is_fixed' => false]);
-        $this->actingAs($owner)->post(route('finance.open-month', $workspace), ['month' => '2027-01'])->assertRedirect(route('finance.index', [$workspace, 'month' => '2027-01']));
+        $this->actingAs($owner)->post(route('finance.open-month', $workspace), ['month' => '2027-01', 'cycleStartInput' => '2027-01-01', 'cycleEndInput' => '2027-01-31'])->assertRedirect(route('finance.index', [$workspace, 'month' => '2027-01']));
         $copy = $workspace->entries()->where('id', '!=', $expense->id)->where('is_fixed', true)->firstOrFail();
         $this->assertFalse($copy->paid);
-        $this->assertSame('2027-01-31', $copy->date->format('Y-m-d'));
+        $this->assertSame('2027-01-01', $copy->date->format('Y-m-d'));
         $this->assertSame(100000, $copy->amount_cents);
         $this->assertSame('Contrato', $copy->notes);
         $this->assertDatabaseCount('entries', 3);
-        $this->post(route('finance.open-month', $workspace), ['month' => '2027-01'])->assertRedirect();
+        $this->post(route('finance.open-month', $workspace), ['month' => '2027-01', 'cycleStartInput' => '2027-01-01', 'cycleEndInput' => '2027-01-31'])->assertSessionHasErrors('synchronization');
         $this->assertDatabaseCount('entries', 3);
         $this->put(route('entries.update', [$workspace, $copy]), ['description' => 'Aluguel reajustado', 'type' => 'expense', 'amount' => '1200.00', 'date' => '2027-01-31', 'is_fixed' => '1'])->assertRedirect();
         $this->assertSame(100000, $expense->fresh()->amount_cents);
         $this->assertTrue($expense->fresh()->paid);
-        $this->post(route('finance.open-month', $workspace), ['month' => '2027-02'])->assertRedirect();
+        $this->post(route('finance.open-month', $workspace), ['month' => '2027-02', 'cycleStartInput' => '2027-02-01', 'cycleEndInput' => '2027-02-28'])->assertRedirect();
         $february = $workspace->entries()->where('description', 'Aluguel reajustado')->orderByDesc('id')->firstOrFail();
-        $this->assertSame('2027-02-28', $february->date->format('Y-m-d'));
+        $this->assertSame('2027-02-01', $february->date->format('Y-m-d'));
         $this->assertSame(120000, $february->amount_cents);
         $this->delete(route('entries.destroy', [$workspace, $february]))->assertRedirect();
-        $this->post(route('finance.open-month', $workspace), ['month' => '2027-02'])->assertRedirect();
+        $this->post(route('finance.open-month', $workspace), ['month' => '2027-02', 'cycleStartInput' => '2027-02-01', 'cycleEndInput' => '2027-02-28'])->assertRedirect();
         $this->assertNull($february->fresh());
+        $this->assertSame(1, $workspace->entries()->where('date', '>=', '2027-02-01')->where('date', '<', '2027-03-01')->count());
         $this->assertNotNull($expense->fresh());
         $this->assertNotNull($copy->fresh());
     }
@@ -203,10 +204,10 @@ class HabittosTest extends TestCase
             $space->entries()->create(['description' => 'Fixo', 'type' => 'expense', 'amount_cents' => 100, 'date' => '2028-01-31', 'is_fixed' => true]);
         }
         $opener = app(OpenFinancialMonth::class);
-        $this->assertSame(1, $opener->handle($workspace, '2028-02'));
-        $this->assertSame('2028-02-29', $workspace->entries()->orderByDesc('id')->first()->date->format('Y-m-d'));
+        $this->assertSame(1, $opener->handle($workspace, '2028-02', '2028-02-01', '2028-02-29'));
+        $this->assertSame('2028-02-01', $workspace->entries()->orderByDesc('id')->first()->date->format('Y-m-d'));
         $this->assertSame(1, $other->entries()->count());
-        $this->assertSame(0, $opener->handle($workspace, '2028-04'));
+        $this->assertSame(0, $opener->handle($workspace, '2028-04', '2028-04-01', '2028-04-30'));
         $this->assertSame(2, $workspace->entries()->count());
     }
 

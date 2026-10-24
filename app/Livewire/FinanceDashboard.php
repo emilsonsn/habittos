@@ -8,9 +8,9 @@ use App\Services\FinancialCalendar;
 use App\Services\FinancialSummary;
 use App\Services\Money;
 use App\Services\OpenFinancialMonth;
-use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -38,6 +38,11 @@ class FinanceDashboard extends Component
 
     public string $cycleStartInput = '';
 
+    public string $cycleEndInput = '';
+
+    #[Locked]
+    public ?string $synchronizingMonth = null;
+
     #[Locked]
     public ?string $editingIndicator = null;
 
@@ -49,13 +54,13 @@ class FinanceDashboard extends Component
         Gate::authorize(Permission::BudgetManage->value, $workspace);
         $this->validate(['month' => ['required', 'date_format:Y-m']]);
         $this->resetValidation();
-        $this->cycleStartInput = app(FinancialCalendar::class)->startsOn($workspace, $this->month)->toDateString();
+        $this->loadCycleDates($workspace);
         $this->editingCycle = true;
     }
 
     public function cancelCycle(): void
     {
-        $this->reset('editingCycle', 'cycleStartInput');
+        $this->reset('editingCycle', 'cycleStartInput', 'cycleEndInput');
         $this->resetValidation();
     }
 
@@ -64,13 +69,9 @@ class FinanceDashboard extends Component
         $workspace = $this->workspace();
         Gate::authorize(Permission::BudgetManage->value, $workspace);
         $this->validate(['month' => ['required', 'date_format:Y-m']]);
-        $firstDay = CarbonImmutable::createFromFormat('!Y-m', $this->month);
-        $this->validate([
-            'cycleStartInput' => ['required', 'date_format:Y-m-d', 'after_or_equal:'.$firstDay->toDateString(), 'before_or_equal:'.$firstDay->endOfMonth()->toDateString()],
-        ], attributes: ['cycleStartInput' => 'início do mês financeiro']);
-        $workspace->budgets()->updateOrCreate(['month' => $this->month], ['starts_on' => $this->cycleStartInput]);
+        app(FinancialCalendar::class)->savePeriod($workspace, $this->month, $this->cycleStartInput, $this->cycleEndInput);
         $this->cancelCycle();
-        $this->message = 'Início do mês atualizado. O ciclo anterior termina na véspera desta data. As datas dos lançamentos foram preservadas.';
+        $this->message = 'Ciclo atualizado. O ciclo anterior termina na véspera do início e o próximo começa no dia seguinte ao fim informado. As datas dos lançamentos foram preservadas.';
     }
 
     protected function indicatorColumns(): array
@@ -140,6 +141,7 @@ class FinanceDashboard extends Component
     {
         $this->cancelIndicator();
         $this->cancelCycle();
+        $this->reset('synchronizingMonth');
         $budget = $this->workspace()->budgets()->where('month', $this->month)->first();
         $this->reserveInput = (string) (($budget?->reserve_cents ?? 0) / 100);
         $this->investmentBalanceInput = $budget?->investment_balance_cents !== null
@@ -153,16 +155,56 @@ class FinanceDashboard extends Component
         $workspace = $this->workspace();
         $this->resetValidation();
         $this->message = '';
-        if ($workspace->allows(auth()->user(), Permission::FinanceCreate)) {
-            $copied = app(OpenFinancialMonth::class)->handle($workspace, $target);
-            if ($copied > 0) {
-                $this->message = $copied.' lançamento(s) fixo(s) copiado(s) como pendentes.';
-            }
-        }
         $this->month = $target;
         $this->selectedMonth = $target;
         $this->loadBudget();
         $this->dispatch('financial-month-changed', month: $target);
+    }
+
+    private function loadCycleDates(Workspace $workspace): void
+    {
+        $period = app(FinancialCalendar::class)->period($workspace, $this->month);
+        $this->cycleStartInput = $period['start']->toDateString();
+        $this->cycleEndInput = $period['end']->subDay()->toDateString();
+    }
+
+    public function startSynchronization(): void
+    {
+        $workspace = $this->workspace();
+        Gate::authorize(Permission::FinanceCreate->value, $workspace);
+        Gate::authorize(Permission::BudgetManage->value, $workspace);
+        $this->validate(['month' => ['required', 'date_format:Y-m']]);
+        $summary = app(FinancialSummary::class)->forMonth($workspace, $this->month);
+        if ($summary['entries']->isNotEmpty()) {
+            throw ValidationException::withMessages(['synchronization' => 'Este mês já possui lançamentos e não pode ser sincronizado.']);
+        }
+        $this->cancelCycle();
+        $this->message = '';
+        $this->loadCycleDates($workspace);
+        $this->synchronizingMonth = $this->month;
+        $this->dispatch('open-month-sync');
+    }
+
+    public function cancelSynchronization(): void
+    {
+        $this->reset('synchronizingMonth', 'cycleStartInput', 'cycleEndInput');
+        $this->resetValidation();
+    }
+
+    public function synchronizePreviousMonth(): void
+    {
+        $workspace = $this->workspace();
+        Gate::authorize(Permission::FinanceCreate->value, $workspace);
+        Gate::authorize(Permission::BudgetManage->value, $workspace);
+        abort_unless($this->synchronizingMonth === $this->month, 422);
+        $this->resetValidation();
+        $this->message = '';
+        $copied = app(OpenFinancialMonth::class)->handle($workspace, $this->month, $this->cycleStartInput, $this->cycleEndInput);
+        $this->cancelSynchronization();
+        $this->message = $copied > 0
+            ? $copied.' lançamento(s) fixo(s) copiado(s) do mês anterior como pendentes. Ciclo salvo.'
+            : 'Ciclo salvo. O mês anterior não possui receitas ou gastos fixos para sincronizar.';
+        $this->dispatch('close-month-sync');
     }
 
     public function updatedMonth(): void

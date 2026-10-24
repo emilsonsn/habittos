@@ -21,7 +21,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/ambientes/selecionar', [WorkspaceController::class, 'select'])->name('workspaces.select');
     Route::prefix('ambientes/{workspace}')->middleware('workspace')->group(function () {
         Route::get('/configuracoes', fn (Workspace $workspace) => view('settings.index', compact('workspace')))->name('settings.index');
-        Route::post('/financeiro/abrir-mes', [FinanceController::class, 'openMonth'])->middleware(['workspace:finance.view', 'workspace:finance.create'])->name('finance.open-month');
+        Route::post('/financeiro/abrir-mes', [FinanceController::class, 'openMonth'])->middleware(['workspace:finance.view', 'workspace:finance.create', 'workspace:budget.manage'])->name('finance.open-month');
         Route::get('/financeiro', [FinanceController::class, 'index'])->middleware('workspace:finance.view')->name('finance.index');
         Route::get('/lancamentos/novo', [FinanceController::class, 'create'])->middleware('workspace:finance.create')->name('entries.create');
         Route::post('/lancamentos', [FinanceController::class, 'store'])->middleware('workspace:finance.create')->name('entries.store');

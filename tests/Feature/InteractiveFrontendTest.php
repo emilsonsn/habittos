@@ -49,9 +49,9 @@ class InteractiveFrontendTest extends TestCase
         $original = $workspace->entries()->create(['description' => 'Internet', 'type' => 'expense', 'amount_cents' => 9990, 'date' => '2026-12-31', 'paid' => true, 'is_fixed' => true]);
         $this->actingAs($user);
         Livewire::test(FinanceDashboard::class, ['workspaceId' => $workspace->id, 'month' => '2026-12'])
-            ->call('openMonth', '2027-01')->assertSet('month', '2027-01')->assertSee('Internet')
+            ->call('openMonth', '2027-01')->assertSet('month', '2027-01')->assertDontSee('Internet')
             ->assertDispatched('financial-month-changed', month: '2027-01')
-            ->call('openMonth', '2027-01');
+            ->call('startSynchronization')->call('synchronizePreviousMonth')->assertHasNoErrors();
         $this->assertDatabaseCount('entries', 2);
         $copy = $workspace->entries()->where('id', '!=', $original->id)->firstOrFail();
         Livewire::test(FinanceDashboard::class, ['workspaceId' => $workspace->id, 'month' => '2027-01'])
