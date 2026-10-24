@@ -31,7 +31,19 @@ class WorkspaceController extends Controller
 
     public function index(Request $request)
     {
-        return view('workspaces.index');
+        $activeWorkspace = app(SelectWorkspace::class)->current($request->user());
+        $canViewFinance = $activeWorkspace?->allows($request->user(), Permission::FinanceView) ?? false;
+        $latestInvestment = $canViewFinance
+            ? $activeWorkspace->budgets()->whereNotNull('investment_balance_cents')->orderByDesc('month')->first()
+            : null;
+        $hour = now(config('app.timezone'))->hour;
+        $greeting = match (true) {
+            $hour >= 5 && $hour < 12 => 'Bom dia',
+            $hour >= 12 && $hour < 18 => 'Boa tarde',
+            default => 'Boa noite',
+        };
+
+        return view('workspaces.index', compact('activeWorkspace', 'canViewFinance', 'latestInvestment', 'greeting'));
     }
 
     public function store(Request $request, CreateWorkspace $creator)

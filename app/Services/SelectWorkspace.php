@@ -5,9 +5,21 @@ namespace App\Services;
 use App\Enums\FinanceSection;
 use App\Enums\Permission;
 use App\Models\User;
+use App\Models\Workspace;
 
 class SelectWorkspace
 {
+    public function current(User $user, ?int $routeWorkspaceId = null): ?Workspace
+    {
+        $workspaces = $user->workspaces()->orderBy('name')->get();
+        $workspace = $workspaces->firstWhere('id', $routeWorkspaceId)
+            ?? $workspaces->firstWhere('id', session('active_workspace_id'))
+            ?? $workspaces->first();
+        session(['active_workspace_id' => $workspace?->id]);
+
+        return $workspace;
+    }
+
     public function handle(User $user, int $workspaceId, string $module = 'finance', ?string $month = null): string
     {
         $workspace = $user->workspaces()->findOrFail($workspaceId);

@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Enums\Permission;
 use App\Models\User;
 use App\Models\Workspace;
+use App\Services\SelectWorkspace;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -21,16 +22,8 @@ class AppServiceProvider extends ServiceProvider
                 return;
             }
 
-            $workspaces = $user->workspaces()->orderBy('name')->get();
             $routeWorkspace = request()->route('workspace');
-            $activeWorkspace = $workspaces->firstWhere('id', $routeWorkspace?->id)
-                ?? $workspaces->firstWhere('id', session('active_workspace_id'))
-                ?? $workspaces->first();
-
-            // Revalida o acesso, inclusive quando a participação foi removida.
-            session(['active_workspace_id' => $activeWorkspace?->id]);
-            $view->with('availableWorkspaces', $workspaces)
-                ->with('activeWorkspace', $activeWorkspace);
+            $view->with('activeWorkspace', app(SelectWorkspace::class)->current($user, $routeWorkspace?->id));
         });
 
         foreach (Permission::cases() as $permission) {
