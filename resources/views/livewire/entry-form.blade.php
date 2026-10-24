@@ -8,10 +8,16 @@
         <a wire:navigate href="{{ route('finance.index', [$workspace, 'month' => substr($form['date'], 0, 7)]) }}">←
             Voltar ao financeiro</a>
     </div>
-    <section class="panel form-panel">
+    @if ($success)
+        <div class="notice success" role="status" wire:key="entry-success-{{ $formVersion }}"
+            x-data="{ visible: true }" x-show="visible" x-init="setTimeout(() => visible = false, 6000)" x-transition.opacity>
+            {{ $success }}<button type="button" @click="visible = false" aria-label="Dispensar mensagem">×</button>
+        </div>
+    @endif
+    <section class="panel form-panel" wire:key="entry-form-{{ $formVersion }}">
         <form wire:submit="save" class="form-stack">
             <label>Descrição<input wire:model="form.description" maxlength="180" placeholder="Ex.: Mercado da semana"
-                    required autofocus>
+                    required autofocus x-init="$el.focus()">
                 @error('form.description')
                     <span class="field-error">{{ $message }}</span>
                 @enderror
@@ -74,8 +80,15 @@
             </details>
             <div class="form-actions">
                 <button class="button" wire:loading.attr="disabled"><span wire:loading.remove
-                        wire:target="save">{{ $entryId ? 'Salvar alterações' : 'Registrar lançamento' }}</span><span
+                        wire:target="save">{{ $entryId ? 'Salvar alterações' : 'Salvar' }}</span><span
                         wire:loading wire:target="save">Salvando…</span></button>
+                @if (!$entryId)
+                    <button type="button" class="button secondary" wire:click="saveAndCreateAnother"
+                        wire:loading.attr="disabled">
+                        <span wire:loading.remove wire:target="saveAndCreateAnother">Salvar e lançar outro</span>
+                        <span wire:loading wire:target="saveAndCreateAnother">Salvando…</span>
+                    </button>
+                @endif
                 <a wire:navigate
                     href="{{ route('finance.index', [$workspace, 'month' => substr($form['date'], 0, 7)]) }}">Cancelar</a>
             </div>

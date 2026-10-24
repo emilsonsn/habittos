@@ -166,7 +166,7 @@ A troca lista somente ambientes autorizados e revalida a participação no servi
 
 O dashboard é um componente Livewire: navegação de mês/ano, planejamento, criação de categorias, exclusão e alternância de status atualizam os dados na mesma página. O período aparece na URL e é informado ao seletor de ambientes. Receitas e despesas fixas mantêm a inicialização idempotente e a independência entre meses.
 
-O formulário de lançamento usa Livewire, validação de campos, estado de salvamento e seleção visual entre receita, despesa e investimento. A validação e a persistência são compartilhadas com os endpoints HTTP existentes. Não há gravação automática de rascunhos.
+O formulário de lançamento usa Livewire, validação de campos, estado de salvamento e seleção visual entre receita, despesa e investimento. A validação e a persistência são compartilhadas com os endpoints HTTP existentes. Na criação, “Salvar” volta ao financeiro; “Salvar e lançar outro” confirma o registro na própria tela, limpa todos os campos para os padrões de criação e devolve o foco à descrição. Erros de validação preservam os valores preenchidos. A edição mantém apenas o salvamento com retorno. Não há gravação automática de rascunhos.
 
 Metas e pessoas também usam componentes Livewire. Criar metas, atualizar progresso, excluir metas, conceder acesso e editar permissões atualizam as telas sem carregamento completo. As ações de domínio são compartilhadas com os endpoints HTTP tradicionais para manter uma única regra de negócio.
 

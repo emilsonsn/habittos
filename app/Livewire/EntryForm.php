@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\Entry;
 use App\Models\Workspace;
 use App\Services\EntryRules;
 use App\Services\FinancialCalendar;
@@ -21,6 +22,11 @@ class EntryForm extends Component
 
     public array $form = [];
 
+    public ?string $success = null;
+
+    #[Locked]
+    public int $formVersion = 0;
+
     protected function workspace(): Workspace
     {
         abort_unless(auth()->check(), 401);
@@ -36,20 +42,35 @@ class EntryForm extends Component
         $this->entryId = $entryId;
         $workspace = $this->workspace();
         $entry = $entryId ? $workspace->entries()->findOrFail($entryId) : null;
-        $this->form = [
-            'description' => $entry?->description ?? '',
-            'type' => $entry?->type ?? 'expense',
-            'amount' => $entry ? (string) ($entry->amount_cents / 100) : '',
-            'date' => $entry?->date->format('Y-m-d') ?? now()->toDateString(),
-            'category_id' => $entry?->category_id,
-            'paid' => $entry?->paid ?? true,
-            'is_fixed' => $entry?->is_fixed ?? false,
-            'notes' => $entry?->notes,
+        $this->form = $entry ? [
+            'description' => $entry->description,
+            'type' => $entry->type,
+            'amount' => (string) ($entry->amount_cents / 100),
+            'date' => $entry->date->format('Y-m-d'),
+            'category_id' => $entry->category_id,
+            'paid' => $entry->paid,
+            'is_fixed' => $entry->is_fixed,
+            'notes' => $entry->notes,
+        ] : $this->defaultForm();
+    }
+
+    private function defaultForm(): array
+    {
+        return [
+            'description' => '',
+            'type' => 'expense',
+            'amount' => '',
+            'date' => now()->toDateString(),
+            'category_id' => null,
+            'paid' => true,
+            'is_fixed' => false,
+            'notes' => null,
         ];
     }
 
-    public function save(): void
+    private function persist(): Entry
     {
+        $this->success = null;
         $workspace = $this->workspace();
         if (($this->form['category_id'] ?? null) === '') {
             $this->form['category_id'] = null;
@@ -58,9 +79,26 @@ class EntryForm extends Component
         $validated = $this->validate($rules)['form'];
         $validated['amount_cents'] = Money::cents($validated['amount']);
         unset($validated['amount']);
-        $entry = app(SaveEntry::class)->handle($workspace, $validated, $this->entryId);
+
+        return app(SaveEntry::class)->handle($workspace, $validated, $this->entryId);
+    }
+
+    public function save(): void
+    {
+        $entry = $this->persist();
+        $workspace = $this->workspace();
         session()->flash('success', $this->entryId ? 'Lançamento atualizado.' : 'Lançamento registrado.');
         $this->redirect(route('finance.index', [$workspace, 'month' => app(FinancialCalendar::class)->monthForDate($workspace, $entry->date->toDateString())]), navigate: true);
+    }
+
+    public function saveAndCreateAnother(): void
+    {
+        abort_if($this->entryId !== null, 403);
+        $this->persist();
+        $this->form = $this->defaultForm();
+        $this->resetValidation();
+        $this->formVersion++;
+        $this->success = 'Lançamento registrado. Você já pode cadastrar o próximo.';
     }
 
     public function render()

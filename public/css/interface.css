@@ -932,6 +932,9 @@ textarea:focus {
     background: #ebebf4;
     border-radius: 10px;
 }
+.form-actions {
+    flex-wrap: wrap;
+}
 .entry-types label {
     flex: 1;
     position: relative;
