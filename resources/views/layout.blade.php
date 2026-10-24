@@ -68,7 +68,7 @@
                         <x-theme-toggle />
                     </div>
                 </header>
-                <div class="content page-enter">
+                <div class="content page-enter {{ request()->routeIs('home') ? 'home-content' : '' }}">
                     @include('partials.feedback')
                     @yield('content')
                 </div>
@@ -90,6 +90,7 @@
         </main>
     @endauth
     <script src="{{ asset('money.js') }}" data-navigate-once></script>
+    <script src="{{ asset('cover-position.js') }}" data-navigate-once></script>
     <script src="{{ asset('app.js') }}" data-navigate-once></script>
     @livewireScripts
 </body>

@@ -22,6 +22,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/ambientes', [WorkspaceController::class, 'store'])->name('workspaces.store');
     Route::post('/ambientes/selecionar', [WorkspaceController::class, 'select'])->name('workspaces.select');
     Route::prefix('ambientes/{workspace}')->middleware('workspace')->group(function () {
+        Route::get('/capa', [WorkspaceController::class, 'cover'])->name('workspaces.cover');
         Route::get('/configuracoes', fn (Workspace $workspace) => view('settings.index', compact('workspace')))->name('settings.index');
         Route::post('/financeiro/abrir-mes', [FinanceController::class, 'openMonth'])->middleware(['workspace:finance.view', 'workspace:finance.create', 'workspace:budget.manage'])->name('finance.open-month');
         foreach (FinanceSection::cases() as $section) {

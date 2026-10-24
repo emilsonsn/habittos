@@ -9,7 +9,19 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Workspace extends Model
 {
-    protected $fillable = ['name', 'owner_id'];
+    protected $fillable = ['name', 'owner_id', 'cover_path', 'cover_position_x', 'cover_position_y'];
+
+    protected function casts(): array
+    {
+        return ['cover_position_x' => 'integer', 'cover_position_y' => 'integer'];
+    }
+
+    public function coverUrl(): ?string
+    {
+        return $this->cover_path
+            ? route('workspaces.cover', [$this, 'v' => md5($this->cover_path)])
+            : null;
+    }
 
     public function members(): BelongsToMany
     {

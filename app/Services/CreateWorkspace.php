@@ -4,17 +4,21 @@ namespace App\Services;
 
 use App\Models\User;
 use App\Models\Workspace;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 
 class CreateWorkspace
 {
-    public function handle(User $owner, string $name): Workspace
+    public function handle(User $owner, string $name, ?UploadedFile $cover = null, int $positionX = 50, int $positionY = 50): Workspace
     {
-        return DB::transaction(function () use ($owner, $name) {
+        return DB::transaction(function () use ($owner, $name, $cover, $positionX, $positionY) {
             $workspace = Workspace::create(['name' => $name, 'owner_id' => $owner->id]);
             $workspace->members()->attach($owner, ['permissions' => []]);
             foreach (['Moradia', 'Alimentação', 'Transporte', 'Saúde', 'Lazer', 'Família', 'Assinaturas', 'Outros'] as $category) {
                 $workspace->categories()->create(['name' => $category]);
+            }
+            if ($cover) {
+                app(WorkspaceCover::class)->save($workspace, $cover, $positionX, $positionY);
             }
 
             return $workspace;

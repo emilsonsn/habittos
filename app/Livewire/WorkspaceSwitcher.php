@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\HandlesWorkspaceCover;
 use App\Services\CreateWorkspace;
 use App\Services\SelectWorkspace;
 use Livewire\Attributes\Locked;
@@ -10,6 +11,8 @@ use Livewire\Component;
 
 class WorkspaceSwitcher extends Component
 {
+    use HandlesWorkspaceCover;
+
     #[Locked]
     public ?int $activeId = null;
 
@@ -48,7 +51,8 @@ class WorkspaceSwitcher extends Component
         abort_unless(auth()->check(), 401);
         $this->name = trim($this->name);
         $this->validate(['name' => ['required', 'string', 'max:100']]);
-        $workspace = app(CreateWorkspace::class)->handle(auth()->user(), $this->name);
+        $this->validateCoverDraft();
+        $workspace = app(CreateWorkspace::class)->handle(auth()->user(), $this->name, $this->cover, (int) $this->positionX, (int) $this->positionY);
         $url = app(SelectWorkspace::class)->handle(auth()->user(), $workspace->id, 'finance', $this->month);
         $this->redirect($url, navigate: true);
     }

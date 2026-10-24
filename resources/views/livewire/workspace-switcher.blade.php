@@ -71,11 +71,15 @@
             @error('name')
                 <p class="field-error" role="alert">{{ $message }}</p>
             @enderror
+            <x-workspace-cover-upload id="create-workspace-cover" :upload="$cover" :ready="$coverReady" :upload-x="$positionX" :upload-y="$positionY" :version="$coverVersion" />
             <div class="dialog-actions"><button type="button" class="button secondary"
                     @click="$refs.createDialog.close()">Cancelar</button><button class="button"
                     wire:loading.attr="disabled"><span wire:loading.remove wire:target="createWorkspace">Criar
                         ambiente</span><span wire:loading wire:target="createWorkspace">Criando…</span></button></div>
         </form>
     </dialog>
+    @if ($positioning && $cover && !$errors->has('cover'))
+        <x-workspace-cover-editor :image="$cover->temporaryUrl()" editor-id="create-cover-editor" :version="$coverVersion" />
+    @endif
     <span class="space-loading" wire:loading wire:target="selectWorkspace" role="status">Abrindo ambiente…</span>
 </div>

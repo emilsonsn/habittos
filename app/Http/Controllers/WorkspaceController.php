@@ -11,7 +11,9 @@ use App\Services\InvestmentBalance;
 use App\Services\ManageMembers;
 use App\Services\OpenFinancialMonth;
 use App\Services\SelectWorkspace;
+use App\Services\WorkspaceCover;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 class WorkspaceController extends Controller
@@ -49,10 +51,19 @@ class WorkspaceController extends Controller
 
     public function store(Request $request, CreateWorkspace $creator)
     {
-        $data = $request->validate(['name' => ['required', 'string', 'max:100']]);
-        $creator->handle($request->user(), $data['name']);
+        $data = $request->validate(['name' => ['required', 'string', 'max:100'], 'cover' => WorkspaceCover::rules(),
+            'positionX' => ['sometimes', 'integer', 'between:0,100'], 'positionY' => ['sometimes', 'integer', 'between:0,100'],
+        ]);
+        $creator->handle($request->user(), $data['name'], $request->file('cover'), (int) ($data['positionX'] ?? 50), (int) ($data['positionY'] ?? 50));
 
         return back()->with('success', 'Ambiente criado.');
+    }
+
+    public function cover(Workspace $workspace)
+    {
+        abort_unless($workspace->cover_path && Storage::disk('local')->exists($workspace->cover_path), 404);
+
+        return Storage::disk('local')->response($workspace->cover_path, null, ['Cache-Control' => 'private, max-age=3600']);
     }
 
     public function members(Workspace $workspace)

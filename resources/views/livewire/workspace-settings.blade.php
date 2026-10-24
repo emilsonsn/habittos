@@ -1,4 +1,7 @@
 <div class="settings-page">
+    @if ($message)
+        <div class="notice success" role="status">{{ $message }}</div>
+    @endif
     <div class="page-heading">
         <div><span class="eyebrow">DO SEU JEITO</span>
             <h1>Configurações<span class="heading-dot">.</span></h1>
@@ -28,9 +31,39 @@
             @endif
         </div>
     </section>
+    <section class="settings-section">
+        <div class="settings-description"><span class="settings-number">02</span>
+            <h2>Capa do ambiente</h2>
+            <p>Uma imagem para deixar a Home com a sua cara.</p>
+        </div>
+        <div class="panel">
+            @if ($workspace->owner_id === auth()->id())
+                <form wire:submit="saveCover" class="form-stack">
+                    <x-workspace-cover-upload id="settings-workspace-cover" :upload="$cover" :current-url="$workspace->coverUrl()"
+                        :workspace-id="$workspace->id" :position-x="$workspace->cover_position_x" :position-y="$workspace->cover_position_y" :ready="$coverReady" :upload-x="$positionX" :upload-y="$positionY" :version="$coverVersion" />
+                    <div class="actions">
+                        <button class="button" wire:loading.attr="disabled" wire:target="cover,saveCover,removeCover">
+                            <span wire:loading.remove wire:target="saveCover">Salvar capa</span>
+                            <span wire:loading wire:target="saveCover">Salvando…</span>
+                        </button>
+                        @if ($workspace->cover_path)
+                            <button type="button" class="text-button danger" wire:click="removeCover"
+                                wire:loading.attr="disabled" wire:target="cover,saveCover,removeCover">Remover capa</button>
+                        @endif
+                    </div>
+                </form>
+            @else
+                @if ($workspace->cover_path)
+                    <x-workspace-cover-image class="workspace-cover-preview" :src="$workspace->coverUrl()" :alt="'Capa do ambiente '.$workspace->name"
+                        :workspace-id="$workspace->id" :position-x="$workspace->cover_position_x" :position-y="$workspace->cover_position_y" />
+                @endif
+                <p class="muted">Somente o proprietário pode alterar a capa.</p>
+            @endif
+        </div>
+    </section>
     @can('members.manage', $workspace)
         <section class="settings-section">
-            <div class="settings-description"><span class="settings-number">02</span>
+            <div class="settings-description"><span class="settings-number">03</span>
                 <h2>Pessoas e acessos</h2>
                 <p>Escolha quem participa e o que cada pessoa pode fazer.</p>
             </div>
@@ -45,7 +78,7 @@
     @endcan
     @if ($workspace->owner_id === auth()->id())
         <section class="settings-section" x-data>
-            <div class="settings-description"><span class="settings-number">03</span>
+            <div class="settings-description"><span class="settings-number">04</span>
                 <h2>Excluir ambiente</h2>
                 <p>Esta ação é definitiva. Faça isso somente se não precisar mais dos dados.</p>
             </div>
@@ -74,5 +107,8 @@
                 </form>
             </dialog>
         </section>
+    @endif
+    @if ($positioning && $cover && !$errors->has('cover'))
+        <x-workspace-cover-editor :image="$cover->temporaryUrl()" :editor-id="'settings-cover-editor-'.$workspaceId" :version="$coverVersion" />
     @endif
 </div>
