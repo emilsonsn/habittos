@@ -75,7 +75,7 @@ Metas têm progresso manual, independente dos lançamentos. A meta pode ultrapas
 
 ## Sincronização de fixos e ciclo financeiro
 
-A navegação entre meses, a troca de ambiente e o cadastro do primeiro lançamento não copiam registros automaticamente. No bloco do mês de referência, o botão “Sincronizar com o mês anterior” aparece somente quando o ciclo selecionado não possui nenhum lançamento, incluindo receitas, despesas e investimentos, fixos ou variáveis, pagos ou pendentes. É necessário ter `finance.view`, `finance.create` e `budget.manage`, pois a ação cria lançamentos e configura o período financeiro.
+A navegação entre meses, a troca de ambiente e o cadastro do primeiro lançamento não copiam registros automaticamente. No bloco do mês de referência, o botão “Sincronizar com o mês anterior” aparece somente quando o ciclo selecionado não possui nenhum lançamento, incluindo receitas, despesas e investimentos, fixos ou variáveis, pagos ou pendentes. É necessário ter `finance.view`, `finance.create` e `budget.manage`, pois a ação cria lançamentos e configura o período financeiro. O mesmo bloco é compartilhado por todas as seções financeiras.
 
 O botão abre um diálogo com início e fim do ciclo e as ações Cancelar e Confirmar sincronização. Abrir ou cancelar o diálogo não grava dados. A confirmação salva o período e copia somente receitas e despesas fixas do ciclo imediatamente anterior, do mesmo ambiente, preservando descrição, tipo, valor, categoria e observações. Todos os registros copiados recebem a data de início escolhida, com status pendente e marcador de fixo. Investimentos e lançamentos variáveis não são copiados. Se não houver fixos no ciclo anterior, o período ainda é salvo e a interface informa que não há registros para copiar.
 
@@ -85,7 +85,7 @@ O lápis ao lado do período permite editar as mesmas duas datas, exigindo `budg
 
 A sincronização revalida no servidor a ausência de lançamentos tanto no ciclo atual quanto no período proposto, impedindo contornar a restrição ao mudar as datas. Cópia e configuração do ciclo usam uma única transação; sincronizações e salvamentos de lançamentos bloqueiam o mesmo ambiente para serializar alterações concorrentes. Depois da cópia, o botão desaparece e uma nova tentativa é rejeitada. O marcador histórico em `financial_months` não bloqueia um ciclo que esteja de fato vazio: se todos os lançamentos forem excluídos, uma nova sincronização explícita é permitida. Meses anteriores nunca são alterados pela edição ou exclusão das cópias.
 
-O endpoint HTTP `POST /ambientes/{workspace}/financeiro/abrir-mes` também executa a sincronização explícita, exige as mesmas permissões e CSRF e recebe `month` (AAAA-MM), `cycleStartInput` e `cycleEndInput` (AAAA-MM-DD). A interface usa a ação Livewire correspondente e mantém o mês selecionado.
+O endpoint HTTP `POST /ambientes/{workspace}/financeiro/abrir-mes` também executa a sincronização explícita, exige as mesmas permissões e CSRF e recebe `month` (AAAA-MM), `cycleStartInput` e `cycleEndInput` (AAAA-MM-DD). A interface usa a ação Livewire correspondente e mantém a seção financeira e o mês selecionados.
 
 ## Referência da planilha
 
@@ -165,6 +165,10 @@ O antigo menu/listagem de ambientes foi removido da navegação. O dropdown da b
 A troca lista somente ambientes autorizados e revalida a participação no servidor. Ela preserva o módulo atual e o mês/ano do financeiro, ou abre outro módulo permitido no destino. Se nenhum estiver liberado, retorna ao início. A seleção fica na sessão; abrir uma URL autorizada atualiza o ambiente ativo. Acesso removido provoca retorno a um ambiente disponível. Usuários com somente leitura não inicializam meses ao trocar.
 
 ### Financeiro
+
+O menu Financeiro expande quatro submenus: Dashboard, Receitas fixas, Gastos fixos e Lançamentos do mês. Cada tela tem URL própria e mantém o mês selecionado; trocar de ambiente preserva também a seção financeira, respeitando as permissões. Todas usam `FinanceDashboard`, que centraliza carregamento, navegação mensal e ações autorizadas, com seções definidas em `FinanceSection`.
+
+A tabela de lançamentos fica apenas na tela Lançamentos do mês (`finance/entries-table.blade.php`). Receitas e gastos fixos reutilizam `finance/fixed-entries.blade.php` nas telas dedicadas e no dashboard. O dashboard mantém os indicadores, o planejamento e os fixos, e apresenta as despesas por categoria com gráfico de pizza e legenda de valores e percentuais. O componente `category-pie` usa os mesmos totais por categoria do resumo financeiro, sem biblioteca externa ou consultas próprias, e mostra um estado vazio quando não há despesas.
 
 O dashboard é um componente Livewire: navegação de mês/ano, planejamento, criação de categorias, exclusão e alternância de status atualizam os dados na mesma página. O período aparece na URL e é informado ao seletor de ambientes. Receitas e despesas fixas são copiadas apenas pela sincronização confirmada em um ciclo vazio, mantendo a independência entre meses.
 

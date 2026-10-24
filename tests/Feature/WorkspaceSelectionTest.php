@@ -19,12 +19,12 @@ class WorkspaceSelectionTest extends TestCase
         $first->entries()->create(['description' => 'Despesa pessoal exclusiva', 'type' => 'expense', 'amount_cents' => 1000, 'date' => '2027-02-01']);
         $second->entries()->create(['description' => 'Despesa da casa exclusiva', 'type' => 'expense', 'amount_cents' => 2000, 'date' => '2027-02-01']);
 
-        $this->actingAs($user)->get(route('finance.index', [$first, 'month' => '2027-02']))
+        $this->actingAs($user)->get(route('finance.entries', [$first, 'month' => '2027-02']))
             ->assertSee('Despesa pessoal exclusiva')->assertDontSee('Despesa da casa exclusiva');
         $this->post(route('workspaces.select'), ['workspace_id' => $second->id, 'module' => 'finance', 'month' => '2027-02'])
             ->assertRedirect(route('finance.index', [$second, 'month' => '2027-02']))
             ->assertSessionHas('active_workspace_id', $second->id);
-        $this->get(route('finance.index', [$second, 'month' => '2027-02']))
+        $this->get(route('finance.entries', [$second, 'month' => '2027-02']))
             ->assertSee('Despesa da casa exclusiva')->assertDontSee('Despesa pessoal exclusiva');
         $this->get(route('workspaces.index'))->assertSee('id="workspace-select"', false)
             ->assertSee('aria-selected="true"', false)->assertSee('Casa');

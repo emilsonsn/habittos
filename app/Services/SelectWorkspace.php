@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\FinanceSection;
 use App\Enums\Permission;
 use App\Models\User;
 
@@ -16,6 +17,11 @@ class SelectWorkspace
             return route('settings.index', $workspace);
         }
 
+        $financeSection = collect(FinanceSection::cases())->first(fn ($section) => $section->routeName() === $module);
+        if ($financeSection) {
+            $module = 'finance';
+        }
+
         $modules = ['finance' => Permission::FinanceView, 'goals' => Permission::GoalsView, 'members' => Permission::MembersManage];
         foreach (array_unique([$module, ...array_keys($modules)]) as $candidate) {
             if (! isset($modules[$candidate]) || ! $workspace->allows($user, $modules[$candidate])) {
@@ -24,7 +30,7 @@ class SelectWorkspace
             if ($candidate === 'finance') {
                 $month ??= app(FinancialCalendar::class)->monthForDate($workspace, now()->toDateString());
 
-                return route('finance.index', [$workspace, 'month' => $month]);
+                return route(($financeSection ?? FinanceSection::Dashboard)->routeName(), [$workspace, 'month' => $month]);
             }
 
             return route($candidate === 'goals' ? 'goals.index' : 'members.index', $workspace);

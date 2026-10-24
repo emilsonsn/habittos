@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\FinanceSection;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\FinanceController;
 use App\Http\Controllers\GoalController;
@@ -22,7 +23,11 @@ Route::middleware('auth')->group(function () {
     Route::prefix('ambientes/{workspace}')->middleware('workspace')->group(function () {
         Route::get('/configuracoes', fn (Workspace $workspace) => view('settings.index', compact('workspace')))->name('settings.index');
         Route::post('/financeiro/abrir-mes', [FinanceController::class, 'openMonth'])->middleware(['workspace:finance.view', 'workspace:finance.create', 'workspace:budget.manage'])->name('finance.open-month');
-        Route::get('/financeiro', [FinanceController::class, 'index'])->middleware('workspace:finance.view')->name('finance.index');
+        foreach (FinanceSection::cases() as $section) {
+            Route::get($section->path(), [FinanceController::class, 'index'])
+                ->defaults('section', $section->value)
+                ->middleware('workspace:finance.view')->name($section->routeName());
+        }
         Route::get('/lancamentos/novo', [FinanceController::class, 'create'])->middleware('workspace:finance.create')->name('entries.create');
         Route::post('/lancamentos', [FinanceController::class, 'store'])->middleware('workspace:finance.create')->name('entries.store');
         Route::get('/lancamentos/{entry}/editar', [FinanceController::class, 'edit'])->middleware('workspace:finance.update')->name('entries.edit');

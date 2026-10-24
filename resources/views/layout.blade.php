@@ -17,21 +17,20 @@
             <aside class="sidebar">
                 <a wire:navigate class="brand" href="{{ route('workspaces.index') }}"><span
                         class="brand-mark">h</span>habittos<span class="brand-dot">.</span></a>
-                <livewire:workspace-switcher :active-id="$activeWorkspace?->id" :module="request()->routeIs('settings.*')
+                <livewire:workspace-switcher :active-id="$activeWorkspace?->id" :module="request()->routeIs('finance.*') ? request()->route()->getName() : (request()->routeIs('settings.*')
                     ? 'settings'
                     : (request()->routeIs('goals.*')
                         ? 'goals'
                         : (request()->routeIs('members.*')
                             ? 'members'
-                            : 'finance'))" :month="$month ??
+                            : 'finance')))" :month="$month ??
                     (isset($entry) ? $entry->date->format('Y-m') : request('month', now()->format('Y-m')))" />
                 <span class="nav-label">SEU DIA A DIA</span>
                 <nav aria-label="Navegação principal">
                     @if ($activeWorkspace)
                         @can('finance.view', $activeWorkspace)
-                            <a wire:navigate class="{{ request()->routeIs('finance.*', 'entries.*') ? 'active' : '' }}"
-                                href="{{ route('finance.index', $activeWorkspace) }}"><x-icon
-                                    name="finance" /><span>Financeiro</span></a>
+                            <x-finance-navigation :workspace="$activeWorkspace"
+                                :month="$month ?? (isset($entry) ? $entry->date->format('Y-m') : request('month', app(\App\Services\FinancialCalendar::class)->monthForDate($activeWorkspace, now()->toDateString())))" />
                         @endcan
                         @can('goals.view', $activeWorkspace)
                             <a wire:navigate class="{{ request()->routeIs('goals.*') ? 'active' : '' }}"
@@ -48,9 +47,7 @@
                                 name="settings" /><span>Configurações</span></a>
                     @endif
                 </nav>
-                <div class="sidebar-note"><span class="tiny-dot"></span> No seu ritmo.<p>Um pouco de organização.<br>Mais
-                        espaço para viver.</p>
-                </div>
+
                 <div class="profile"><span class="avatar">{{ mb_substr(auth()->user()->name, 0, 1) }}</span>
                     <div>{{ auth()->user()->name }}<form method="POST" action="{{ route('logout') }}">@csrf<button
                                 class="text-button">Sair da conta</button></form>

@@ -42,14 +42,14 @@ class MonthSynchronizationTest extends TestCase
         $this->fixed($workspace, 'expense', '2026-09-10');
         $other = app(CreateWorkspace::class)->handle(auth()->user(), 'Outro');
         $this->fixed($other, 'expense');
-        $component = Livewire::test(FinanceDashboard::class, ['workspaceId' => $workspace->id, 'month' => '2026-11'])
+        $component = Livewire::test(FinanceDashboard::class, ['workspaceId' => $workspace->id, 'month' => '2026-11', 'section' => 'fixed-income'])
             ->assertSee('wire:click="startSynchronization"', false)
             ->call('startSynchronization')->assertDispatched('open-month-sync')
             ->assertSet('cycleStartInput', '2026-11-01')->assertSet('cycleEndInput', '2026-11-30');
         $this->assertSame(5, $workspace->entries()->count());
         $component->set('cycleStartInput', '2026-11-05')->set('cycleEndInput', '2026-12-03')
             ->call('synchronizePreviousMonth')->assertHasNoErrors()->assertDispatched('close-month-sync')
-            ->assertSee('05/11/2026 a 03/12/2026')
+            ->assertSet('section', 'fixed-income')->assertSee('05/11/2026 a 03/12/2026')
             ->assertDontSee('wire:click="startSynchronization"', false);
         $copies = $workspace->entries()->whereDate('date', '2026-11-05')->get();
         $this->assertCount(2, $copies);
@@ -76,7 +76,7 @@ class MonthSynchronizationTest extends TestCase
         $workspace = $this->workspace();
         foreach (['income', 'expense', 'investment'] as $type) {
             $entry = $workspace->entries()->create(['description' => 'Já existe', 'type' => $type, 'amount_cents' => 100, 'date' => '2026-11-10']);
-            Livewire::test(FinanceDashboard::class, ['workspaceId' => $workspace->id, 'month' => '2026-11'])
+            Livewire::test(FinanceDashboard::class, ['workspaceId' => $workspace->id, 'month' => '2026-11', 'section' => 'fixed-income'])
                 ->assertDontSee('wire:click="startSynchronization"', false)
                 ->call('startSynchronization')->assertHasErrors('synchronization');
             $this->post(route('finance.open-month', $workspace), ['month' => '2026-11', 'cycleStartInput' => '2026-11-15', 'cycleEndInput' => '2026-11-30'])

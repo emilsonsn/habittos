@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\FinanceSection;
 use App\Enums\Permission;
 use App\Models\User;
 use App\Models\Workspace;
@@ -18,7 +19,7 @@ class WorkspaceController extends Controller
     {
         $data = $request->validate([
             'workspace_id' => ['required', 'integer'],
-            'module' => ['required', Rule::in(['finance', 'goals', 'members', 'settings'])],
+            'module' => ['required', Rule::in(['finance', 'goals', 'members', 'settings', ...array_map(fn ($section) => $section->routeName(), FinanceSection::cases())])],
             'month' => ['nullable', 'date_format:Y-m'],
         ]);
         $url = app(SelectWorkspace::class)->handle(

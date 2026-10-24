@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Enums\FinanceSection;
 use App\Enums\Permission;
 use App\Models\Workspace;
 use App\Services\FinancialCalendar;
@@ -22,6 +23,9 @@ class FinanceDashboard extends Component
 
     #[Url(history: true)]
     public string $month = '';
+
+    #[Locked]
+    public string $section = 'dashboard';
 
     public string $selectedMonth = '';
 
@@ -120,8 +124,9 @@ class FinanceDashboard extends Component
         $this->message = 'Indicador atualizado.';
     }
 
-    public function mount(int $workspaceId, string $month): void
+    public function mount(int $workspaceId, string $month, string $section = 'dashboard'): void
     {
+        $this->section = FinanceSection::from($section)->value;
         $this->workspaceId = $workspaceId;
         $this->month = $month;
         $this->selectedMonth = $month;
@@ -264,6 +269,6 @@ class FinanceDashboard extends Component
         $this->validate(['month' => ['required', 'date_format:Y-m']]);
         $workspace = $this->workspace();
 
-        return view('livewire.finance-dashboard', app(FinancialSummary::class)->forMonth($workspace, $this->month) + ['workspace' => $workspace]);
+        return view('livewire.finance-dashboard', app(FinancialSummary::class)->forMonth($workspace, $this->month) + ['workspace' => $workspace, 'financeSection' => FinanceSection::from($this->section)]);
     }
 }

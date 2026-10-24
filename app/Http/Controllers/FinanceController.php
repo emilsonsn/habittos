@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\FinanceSection;
 use App\Http\Requests\EntryRequest;
 use App\Models\Workspace;
 use App\Services\FinancialCalendar;
@@ -13,12 +14,14 @@ use Illuminate\Validation\Rule;
 
 class FinanceController extends Controller
 {
-    public function index(Request $request, Workspace $workspace)
+    public function index(Request $request, Workspace $workspace, string $section = 'dashboard')
     {
         $request->validate(['month' => ['nullable', 'date_format:Y-m']]);
         $month = $request->input('month') ?? app(FinancialCalendar::class)->monthForDate($workspace, now()->toDateString());
 
-        return view('finance.index', compact('workspace', 'month'));
+        $section = FinanceSection::from($section);
+
+        return view('finance.index', compact('workspace', 'month', 'section'));
     }
 
     public function openMonth(Request $request, Workspace $workspace, OpenFinancialMonth $opener)
