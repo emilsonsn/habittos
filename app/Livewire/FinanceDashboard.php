@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Locked;
+use Livewire\Attributes\On;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
@@ -51,6 +52,59 @@ class FinanceDashboard extends Component
     public ?string $editingIndicator = null;
 
     public string $indicatorValue = '';
+
+    #[Locked]
+    public bool $entryFormOpen = false;
+
+    #[Locked]
+    public ?int $editingEntryId = null;
+
+    #[Locked]
+    public int $entryFormVersion = 0;
+
+    public function createEntry(): void
+    {
+        Gate::authorize(Permission::FinanceCreate->value, $this->workspace());
+        $this->editingEntryId = null;
+        $this->entryFormVersion++;
+        $this->entryFormOpen = true;
+    }
+
+    public function editEntry(int $id): void
+    {
+        $workspace = $this->workspace();
+        Gate::authorize(Permission::FinanceUpdate->value, $workspace);
+        $this->editingEntryId = $workspace->entries()->findOrFail($id)->id;
+        $this->entryFormVersion++;
+        $this->entryFormOpen = true;
+    }
+
+    public function closeEntryForm(): void
+    {
+        $this->reset('entryFormOpen', 'editingEntryId');
+    }
+
+    #[On('entry-form-cancelled')]
+    public function cancelEntryForm(int $workspaceId): void
+    {
+        if ($workspaceId === $this->workspaceId) {
+            $this->closeEntryForm();
+        }
+    }
+
+    #[On('entry-saved')]
+    public function entrySaved(int $workspaceId, bool $close = true): void
+    {
+        if ($workspaceId !== $this->workspaceId) {
+            return;
+        }
+        $this->workspace();
+        $this->message = $this->editingEntryId ? 'Lançamento atualizado.' : 'Lançamento registrado.';
+        if ($close) {
+            $this->closeEntryForm();
+        }
+        $this->loadBudget();
+    }
 
     public function startEditingCycle(): void
     {
@@ -131,6 +185,12 @@ class FinanceDashboard extends Component
         $this->month = $month;
         $this->selectedMonth = $month;
         $this->loadBudget();
+        if (request()->filled('edit-entry')) {
+            $data = request()->validate(['edit-entry' => ['required', 'integer', 'min:1']]);
+            $this->editEntry((int) $data['edit-entry']);
+        } elseif (request()->boolean('new-entry')) {
+            $this->createEntry();
+        }
     }
 
     protected function workspace(): Workspace
@@ -160,6 +220,7 @@ class FinanceDashboard extends Component
         $workspace = $this->workspace();
         $this->resetValidation();
         $this->message = '';
+        $this->closeEntryForm();
         $this->month = $target;
         $this->selectedMonth = $target;
         $this->loadBudget();
@@ -216,6 +277,7 @@ class FinanceDashboard extends Component
     {
         $this->validate(['month' => ['required', 'date_format:Y-m']]);
         $this->selectedMonth = $this->month;
+        $this->closeEntryForm();
         $this->loadBudget();
         $this->dispatch('financial-month-changed', month: $this->month);
     }

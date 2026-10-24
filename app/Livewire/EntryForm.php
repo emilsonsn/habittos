@@ -5,7 +5,6 @@ namespace App\Livewire;
 use App\Models\Entry;
 use App\Models\Workspace;
 use App\Services\EntryRules;
-use App\Services\FinancialCalendar;
 use App\Services\Money;
 use App\Services\SaveEntry;
 use Illuminate\Support\Facades\Gate;
@@ -85,10 +84,8 @@ class EntryForm extends Component
 
     public function save(): void
     {
-        $entry = $this->persist();
-        $workspace = $this->workspace();
-        session()->flash('success', $this->entryId ? 'Lançamento atualizado.' : 'Lançamento registrado.');
-        $this->redirect(route('finance.index', [$workspace, 'month' => app(FinancialCalendar::class)->monthForDate($workspace, $entry->date->toDateString())]), navigate: true);
+        $this->persist();
+        $this->dispatch('entry-saved', workspaceId: $this->workspaceId);
     }
 
     public function saveAndCreateAnother(): void
@@ -99,6 +96,12 @@ class EntryForm extends Component
         $this->resetValidation();
         $this->formVersion++;
         $this->success = 'Lançamento registrado. Você já pode cadastrar o próximo.';
+        $this->dispatch('entry-saved', workspaceId: $this->workspaceId, close: false);
+    }
+
+    public function cancel(): void
+    {
+        $this->dispatch('entry-form-cancelled', workspaceId: $this->workspaceId);
     }
 
     public function render()

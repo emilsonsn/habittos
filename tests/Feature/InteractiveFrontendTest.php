@@ -137,7 +137,7 @@ class InteractiveFrontendTest extends TestCase
         $this->actingAs($user);
         Livewire::test(EntryForm::class, ['workspaceId' => $workspace->id])
             ->set('form.description', 'Mercado')->set('form.amount', '19.999')->call('save')->assertHasErrors('form.amount')
-            ->set('form.amount', '19.99')->set('form.category_id', '')->call('save')->assertHasNoErrors()->assertRedirect();
+            ->set('form.amount', '19.99')->set('form.category_id', '')->call('save')->assertHasNoErrors()->assertNoRedirect()->assertDispatched('entry-saved', workspaceId: $workspace->id);
         $this->assertDatabaseHas('entries', ['workspace_id' => $workspace->id, 'amount_cents' => 1999, 'category_id' => null, 'description' => 'Mercado']);
     }
 

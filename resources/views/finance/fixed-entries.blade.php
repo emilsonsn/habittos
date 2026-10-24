@@ -21,7 +21,7 @@
                         title="Alternar status">
                         {{ $fixedEntry->paid ? ($entryType === 'income' ? 'Recebido' : 'Pago') : 'Pendente' }}
                     </button>
-                    <a wire:navigate href="{{ route('entries.edit', [$workspace, $fixedEntry]) }}">Editar</a>
+                    <button type="button" class="text-button" wire:click="editEntry({{ $fixedEntry->id }})" wire:loading.attr="disabled">Editar</button>
                 @else
                     <span
                         class="tag {{ $fixedEntry->paid ? 'settled' : 'pending' }}">{{ $fixedEntry->paid ? ($entryType === 'income' ? 'Recebido' : 'Pago') : 'Pendente' }}</span>

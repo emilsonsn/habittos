@@ -620,6 +620,9 @@ textarea:focus {
     background: #16152865;
     backdrop-filter: blur(5px);
 }
+.entry-dialog {
+    width: min(680px, calc(100vw - 32px));
+}
 .dialog-content {
     padding: 32px;
 }

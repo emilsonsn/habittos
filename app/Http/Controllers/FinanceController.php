@@ -39,7 +39,10 @@ class FinanceController extends Controller
     {
         $request->validate(['month' => ['nullable', 'date_format:Y-m']]);
 
-        return view('finance.form', ['workspace' => $workspace, 'entry' => null]);
+        return redirect()->route('finance.entries', [$workspace,
+            'month' => $request->input('month') ?? app(FinancialCalendar::class)->monthForDate($workspace, now()->toDateString()),
+            'new-entry' => 1,
+        ]);
     }
 
     public function store(EntryRequest $request, Workspace $workspace)
@@ -51,7 +54,12 @@ class FinanceController extends Controller
 
     public function edit(Workspace $workspace, int $entry)
     {
-        return view('finance.form', ['workspace' => $workspace, 'entry' => $workspace->entries()->findOrFail($entry), 'categories' => $workspace->categories()->orderBy('name')->get()]);
+        $entry = $workspace->entries()->findOrFail($entry);
+
+        return redirect()->route('finance.entries', [$workspace,
+            'month' => app(FinancialCalendar::class)->monthForDate($workspace, $entry->date->toDateString()),
+            'edit-entry' => $entry->id,
+        ]);
     }
 
     public function update(EntryRequest $request, Workspace $workspace, int $entry)

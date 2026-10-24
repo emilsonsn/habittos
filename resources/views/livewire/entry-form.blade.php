@@ -1,12 +1,9 @@
-<div>
-    <div class="page-heading">
-        <div>
-            <span class="eyebrow">UM REGISTRO, MAIS CLAREZA</span>
-            <h1>{{ $entryId ? 'Editar lançamento' : 'Novo lançamento' }}</h1>
-            <p>Registre o que entrou, saiu ou foi investido.</p>
+<div class="dialog-content form-stack">
+    <div class="dialog-top">
+        <div><span class="eyebrow">UM REGISTRO, MAIS CLAREZA</span>
+            <h2 id="entry-dialog-title">{{ $entryId ? 'Editar lançamento' : 'Novo lançamento' }}</h2>
         </div>
-        <a wire:navigate href="{{ route('finance.index', [$workspace, 'month' => substr($form['date'], 0, 7)]) }}">←
-            Voltar ao financeiro</a>
+        <button type="button" class="icon-close" wire:click="cancel" wire:loading.attr="disabled" aria-label="Fechar">×</button>
     </div>
     @if ($success)
         <div class="notice success" role="status" wire:key="entry-success-{{ $formVersion }}"
@@ -14,84 +11,81 @@
             {{ $success }}<button type="button" @click="visible = false" aria-label="Dispensar mensagem">×</button>
         </div>
     @endif
-    <section class="panel form-panel" wire:key="entry-form-{{ $formVersion }}">
-        <form wire:submit="save" class="form-stack">
-            <label>Descrição<input wire:model="form.description" maxlength="180" placeholder="Ex.: Mercado da semana"
-                    required autofocus x-init="$el.focus()">
-                @error('form.description')
+    <form wire:submit="save" class="form-stack" wire:key="entry-form-{{ $formVersion }}">
+        <div class="entry-types">
+            @foreach (['expense' => 'Despesa', 'income' => 'Receita', 'investment' => 'Investimento'] as $value => $label)
+                <label><input type="radio" wire:model="form.type"
+                        value="{{ $value }}"><span>{{ $label }}</span></label>
+            @endforeach
+        </div>
+        @error('form.type')
+            <span class="field-error">{{ $message }}</span>
+        @enderror
+        <label>Descrição<input wire:model="form.description" maxlength="180" placeholder="Ex.: Mercado da semana"
+                required autofocus x-init="$el.focus()">
+            @error('form.description')
+                <span class="field-error">{{ $message }}</span>
+            @enderror
+        </label>
+        <div class="form-grid">
+            <label>Valor (R$)<x-money-input model="form.amount" required />
+                @error('form.amount')
                     <span class="field-error">{{ $message }}</span>
                 @enderror
             </label>
-            <div class="form-grid">
-                <label>Valor (R$)<x-money-input model="form.amount" required />
-                    @error('form.amount')
+            <label>Categoria<select wire:model="form.category_id">
+                    <option value="">Sem categoria</option>
+                    @foreach ($categories as $category)
+                        <option value="{{ $category->id }}">{{ $category->name }}</option>
+                    @endforeach
+                </select>
+                @error('form.category_id')
+                    <span class="field-error">{{ $message }}</span>
+                @enderror
+            </label>
+        </div>
+        <details class="entry-advanced" @if ($errors->hasAny(['form.date', 'form.paid', 'form.is_fixed', 'form.notes'])) open @endif>
+            <summary><span>Avançado</span><small>Data, pagamento, recorrência e observações</small><span
+                    class="advanced-chevron" aria-hidden="true">⌄</span></summary>
+            <div class="entry-advanced-fields form-stack">
+                <label>Data de referência / vencimento<input type="date" wire:model="form.date" required>
+                    @error('form.date')
                         <span class="field-error">{{ $message }}</span>
                     @enderror
                 </label>
-                <label>Categoria<select wire:model="form.category_id">
-                        <option value="">Sem categoria</option>
-                        @foreach ($categories as $category)
-                            <option value="{{ $category->id }}">{{ $category->name }}</option>
-                        @endforeach
-                    </select>
-                    @error('form.category_id')
+                <div class="check-group">
+                    <label class="checkbox"><input type="checkbox" wire:model="form.paid">Já foi recebido, pago ou
+                        investido</label>
+                    <label class="checkbox"><input type="checkbox" wire:model="form.is_fixed">Lançamento fixo
+                        mensal</label>
+                    <small>Receitas e despesas fixas são copiadas como efetivadas ao sincronizar o mês seguinte.</small>
+                    @error('form.paid')
                         <span class="field-error">{{ $message }}</span>
                     @enderror
-                </label>
-            </div>
-            <details class="entry-advanced" @if ($errors->hasAny(['form.date', 'form.paid', 'form.is_fixed', 'form.notes', 'form.type'])) open @endif>
-                <summary><span>Avançado</span><small>Tipo, data, pagamento, recorrência e observações</small><span
-                        class="advanced-chevron" aria-hidden="true">⌄</span></summary>
-                <div class="entry-advanced-fields form-stack">
-                    <div class="entry-types">
-                        @foreach (['expense' => 'Despesa', 'income' => 'Receita', 'investment' => 'Investimento'] as $value => $label)
-                            <label><input type="radio" wire:model="form.type"
-                                    value="{{ $value }}"><span>{{ $label }}</span></label>
-                        @endforeach
-                    </div>
-                    @error('form.type')
+                    @error('form.is_fixed')
                         <span class="field-error">{{ $message }}</span>
                     @enderror
-                    <label>Data de referência / vencimento<input type="date" wire:model="form.date" required>
-                        @error('form.date')
-                            <span class="field-error">{{ $message }}</span>
-                        @enderror
-                    </label>
-                    <div class="check-group">
-                        <label class="checkbox"><input type="checkbox" wire:model="form.paid">Já foi recebido, pago ou
-                            investido</label>
-                        <label class="checkbox"><input type="checkbox" wire:model="form.is_fixed">Lançamento fixo
-                            mensal</label>
-                        <small>Receitas e despesas fixas são copiadas como efetivadas ao sincronizar o mês seguinte.</small>
-                        @error('form.paid')
-                            <span class="field-error">{{ $message }}</span>
-                        @enderror
-                        @error('form.is_fixed')
-                            <span class="field-error">{{ $message }}</span>
-                        @enderror
-                    </div>
-                    <label>Observações <span class="muted">(opcional)</span>
-                        <textarea wire:model="form.notes" rows="3" maxlength="2000"></textarea>
-                        @error('form.notes')
-                            <span class="field-error">{{ $message }}</span>
-                        @enderror
-                    </label>
                 </div>
-            </details>
-            <div class="form-actions">
-                <button class="button" wire:loading.attr="disabled"><span wire:loading.remove
-                        wire:target="save">{{ $entryId ? 'Salvar alterações' : 'Salvar' }}</span><span
-                        wire:loading wire:target="save">Salvando…</span></button>
-                @if (!$entryId)
-                    <button type="button" class="button secondary" wire:click="saveAndCreateAnother"
-                        wire:loading.attr="disabled">
-                        <span wire:loading.remove wire:target="saveAndCreateAnother">Salvar e lançar outro</span>
-                        <span wire:loading wire:target="saveAndCreateAnother">Salvando…</span>
-                    </button>
-                @endif
-                <a wire:navigate
-                    href="{{ route('finance.index', [$workspace, 'month' => substr($form['date'], 0, 7)]) }}">Cancelar</a>
+                <label>Observações <span class="muted">(opcional)</span>
+                    <textarea wire:model="form.notes" rows="3" maxlength="2000"></textarea>
+                    @error('form.notes')
+                        <span class="field-error">{{ $message }}</span>
+                    @enderror
+                </label>
             </div>
-        </form>
-    </section>
+        </details>
+        <div class="form-actions">
+            <button class="button" wire:loading.attr="disabled"><span wire:loading.remove
+                    wire:target="save">{{ $entryId ? 'Salvar alterações' : 'Salvar' }}</span><span
+                    wire:loading wire:target="save">Salvando…</span></button>
+            @if (!$entryId)
+                <button type="button" class="button secondary" wire:click="saveAndCreateAnother"
+                    wire:loading.attr="disabled">
+                    <span wire:loading.remove wire:target="saveAndCreateAnother">Salvar e lançar outro</span>
+                    <span wire:loading wire:target="saveAndCreateAnother">Salvando…</span>
+                </button>
+            @endif
+            <button type="button" class="text-button" wire:click="cancel" wire:loading.attr="disabled">Cancelar</button>
+        </div>
+    </form>
 </div>

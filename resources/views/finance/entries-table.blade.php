@@ -9,10 +9,7 @@
             <h3>Um primeiro passo para ter clareza.</h3>
             <p>Registre sua renda e suas despesas para acompanhar o mês.</p>
             @can('finance.create', $workspace)
-                <a wire:navigate class="button secondary"
-                    href="{{ route('entries.create', [$workspace, 'month' => $month]) }}">Criar
-                    primeiro
-                    lançamento</a>
+                <button type="button" class="button secondary" wire:click="createEntry" wire:loading.attr="disabled">Criar primeiro lançamento</button>
             @endcan
         </div>
     @else
@@ -51,8 +48,7 @@
                             <td>
                                 <div class="row-actions">
                                     @can('finance.update', $workspace)
-                                        <a wire:navigate
-                                            href="{{ route('entries.edit', [$workspace, $entry]) }}">Editar</a>
+                                        <button type="button" class="text-button" wire:click="editEntry({{ $entry->id }})" wire:loading.attr="disabled">Editar</button>
                                         @endcan @can('finance.delete', $workspace)
                                         <button type="button" class="text-button danger"
                                             wire:click="deleteEntry({{ $entry->id }})"

@@ -143,7 +143,7 @@ class FinancialCalendarTest extends TestCase
         $this->get(route('finance.index', $workspace))->assertSee('Outubro de 2026');
         Livewire::test(EntryForm::class, ['workspaceId' => $workspace->id])
             ->set('form.description', 'Compra')->set('form.amount', '12.34')->call('save')
-            ->assertRedirect(route('finance.index', [$workspace, 'month' => '2026-10']));
+            ->assertNoRedirect()->assertDispatched('entry-saved', workspaceId: $workspace->id);
         $this->post(route('entries.store', $workspace), ['description' => 'Outra', 'amount' => '5.00', 'type' => 'expense', 'date' => '2026-11-02'])
             ->assertRedirect(route('finance.index', [$workspace, 'month' => '2026-10']));
         $this->assertDatabaseMissing('financial_months', ['workspace_id' => $workspace->id, 'month' => '2026-10']);

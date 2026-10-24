@@ -23,7 +23,7 @@ class EntryDefaultsTest extends TestCase
             ->assertSet('form.date', '2026-10-22')->assertSet('form.paid', true)
             ->assertSet('form.is_fixed', false)->assertSet('form.notes', null)
             ->set('form.description', 'Mercado')->set('form.amount', '1234.56')->set('form.notes', '   ')
-            ->call('save')->assertHasNoErrors()->assertRedirect();
+            ->call('save')->assertHasNoErrors()->assertNoRedirect()->assertDispatched('entry-saved', workspaceId: $workspace->id);
         $this->assertDatabaseHas('entries', [
             'workspace_id' => $workspace->id, 'description' => 'Mercado', 'type' => 'expense',
             'amount_cents' => 123456, 'paid' => true, 'is_fixed' => false, 'notes' => null,

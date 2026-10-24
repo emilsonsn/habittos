@@ -152,7 +152,7 @@ class HabittosTest extends TestCase
     {
         [$owner, $workspace] = $this->environment();
         $this->actingAs($owner);
-        foreach (['workspaces.index' => [], 'finance.index' => [$workspace], 'entries.create' => [$workspace], 'members.index' => [$workspace], 'goals.index' => [$workspace]] as $route => $parameters) {
+        foreach (['workspaces.index' => [], 'finance.index' => [$workspace], 'members.index' => [$workspace], 'goals.index' => [$workspace]] as $route => $parameters) {
             $this->get(route($route, $parameters))->assertOk();
         }
     }
@@ -214,7 +214,7 @@ class HabittosTest extends TestCase
     public function test_new_entry_defaults_to_today_and_budget_is_independent(): void
     {
         [$owner, $workspace] = $this->environment();
-        $this->actingAs($owner)->get(route('entries.create', [$workspace, 'month' => '2027-02']))->assertOk()->assertSee(now()->toDateString());
+        $this->actingAs($owner)->followingRedirects()->get(route('entries.create', [$workspace, 'month' => '2027-02']))->assertOk()->assertSee('Novo lançamento')->assertSee(now()->toDateString());
         foreach (['2026-12' => '200', '2027-01' => '300'] as $month => $limit) {
             $this->put(route('budget.update', $workspace), ['month' => $month, 'weekly_limit' => $limit, 'reserve' => '50'])->assertRedirect();
         }

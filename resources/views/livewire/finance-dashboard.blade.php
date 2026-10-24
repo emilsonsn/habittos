@@ -15,8 +15,7 @@
                 <button class="button secondary" wire:loading.attr="disabled">Ver mês</button>
             </form>
             @can('finance.create', $workspace)
-                <a wire:navigate class="button" href="{{ route('entries.create', [$workspace, 'month' => $month]) }}">+ Novo
-                    lançamento</a>
+                <button type="button" class="button" wire:click="createEntry" wire:loading.attr="disabled">+ Novo lançamento</button>
             @endcan
         </div>
     </div>
@@ -100,5 +99,13 @@
                 @include('finance.entries-table')
                 @break
         @endswitch
+    @endif
+    @if ($entryFormOpen)
+        <dialog class="app-dialog entry-dialog" wire:ignore.self aria-labelledby="entry-dialog-title"
+            wire:key="entry-dialog-{{ $entryFormVersion }}" x-data
+            x-init="$nextTick(() => $el.showModal())" @cancel.prevent="$wire.closeEntryForm()">
+            <livewire:entry-form :workspace-id="$workspace->id" :entry-id="$editingEntryId"
+                :key="'entry-form-'.$workspace->id.'-'.$entryFormVersion" />
+        </dialog>
     @endif
 </div>
