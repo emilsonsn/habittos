@@ -64,7 +64,7 @@
                     @endforeach
                 </div>
                 <div class="panel-footer weekly-limits">
-                    <span title="Todas as receitas menos despesas fixas, aportes e reserva planejada, dividido por 4.">
+                    <span title="Todas as receitas menos despesas fixas e reserva planejada, dividido por 4.">
                         Limite por semana <strong>{{ $money($weeklyLimit) }}</strong>
                     </span>
                     <span title="Limite semanal menos o excesso das semanas encerradas, dividido pelas semanas restantes, incluindo a atual.">
@@ -80,7 +80,7 @@
                             <strong @class(['negative' => $weeklyPlan['currentWeekRemaining'] < 0])>{{ $money($weeklyPlan['currentWeekRemaining']) }}</strong>
                         </span>
                     @endif
-                    <small class="weekly-limits-note">Base: receitas − fixos − investimentos − reserva. O ajustado desconta apenas o excesso das semanas encerradas.</small>
+                    <small class="weekly-limits-note">Base: receitas − fixos − reserva. O ajustado desconta apenas o excesso das semanas encerradas.</small>
                 </div>
             </section>
             @include('finance.planning-indicators')
@@ -94,6 +94,14 @@
                 @break
             @case(\App\Enums\FinanceSection::FixedExpenses)
                 @include('finance.fixed-entries', ['entryType' => 'expense', 'heading' => 'Gastos fixos', 'total' => $fixed])
+                @break
+            @case(\App\Enums\FinanceSection::Investments)
+                @include('finance.entries-table', [
+                    'entries' => $entries->where('type', 'investment'),
+                    'heading' => 'Investimentos do mês',
+                    'emptyTitle' => 'Nenhum investimento neste mês.',
+                    'emptyDescription' => 'Registre seus aportes para acompanhar os investimentos do ciclo selecionado.',
+                ])
                 @break
             @case(\App\Enums\FinanceSection::Entries)
                 @include('finance.entries-table')

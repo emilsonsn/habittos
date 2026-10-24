@@ -68,6 +68,55 @@ class FinanceSectionsTest extends TestCase
             ->assertDontSee('conic-gradient')->assertSee('As categorias aparecem conforme você registra despesas.');
     }
 
+    public function test_investments_reuse_entry_actions_and_follow_cycle_and_workspace_filters(): void
+    {
+        $workspace = $this->workspace();
+        $workspace->budgets()->create(['month' => '2026-10', 'starts_on' => '2026-10-05']);
+        $workspace->budgets()->create(['month' => '2026-11', 'starts_on' => '2026-11-03']);
+        $investment = $workspace->entries()->create(['description' => 'Aporte outubro', 'type' => 'investment', 'amount_cents' => 12345, 'date' => '2026-11-02', 'paid' => false]);
+        $nextInvestment = $workspace->entries()->create(['description' => 'Aporte novembro', 'type' => 'investment', 'amount_cents' => 20000, 'date' => '2026-11-03']);
+        foreach (['income', 'expense'] as $type) {
+            $workspace->entries()->create(['description' => 'Registro '.$type, 'type' => $type, 'amount_cents' => 10000, 'date' => '2026-10-10']);
+        }
+        $other = app(CreateWorkspace::class)->handle(auth()->user(), 'Outro');
+        $otherInvestment = $other->entries()->create(['description' => 'Aporte outro ambiente', 'type' => 'investment', 'amount_cents' => 30000, 'date' => '2026-10-10']);
+
+        $this->get(route('finance.investments', [$workspace, 'month' => '2026-10']))
+            ->assertOk()->assertSee('Investimentos do mês')->assertSee('Aporte outubro')->assertSee('R$ 123,45')
+            ->assertSee('wire:click="editEntry('.$investment->id.')"', false)
+            ->assertSee('wire:click="createEntry"', false)
+            ->assertDontSee('Aporte novembro')->assertDontSee('Registro income')->assertDontSee('Registro expense')
+            ->assertDontSee('Aporte outro ambiente');
+        Livewire::test(FinanceDashboard::class, ['workspaceId' => $workspace->id, 'month' => '2026-10', 'section' => 'investments'])
+            ->call('togglePaid', $investment->id)->assertHasNoErrors()->assertSee('Efetivado');
+        $this->delete(route('entries.destroy', [$workspace, $otherInvestment]))->assertNotFound();
+        $this->assertTrue($investment->fresh()->paid);
+        $this->assertNotNull($otherInvestment->fresh());
+        Livewire::test(FinanceDashboard::class, ['workspaceId' => $workspace->id, 'month' => '2026-10', 'section' => 'investments'])
+            ->call('deleteEntry', $investment->id)->assertHasNoErrors()->assertSee('Nenhum investimento neste mês.')
+            ->call('openMonth', '2026-11')->assertSet('section', 'investments')
+            ->assertSee('Aporte novembro')->assertDontSee('Aporte outubro');
+        $this->assertNull($investment->fresh());
+        $this->assertNotNull($nextInvestment->fresh());
+    }
+
+    public function test_investments_are_read_only_without_write_permissions(): void
+    {
+        $workspace = $this->workspace();
+        $investment = $workspace->entries()->create(['description' => 'Aporte visível', 'type' => 'investment', 'amount_cents' => 10000, 'date' => '2026-10-10']);
+        $reader = User::factory()->create();
+        $workspace->members()->attach($reader, ['permissions' => ['finance.view']]);
+        $this->actingAs($reader)->get(route('finance.investments', [$workspace, 'month' => '2026-10']))
+            ->assertOk()->assertSee('Aporte visível')->assertDontSee('Novo lançamento')
+            ->assertDontSee('wire:click="editEntry(', false)->assertDontSee('wire:click="togglePaid(', false)
+            ->assertDontSee('wire:click="deleteEntry(', false);
+        foreach (['togglePaid', 'deleteEntry'] as $action) {
+            Livewire::test(FinanceDashboard::class, ['workspaceId' => $workspace->id, 'month' => '2026-10', 'section' => 'investments'])
+                ->call($action, $investment->id)->assertForbidden();
+        }
+        $this->assertNotNull($investment->fresh());
+    }
+
     public function test_every_section_requires_finance_permission_and_workspace_membership(): void
     {
         $workspace = $this->workspace();

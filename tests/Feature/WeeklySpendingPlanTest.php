@@ -49,12 +49,12 @@ class WeeklySpendingPlanTest extends TestCase
         $this->expense($other, '2026-10-08', 50000);
 
         $summary = app(FinancialSummary::class)->forMonth($workspace, '2026-10');
-        $this->assertSame(120000, $summary['monthlyLimit']);
-        $this->assertSame(30000, $summary['weeklyLimit']);
+        $this->assertSame(130000, $summary['monthlyLimit']);
+        $this->assertSame(32500, $summary['weeklyLimit']);
         $this->assertSame(2, $summary['weeklyPlan']['remainingWeeks']);
-        $this->assertSame(30000, $summary['weeklyPlan']['adjustedLimit']);
+        $this->assertSame(32500, $summary['weeklyPlan']['adjustedLimit']);
         Livewire::test(FinanceDashboard::class, ['workspaceId' => $workspace->id, 'month' => '2026-10'])
-            ->assertSee('Limite ajustado')->assertSee('R$ 300,00')
+            ->assertSee('Limite ajustado')->assertSee('R$ 325,00')
             ->assertDontSee('Editar limite mensal')->assertDontSee('Editar limite semanal');
     }
 

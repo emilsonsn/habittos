@@ -21,10 +21,10 @@ class FinancialSummary
         $fixed = $entries->where('type', 'expense')->where('is_fixed', true)->sum('amount_cents');
         $invested = $entries->where('type', 'investment')->sum('amount_cents');
         $settled = $entries->where('paid', true);
-        $balance = $settled->where('type', 'income')->sum('amount_cents') - $settled->whereIn('type', ['expense', 'investment'])->sum('amount_cents');
+        $balance = $settled->where('type', 'income')->sum('amount_cents') - $settled->where('type', 'expense')->sum('amount_cents');
         $budget = $workspace->budgets()->where('month', $month)->first();
         $reserve = $budget?->reserve_cents ?? 0;
-        $monthlyLimit = max(0, $income - $fixed - $invested - $reserve);
+        $monthlyLimit = max(0, $income - $fixed - $reserve);
         $weeklyLimit = intdiv($monthlyLimit, 4);
         $weeks = collect(range(1, 4))->map(function ($week) use ($entries, $weeklyLimit, $start, $end, $weekLength) {
             $weekStart = $start->addDays(($week - 1) * $weekLength);
@@ -40,9 +40,9 @@ class FinancialSummary
             'available' => $balance - $reserve,
             'investmentBalance' => $budget?->investment_balance_cents,
             'fixedIncome' => $entries->where('type', 'income')->where('is_fixed', true)->sum('amount_cents'),
-            'projected' => $income - $expenses - $invested - $reserve,
+            'projected' => $income - $expenses - $reserve,
             'fixed' => $fixed,
-            'pending' => $entries->where('paid', false)->whereIn('type', ['expense', 'investment'])->sum('amount_cents'),
+            'pending' => $entries->where('paid', false)->where('type', 'expense')->sum('amount_cents'),
         ];
     }
 

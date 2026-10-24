@@ -5,7 +5,7 @@
         </div>
         <span class="round-icon" aria-hidden="true">◎</span>
     </div>
-    @foreach ([['key' => 'monthly_limit', 'label' => 'Limite mensal', 'value' => $monthlyLimit, 'description' => 'Receitas menos despesas fixas, aportes e reserva planejada. Orçamento para gastos variáveis.'], ['key' => 'reserve', 'label' => 'Reserva planejada', 'value' => $reserve, 'description' => 'Valor separado para investir neste mês.']] as $indicator)
+    @foreach ([['key' => 'monthly_limit', 'label' => 'Limite mensal', 'value' => $monthlyLimit, 'description' => 'Receitas menos despesas fixas e reserva planejada. Orçamento para gastos variáveis.'], ['key' => 'reserve', 'label' => 'Reserva planejada', 'value' => $reserve, 'description' => 'Valor separado para investir e metas do mês.']] as $indicator)
         <div class="planning-indicator" wire:key="planning-{{ $indicator['key'] }}">
             <div class="planning-indicator-heading">
                 <span>{{ $indicator['label'] }}</span>

@@ -1,13 +1,13 @@
 <section class="panel transactions">
     <div class="section-heading">
         <div><span class="eyebrow">CADA MOVIMENTO CONTA</span>
-            <h2>Lançamentos do mês <span class="count">{{ $entries->count() }}</span></h2>
+            <h2>{{ $heading ?? 'Lançamentos do mês' }} <span class="count">{{ $entries->count() }}</span></h2>
         </div>
     </div>
     @if ($entries->isEmpty())
         <div class="empty-state"><span>↗</span>
-            <h3>Um primeiro passo para ter clareza.</h3>
-            <p>Registre sua renda e suas despesas para acompanhar o mês.</p>
+            <h3>{{ $emptyTitle ?? 'Um primeiro passo para ter clareza.' }}</h3>
+            <p>{{ $emptyDescription ?? 'Registre sua renda e suas despesas para acompanhar o mês.' }}</p>
             @can('finance.create', $workspace)
                 <button type="button" class="button secondary" wire:click="createEntry" wire:loading.attr="disabled">Criar primeiro lançamento</button>
             @endcan
@@ -41,8 +41,8 @@
                                         class="tag {{ $entry->paid ? 'settled' : 'pending' }}">{{ $entry->paid ? 'Efetivado' : 'Pendente' }}</span>
                                 @endcan
                             </td>
-                            <td class="number {{ $entry->type === 'income' ? 'green' : '' }}">
-                                {{ $entry->type === 'income' ? '+' : '−' }}
+                            <td class="number {{ $entry->type !== 'expense' ? 'green' : '' }}">
+                                {{ $entry->type === 'expense' ? '−' : '+' }}
                                 {{ $money($entry->amount_cents) }}<small>{{ ['income' => 'Receita', 'expense' => 'Despesa', 'investment' => 'Investimento'][$entry->type] }}</small>
                             </td>
                             <td>

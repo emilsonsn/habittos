@@ -63,14 +63,14 @@ class FinancialCalendarTest extends TestCase
         $workspace->budgets()->where('month', '2026-10')->update(['reserve_cents' => 10000]);
         $summary = app(FinancialSummary::class)->forMonth($workspace, '2026-10');
         $this->assertSame(6000, $summary['expenses']);
-        $this->assertSame(79000, $summary['available']);
-        $this->assertSame(21250, $summary['weeklyLimit']);
+        $this->assertSame(84000, $summary['available']);
+        $this->assertSame(22500, $summary['weeklyLimit']);
         $this->assertSame([2000, 1000, 1000, 2000], $summary['weeks']->pluck('spent')->all());
         $this->assertSame('05/10–11/10', $summary['weeks']->first()['dateLabel']);
         $this->assertSame('26/10–02/11', $summary['weeks']->last()['dateLabel']);
         $this->assertSame(1, $summary['weeklyPlan']['remainingWeeks']);
-        $this->assertSame(21250, $summary['weeklyPlan']['adjustedLimit']);
-        $this->assertSame(19250, $summary['weeklyPlan']['currentWeekRemaining']);
+        $this->assertSame(22500, $summary['weeklyPlan']['adjustedLimit']);
+        $this->assertSame(20500, $summary['weeklyPlan']['currentWeekRemaining']);
         $calendar = app(FinancialCalendar::class);
         $this->assertSame('2026-09', $calendar->monthForDate($workspace, '2026-10-04'));
         $this->assertSame('2026-10', $calendar->monthForDate($workspace, '2026-11-02'));

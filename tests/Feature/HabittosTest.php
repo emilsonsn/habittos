@@ -125,9 +125,9 @@ class HabittosTest extends TestCase
         }
         $workspace->budgets()->create(['month' => '2026-10', 'reserve_cents' => 3000, 'weekly_limit_cents' => 10000]);
         $summary = app(FinancialSummary::class)->forMonth($workspace, '2026-10');
-        $this->assertSame(85000, $summary['balance']);
-        $this->assertSame(82000, $summary['available']);
-        $this->assertSame(100000, $summary['projected']);
+        $this->assertSame(90000, $summary['balance']);
+        $this->assertSame(87000, $summary['available']);
+        $this->assertSame(105000, $summary['projected']);
         $this->assertSame(2000, $summary['pending']);
         $this->assertCount(4, $summary['weeks']);
         $this->assertSame(2000, $summary['weeks']->last()['spent']);
