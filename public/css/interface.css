@@ -319,6 +319,9 @@ h2 {
 .weekly-limits small {
     font-size: 10px;
 }
+.weekly-limits .current-week-remaining {
+    font-size: 10px;
+}
 .weekly-limits .weekly-limits-note {
     flex-basis: 100%;
     margin-left: 0;

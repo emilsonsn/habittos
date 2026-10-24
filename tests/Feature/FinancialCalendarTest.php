@@ -69,7 +69,8 @@ class FinancialCalendarTest extends TestCase
         $this->assertSame('05/10–11/10', $summary['weeks']->first()['dateLabel']);
         $this->assertSame('26/10–02/11', $summary['weeks']->last()['dateLabel']);
         $this->assertSame(1, $summary['weeklyPlan']['remainingWeeks']);
-        $this->assertSame(79000, $summary['weeklyPlan']['adjustedLimit']);
+        $this->assertSame(21250, $summary['weeklyPlan']['adjustedLimit']);
+        $this->assertSame(19250, $summary['weeklyPlan']['currentWeekRemaining']);
         $calendar = app(FinancialCalendar::class);
         $this->assertSame('2026-09', $calendar->monthForDate($workspace, '2026-10-04'));
         $this->assertSame('2026-10', $calendar->monthForDate($workspace, '2026-11-02'));

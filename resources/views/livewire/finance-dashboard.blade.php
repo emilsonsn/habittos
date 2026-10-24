@@ -66,14 +66,20 @@
                 <span title="Todas as receitas menos despesas fixas, aportes e reserva planejada, dividido por 4.">
                     Limite por semana <strong>{{ $money($weeklyLimit) }}</strong>
                 </span>
-                <span title="Saldo restante do mês dividido pelas semanas restantes, incluindo a atual.">
+                <span title="Limite semanal menos o excesso das semanas encerradas, dividido pelas semanas restantes, incluindo a atual.">
                     Limite ajustado
                     <strong>{{ $weeklyPlan['adjustedLimit'] !== null ? $money($weeklyPlan['adjustedLimit']) : 'Mês encerrado' }}</strong>
                     @if ($weeklyPlan['remainingWeeks'] > 0)
                         <small>({{ $weeklyPlan['remainingWeeks'] }} {{ $weeklyPlan['remainingWeeks'] === 1 ? 'semana restante' : 'semanas restantes' }})</small>
                     @endif
                 </span>
-                <small class="weekly-limits-note">Base: receitas − fixos − investimentos. O ajustado desconta os gastos variáveis.</small>
+                @if ($weeklyPlan['currentWeekRemaining'] !== null)
+                    <span class="current-week-remaining" title="Limite ajustado menos as despesas variáveis da semana vigente.">
+                        Restante nesta semana
+                        <strong @class(['negative' => $weeklyPlan['currentWeekRemaining'] < 0])>{{ $money($weeklyPlan['currentWeekRemaining']) }}</strong>
+                    </span>
+                @endif
+                <small class="weekly-limits-note">Base: receitas − fixos − investimentos − reserva. O ajustado desconta apenas o excesso das semanas encerradas.</small>
             </div>
         </section>
         @include('finance.planning-indicators')

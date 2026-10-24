@@ -33,7 +33,7 @@ class WeeklySpendingPlanTest extends TestCase
         $workspace->entries()->create($attributes + ['description' => 'Mercado', 'type' => 'expense', 'amount_cents' => $amount, 'date' => $date, 'paid' => true, 'is_fixed' => false]);
     }
 
-    public function test_base_limits_exclude_variable_expenses_while_adjusted_limit_deducts_them(): void
+    public function test_spending_below_the_weekly_limit_does_not_increase_the_adjusted_limit(): void
     {
         $this->travelTo(CarbonImmutable::parse('2026-10-15 12:00:00'));
         $workspace = $this->workspace();
@@ -52,13 +52,13 @@ class WeeklySpendingPlanTest extends TestCase
         $this->assertSame(120000, $summary['monthlyLimit']);
         $this->assertSame(30000, $summary['weeklyLimit']);
         $this->assertSame(2, $summary['weeklyPlan']['remainingWeeks']);
-        $this->assertSame(40000, $summary['weeklyPlan']['adjustedLimit']);
+        $this->assertSame(30000, $summary['weeklyPlan']['adjustedLimit']);
         Livewire::test(FinanceDashboard::class, ['workspaceId' => $workspace->id, 'month' => '2026-10'])
-            ->assertSee('Limite ajustado')->assertSee('R$ 300,00')->assertSee('R$ 400,00')
+            ->assertSee('Limite ajustado')->assertSee('R$ 300,00')
             ->assertDontSee('Editar limite mensal')->assertDontSee('Editar limite semanal');
     }
 
-    public function test_current_week_expenses_reduce_only_adjusted_limit_without_double_subtraction(): void
+    public function test_only_excess_from_completed_weeks_reduces_the_adjusted_limit(): void
     {
         $this->travelTo(CarbonImmutable::parse('2026-10-22 12:00:00'));
         $workspace = $this->workspace();
@@ -71,7 +71,67 @@ class WeeklySpendingPlanTest extends TestCase
         $this->assertSame(31, $summary['weeks']->last()['endDay']);
         $this->assertSame(40000, $summary['weeklyLimit']);
         $this->assertSame(1, $summary['weeklyPlan']['remainingWeeks']);
-        $this->assertSame(6551, $summary['weeklyPlan']['adjustedLimit']);
+        $this->assertSame(0, $summary['weeklyPlan']['adjustedLimit']);
+    }
+
+    public function test_week_three_limit_is_300_after_400_and_600_spending_regardless_of_current_spending(): void
+    {
+        $this->travelTo(CarbonImmutable::parse('2026-10-15 12:00:00'));
+        $workspace = $this->workspace();
+        $this->expense($workspace, '2026-10-01', 40000);
+        $this->expense($workspace, '2026-10-08', 60000, ['paid' => false]);
+        foreach ([0, 10000, 100000] as $currentSpending) {
+            if ($currentSpending > 0) {
+                $this->expense($workspace, '2026-10-15', $currentSpending);
+            }
+            $summary = app(FinancialSummary::class)->forMonth($workspace, '2026-10');
+            $this->assertSame(40000, $summary['weeklyLimit']);
+            $this->assertSame(2, $summary['weeklyPlan']['remainingWeeks']);
+            $this->assertSame(30000, $summary['weeklyPlan']['adjustedLimit']);
+        }
+        $this->expense($workspace, '2026-10-22', 90000);
+        Livewire::test(FinanceDashboard::class, ['workspaceId' => $workspace->id, 'month' => '2026-10'])
+            ->assertViewHas('weeklyPlan', fn ($plan) => $plan['adjustedLimit'] === 30000)
+            ->assertSee('R$ 300,00')->assertSee('apenas o excesso das semanas encerradas');
+    }
+
+    public function test_current_week_remaining_uses_adjusted_limit_and_only_current_variable_expenses(): void
+    {
+        $this->travelTo(CarbonImmutable::parse('2026-10-15 12:00:00'));
+        $workspace = $this->workspace();
+        $this->expense($workspace, '2026-10-01', 40000);
+        $this->expense($workspace, '2026-10-08', 60000);
+        $this->expense($workspace, '2026-10-15', 10000, ['paid' => false]);
+        $this->expense($workspace, '2026-10-22', 90000);
+        $summary = app(FinancialSummary::class)->forMonth($workspace, '2026-10');
+        $this->assertSame(30000, $summary['weeklyPlan']['adjustedLimit']);
+        $this->assertSame(20000, $summary['weeklyPlan']['currentWeekRemaining']);
+        Livewire::test(FinanceDashboard::class, ['workspaceId' => $workspace->id, 'month' => '2026-10'])
+            ->assertSee('Restante nesta semana')->assertSee('R$ 200,00');
+
+        $this->expense($workspace, '2026-10-16', 20000);
+        $summary = app(FinancialSummary::class)->forMonth($workspace, '2026-10');
+        $this->assertSame(0, $summary['weeklyPlan']['currentWeekRemaining']);
+        $this->expense($workspace, '2026-10-17', 1000);
+        $summary = app(FinancialSummary::class)->forMonth($workspace, '2026-10');
+        $this->assertSame(-1000, $summary['weeklyPlan']['currentWeekRemaining']);
+        $this->assertSame(30000, $summary['weeklyPlan']['adjustedLimit']);
+        Livewire::test(FinanceDashboard::class, ['workspaceId' => $workspace->id, 'month' => '2026-10'])
+            ->assertSee('R$ -10,00');
+    }
+
+    public function test_savings_do_not_offset_excess_and_the_current_week_counts_only_when_it_ends(): void
+    {
+        $workspace = $this->workspace();
+        $this->expense($workspace, '2026-10-01', 10000);
+        $this->expense($workspace, '2026-10-08', 60001);
+        $this->travelTo(CarbonImmutable::parse('2026-10-14 23:59:59'));
+        $summary = app(FinancialSummary::class)->forMonth($workspace, '2026-10');
+        $this->assertSame(40000, $summary['weeklyPlan']['adjustedLimit']);
+        $this->travelTo(CarbonImmutable::parse('2026-10-15 00:00:00'));
+        $summary = app(FinancialSummary::class)->forMonth($workspace, '2026-10');
+        // Only the 200.01 excess counts; the 300.00 saved in week one does not offset it.
+        $this->assertSame(29999, $summary['weeklyPlan']['adjustedLimit']);
     }
 
     public function test_live_edits_recalculate_automatic_limits_and_manual_edits_are_rejected(): void
@@ -82,7 +142,7 @@ class WeeklySpendingPlanTest extends TestCase
             ->assertViewHas('weeklyLimit', 40000)
             ->call('startEditingIndicator', 'reserve')->set('indicatorValue', '400')->call('saveIndicator')
             ->assertHasNoErrors()->assertViewHas('weeklyLimit', 30000)
-            ->assertViewHas('weeklyPlan', fn ($plan) => $plan['adjustedLimit'] === 40000);
+            ->assertViewHas('weeklyPlan', fn ($plan) => $plan['adjustedLimit'] === 30000);
         foreach (['weekly_limit', 'monthly_limit'] as $indicator) {
             Livewire::test(FinanceDashboard::class, ['workspaceId' => $workspace->id, 'month' => '2026-10'])
                 ->call('startEditingIndicator', $indicator)->assertStatus(422);
@@ -112,13 +172,17 @@ class WeeklySpendingPlanTest extends TestCase
         $this->expense($workspace, '2026-10-31', 25000);
         $summary = app(FinancialSummary::class)->forMonth($workspace, '2026-10');
         $this->assertSame(4, $summary['weeklyPlan']['remainingWeeks']);
-        $this->assertSame(33750, $summary['weeklyPlan']['adjustedLimit']);
+        $this->assertSame(40000, $summary['weeklyPlan']['adjustedLimit']);
+        $this->assertNull($summary['weeklyPlan']['currentWeekRemaining']);
+        Livewire::test(FinanceDashboard::class, ['workspaceId' => $workspace->id, 'month' => '2026-10'])
+            ->assertDontSee('Restante nesta semana');
         $this->travelTo(CarbonImmutable::parse('2026-11-01 12:00:00'));
         $summary = app(FinancialSummary::class)->forMonth($workspace, '2026-10');
         $this->assertSame(0, $summary['weeklyPlan']['remainingWeeks']);
         $this->assertNull($summary['weeklyPlan']['adjustedLimit']);
+        $this->assertNull($summary['weeklyPlan']['currentWeekRemaining']);
         Livewire::test(FinanceDashboard::class, ['workspaceId' => $workspace->id, 'month' => '2026-10'])
-            ->assertSee('Mês encerrado');
+            ->assertSee('Mês encerrado')->assertDontSee('Restante nesta semana');
         $summary = app(FinancialSummary::class)->forMonth($workspace, '2026-11');
         $this->assertSame(0, $summary['weeklyLimit']);
         $this->assertSame(0, $summary['weeklyPlan']['adjustedLimit']);
