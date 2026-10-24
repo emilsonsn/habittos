@@ -54,7 +54,7 @@ class WorkspaceSettings extends Component
         DB::transaction(fn () => $workspace->delete());
         session()->forget('active_workspace_id');
         session()->flash('success', 'Ambiente excluído.');
-        $this->redirect(route('workspaces.index'), navigate: true);
+        $this->redirect(route('home'), navigate: true);
     }
 
     public function render()

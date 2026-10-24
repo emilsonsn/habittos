@@ -111,7 +111,7 @@ class InteractiveFrontendTest extends TestCase
         $this->actingAs($user);
         Livewire::test(WorkspaceSettings::class, ['workspaceId' => $workspace->id])
             ->set('confirmation', 'Errado')->call('deleteWorkspace')->assertHasErrors('confirmation')
-            ->set('confirmation', 'Pessoal')->call('deleteWorkspace')->assertRedirect(route('workspaces.index'));
+            ->set('confirmation', 'Pessoal')->call('deleteWorkspace')->assertRedirect(route('home'));
         $this->assertNull($workspace->fresh());
         $this->assertNotNull($other->fresh());
         $this->assertNotNull($member->fresh());
@@ -124,7 +124,7 @@ class InteractiveFrontendTest extends TestCase
     {
         $user = User::factory()->create();
         $workspace = app(CreateWorkspace::class)->handle($user, 'Pessoal');
-        $this->actingAs($user)->get(route('workspaces.index'))->assertOk()
+        $this->actingAs($user)->get(route('home'))->assertOk()
             ->assertDontSee('Seus ambientes</h1>', false)->assertDontSee('<span>Ambientes</span>', false)
             ->assertSee('Criar ambiente')->assertSee('Configurações');
         $this->get(route('settings.index', $workspace))->assertOk()->assertSee('Excluir ambiente');

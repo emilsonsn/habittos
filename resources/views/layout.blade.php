@@ -17,18 +17,22 @@
     @auth
         <div class="app-shell">
             <aside class="sidebar">
-                <a wire:navigate class="brand" href="{{ route('workspaces.index') }}"><span
+                <a wire:navigate class="brand" href="{{ route('home') }}"><span
                         class="brand-mark">h</span>habittos<span class="brand-dot">.</span></a>
-                <livewire:workspace-switcher :active-id="$activeWorkspace?->id" :module="request()->routeIs('finance.*') ? request()->route()->getName() : (request()->routeIs('settings.*')
+                <livewire:workspace-switcher :active-id="$activeWorkspace?->id" :module="request()->routeIs('home') ? 'home' : (request()->routeIs('finance.*') ? request()->route()->getName() : (request()->routeIs('settings.*')
                     ? 'settings'
                     : (request()->routeIs('goals.*')
                         ? 'goals'
                         : (request()->routeIs('members.*')
                             ? 'members'
-                            : 'finance')))" :month="$month ??
+                            : 'finance'))))" :month="$month ??
                     (isset($entry) ? $entry->date->format('Y-m') : request('month', now()->format('Y-m')))" />
                 <span class="nav-label">SEU DIA A DIA</span>
                 <nav aria-label="Navegação principal">
+                    <a wire:navigate class="{{ request()->routeIs('home') ? 'active' : '' }}"
+                        href="{{ route('home') }}" @if (request()->routeIs('home')) aria-current="page" @endif>
+                        <x-icon name="dashboard" /><span>Home</span>
+                    </a>
                     @if ($activeWorkspace)
                         @can('finance.view', $activeWorkspace)
                             <x-finance-navigation :workspace="$activeWorkspace"

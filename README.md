@@ -162,7 +162,9 @@ O botão no cabeçalho alterna entre modo claro e escuro, inclusive no celular. 
 
 ### Home
 
-`/ambientes` mostra uma saudação pelo horário de `America/Fortaleza`: bom dia das 05h às 11h59, boa tarde das 12h às 17h59 e boa noite nos demais horários. O indicador de investimentos acumulados soma todos os lançamentos de investimento do ambiente ativo, de todos os meses e status: valores positivos representam aportes e valores negativos representam retiradas. Sem investimentos, o total é zero. O valor exige `finance.view` e não mistura ambientes. Há três cartões genéricos reservados para indicadores futuros. A resolução do ambiente ativo é compartilhada entre a home e o layout por `SelectWorkspace::current`, revalidando a participação.
+A página inicial é `/home`, destino padrão após login e cadastro. `/` e o antigo GET `/ambientes` redirecionam para `/home`. As rotas de criação, seleção e recursos dos ambientes continuam em `/ambientes`.
+
+O menu principal Dashboard abre `/home`, que mostra uma saudação pelo horário de `America/Fortaleza`: bom dia das 05h às 11h59, boa tarde das 12h às 17h59 e boa noite nos demais horários. O indicador de investimentos acumulados soma todos os lançamentos de investimento do ambiente ativo, de todos os meses e status: valores positivos representam aportes e valores negativos representam retiradas. Sem investimentos, o total é zero. O valor exige `finance.view` e não mistura ambientes. Há três cartões genéricos reservados para indicadores futuros. A resolução do ambiente ativo é compartilhada entre a home e o layout por `SelectWorkspace::current`, revalidando a participação.
 
 ### Ambientes
 

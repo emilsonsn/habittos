@@ -26,7 +26,7 @@ class WorkspaceSelectionTest extends TestCase
             ->assertSessionHas('active_workspace_id', $second->id);
         $this->get(route('finance.entries', [$second, 'month' => '2027-02']))
             ->assertSee('Despesa da casa exclusiva')->assertDontSee('Despesa pessoal exclusiva');
-        $this->get(route('workspaces.index'))->assertSee('id="workspace-select"', false)
+        $this->get(route('home'))->assertSee('id="workspace-select"', false)
             ->assertSee('aria-selected="true"', false)->assertSee('Casa');
 
     }
@@ -52,7 +52,7 @@ class WorkspaceSelectionTest extends TestCase
         $this->actingAs($user)->withSession(['active_workspace_id' => $own->id])
             ->post(route('workspaces.select'), ['workspace_id' => $foreign->id, 'module' => 'finance'])
             ->assertNotFound()->assertSessionHas('active_workspace_id', $own->id);
-        $this->get(route('workspaces.index'))->assertDontSee('Privado');
+        $this->get(route('home'))->assertDontSee('Privado');
     }
 
     public function test_revoked_selection_falls_back_and_direct_links_update_selection(): void
@@ -64,7 +64,7 @@ class WorkspaceSelectionTest extends TestCase
         $this->actingAs($user)->get(route('finance.index', $shared))
             ->assertOk()->assertSessionHas('active_workspace_id', $shared->id);
         $shared->members()->detach($user);
-        $this->get(route('workspaces.index'))->assertOk()
+        $this->get(route('home'))->assertOk()
             ->assertDontSee('Casa')->assertSessionHas('active_workspace_id', $own->id);
     }
 
@@ -74,7 +74,7 @@ class WorkspaceSelectionTest extends TestCase
         $workspace = app(CreateWorkspace::class)->handle(User::factory()->create(), 'Compartilhado');
         $workspace->members()->attach($user, ['permissions' => []]);
         $this->actingAs($user)->post(route('workspaces.select'), ['workspace_id' => $workspace->id, 'module' => 'finance'])
-            ->assertRedirect(route('workspaces.index'))->assertSessionHas('active_workspace_id', $workspace->id);
+            ->assertRedirect(route('home'))->assertSessionHas('active_workspace_id', $workspace->id);
         $workspace->members()->updateExistingPivot($user->id, ['permissions' => ['finance.view']]);
         $this->post(route('workspaces.select'), ['workspace_id' => $workspace->id, 'module' => 'finance', 'month' => '2027-02'])
             ->assertRedirect(route('finance.index', [$workspace, 'month' => '2027-02']));

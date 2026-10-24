@@ -28,7 +28,7 @@ class AuthController extends Controller
         Auth::login($user);
         $request->session()->regenerate();
 
-        return redirect()->route('workspaces.index');
+        return redirect()->route('home');
     }
 
     public function login(Request $request)
@@ -39,7 +39,7 @@ class AuthController extends Controller
         }
         $request->session()->regenerate();
 
-        return redirect()->intended(route('workspaces.index'));
+        return redirect()->intended(route('home'));
     }
 
     public function logout(Request $request)

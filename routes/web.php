@@ -8,7 +8,7 @@ use App\Http\Controllers\WorkspaceController;
 use App\Models\Workspace;
 use Illuminate\Support\Facades\Route;
 
-Route::redirect('/', '/ambientes');
+Route::redirect('/', '/home');
 Route::middleware('guest')->group(function () {
     Route::view('/entrar', 'auth.login')->name('login');
     Route::post('/entrar', [AuthController::class, 'login'])->middleware('throttle:6,1');
@@ -17,7 +17,8 @@ Route::middleware('guest')->group(function () {
 });
 Route::middleware('auth')->group(function () {
     Route::post('/sair', [AuthController::class, 'logout'])->name('logout');
-    Route::get('/ambientes', [WorkspaceController::class, 'index'])->name('workspaces.index');
+    Route::get('/home', [WorkspaceController::class, 'index'])->name('home');
+    Route::redirect('/ambientes', '/home')->name('workspaces.index');
     Route::post('/ambientes', [WorkspaceController::class, 'store'])->name('workspaces.store');
     Route::post('/ambientes/selecionar', [WorkspaceController::class, 'select'])->name('workspaces.select');
     Route::prefix('ambientes/{workspace}')->middleware('workspace')->group(function () {

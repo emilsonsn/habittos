@@ -23,7 +23,7 @@ class HabittosTest extends TestCase
 
     public function test_registration_creates_a_private_environment_and_hashes_password(): void
     {
-        $this->post('/cadastro', ['name' => 'Pessoa', 'email' => 'person@example.com', 'password' => 'password1234', 'password_confirmation' => 'password1234'])->assertRedirect('/ambientes');
+        $this->post('/cadastro', ['name' => 'Pessoa', 'email' => 'person@example.com', 'password' => 'password1234', 'password_confirmation' => 'password1234'])->assertRedirect('/home');
         $user = User::first();
         $this->assertAuthenticatedAs($user);
         $this->assertNotSame('password1234', $user->password);
@@ -35,7 +35,7 @@ class HabittosTest extends TestCase
     {
         $user = User::factory()->create(['password' => 'password1234']);
         $this->post('/entrar', ['email' => $user->email, 'password' => 'incorrect'])->assertSessionHasErrors('email');
-        $this->post('/entrar', ['email' => $user->email, 'password' => 'password1234'])->assertRedirect('/ambientes');
+        $this->post('/entrar', ['email' => $user->email, 'password' => 'password1234'])->assertRedirect('/home');
         $this->assertAuthenticatedAs($user);
         $this->post('/sair')->assertRedirect('/entrar');
         $this->assertGuest();
@@ -152,7 +152,7 @@ class HabittosTest extends TestCase
     {
         [$owner, $workspace] = $this->environment();
         $this->actingAs($owner);
-        foreach (['workspaces.index' => [], 'finance.index' => [$workspace], 'members.index' => [$workspace], 'goals.index' => [$workspace]] as $route => $parameters) {
+        foreach (['home' => [], 'finance.index' => [$workspace], 'members.index' => [$workspace], 'goals.index' => [$workspace]] as $route => $parameters) {
             $this->get(route($route, $parameters))->assertOk();
         }
     }

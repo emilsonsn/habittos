@@ -25,6 +25,10 @@ class SelectWorkspace
         $workspace = $user->workspaces()->findOrFail($workspaceId);
         session(['active_workspace_id' => $workspace->id]);
 
+        if ($module === 'home') {
+            return route('home');
+        }
+
         if ($module === 'settings') {
             return route('settings.index', $workspace);
         }
@@ -48,6 +52,6 @@ class SelectWorkspace
             return route($candidate === 'goals' ? 'goals.index' : 'members.index', $workspace);
         }
 
-        return route('workspaces.index');
+        return route('home');
     }
 }

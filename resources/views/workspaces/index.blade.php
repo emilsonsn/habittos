@@ -1,5 +1,5 @@
 @extends('layout')
-@section('title', 'Seu espaço')
+@section('title', 'Home')
 @section('content')
     <section class="home-page">
         <header class="page-heading">
