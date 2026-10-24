@@ -29,6 +29,7 @@
         </label>
         <div class="form-grid">
             <label>Valor (R$)<x-money-input model="form.amount" required />
+                <small>Para investimentos, valores positivos são aportes e negativos são retiradas.</small>
                 @error('form.amount')
                     <span class="field-error">{{ $message }}</span>
                 @enderror

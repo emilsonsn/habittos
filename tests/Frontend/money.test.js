@@ -21,6 +21,10 @@ test("empty, zero and negative inputs remain distinct for backend validation", (
     assert.equal(money.mask("").value, "");
     assert.equal(money.mask("0").value, "0.00");
     assert.equal(money.mask("-10,00").value, "-10.00");
+    assert.deepEqual(money.mask("-"), { display: "-", value: "" });
+    assert.equal(money.mask("-0,50").value, "-0.50");
+    assert.equal(money.mask("-12.34").value, "-12.34");
+    assert.equal(money.format("-0.50"), "-0,50");
     assert.equal(money.format(null), "");
     assert.equal(money.format("0"), "0,00");
 });

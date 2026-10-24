@@ -40,8 +40,8 @@
             </div>
             <div class="metric">
                 <div class="metric-label">Investimentos <span class="purple">◇</span></div>
-                <strong>{{ $money($investmentBalance ?? $invested) }}</strong>
-                <small>{{ $investmentBalance !== null ? 'Saldo acumulado · Aportes no mês: ' . $money($invested) : 'Aportes registrados no mês' }}</small>
+                <strong>{{ $money($investmentBalance) }}</strong>
+                <small>Saldo total · Movimentação no ciclo: {{ $money($invested) }}</small>
             </div>
         </div>
         <div class="dashboard-grid">

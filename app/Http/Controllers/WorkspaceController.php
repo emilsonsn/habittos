@@ -7,6 +7,7 @@ use App\Enums\Permission;
 use App\Models\User;
 use App\Models\Workspace;
 use App\Services\CreateWorkspace;
+use App\Services\InvestmentBalance;
 use App\Services\ManageMembers;
 use App\Services\OpenFinancialMonth;
 use App\Services\SelectWorkspace;
@@ -33,8 +34,8 @@ class WorkspaceController extends Controller
     {
         $activeWorkspace = app(SelectWorkspace::class)->current($request->user());
         $canViewFinance = $activeWorkspace?->allows($request->user(), Permission::FinanceView) ?? false;
-        $latestInvestment = $canViewFinance
-            ? $activeWorkspace->budgets()->whereNotNull('investment_balance_cents')->orderByDesc('month')->first()
+        $investmentBalance = $canViewFinance
+            ? app(InvestmentBalance::class)->forWorkspace($activeWorkspace)
             : null;
         $hour = now(config('app.timezone'))->hour;
         $greeting = match (true) {
@@ -43,7 +44,7 @@ class WorkspaceController extends Controller
             default => 'Boa noite',
         };
 
-        return view('workspaces.index', compact('activeWorkspace', 'canViewFinance', 'latestInvestment', 'greeting'));
+        return view('workspaces.index', compact('activeWorkspace', 'canViewFinance', 'investmentBalance', 'greeting'));
     }
 
     public function store(Request $request, CreateWorkspace $creator)

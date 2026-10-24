@@ -44,12 +44,12 @@ class FixedCashflowTest extends TestCase
         $workspace->entries()->create(['description' => 'Salário', 'type' => 'income', 'amount_cents' => 300000, 'date' => '2026-10-01', 'paid' => true, 'is_fixed' => true]);
         $workspace->budgets()->create(['month' => '2026-10', 'investment_balance_cents' => 2000000]);
         $summary = app(FinancialSummary::class)->forMonth($workspace, '2026-10');
-        $this->assertSame(2000000, $summary['investmentBalance']);
+        $this->assertSame(0, $summary['investmentBalance']);
         $this->assertSame(0, $summary['invested']);
         $this->assertSame(300000, $summary['projected']);
         $this->assertSame(300000, $summary['balance']);
         $this->actingAs($owner)->get(route('finance.index', [$workspace, 'month' => '2026-10']))
             ->assertOk()->assertSeeInOrder(['Receitas fixas', 'Salário', 'Gastos fixos'])
-            ->assertSee('Saldo acumulado');
+            ->assertSee('Saldo total');
     }
 }

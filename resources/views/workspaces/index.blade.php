@@ -12,8 +12,8 @@
         <div class="metrics home-metrics" aria-label="Indicadores do ambiente">
             <article class="metric">
                 <h2 class="metric-label">Investimentos acumulados <span aria-hidden="true">◇</span></h2>
-                <strong>{{ $latestInvestment ? \App\Services\Money::format($latestInvestment->investment_balance_cents) : '—' }}</strong>
-                <small>{{ !$canViewFinance ? ($activeWorkspace ? 'Sem acesso ao financeiro' : 'Selecione ou crie um ambiente') : ($latestInvestment ? 'Último registro · ' . \Carbon\CarbonImmutable::createFromFormat('!Y-m', $latestInvestment->month)->format('m/Y') : 'Nenhum saldo informado') }}</small>
+                <strong>{{ $canViewFinance ? \App\Services\Money::format($investmentBalance) : '—' }}</strong>
+                <small>{{ !$canViewFinance ? ($activeWorkspace ? 'Sem acesso ao financeiro' : 'Selecione ou crie um ambiente') : 'Aportes menos retiradas · Todo o histórico do ambiente' }}</small>
             </article>
             @foreach (range(2, 4) as $indicator)
                 <article class="metric metric-placeholder">

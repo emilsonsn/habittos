@@ -32,7 +32,8 @@ class InvestmentAccountingTest extends TestCase
         }
         $after = app(FinancialSummary::class)->forMonth($workspace, '2026-10');
         $this->assertSame(20000, $after['invested']);
-        foreach (['investmentBalance', 'income', 'expenses', 'fixed', 'fixedIncome', 'balance', 'available', 'projected', 'pending', 'monthlyLimit', 'weeklyLimit', 'weeks', 'weeklyPlan', 'byCategory'] as $key) {
+        $this->assertSame(20000, $after['investmentBalance']);
+        foreach (['income', 'expenses', 'fixed', 'fixedIncome', 'balance', 'available', 'projected', 'pending', 'monthlyLimit', 'weeklyLimit', 'weeks', 'weeklyPlan', 'byCategory'] as $key) {
             $this->assertEquals($before[$key], $after[$key], $key.' deve ignorar os lançamentos de investimento.');
         }
     }

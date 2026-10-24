@@ -32,8 +32,6 @@ class FinanceDashboard extends Component
 
     public string $reserveInput = '0';
 
-    public string $investmentBalanceInput = '';
-
     public string $categoryName = '';
 
     public string $message = '';
@@ -136,7 +134,6 @@ class FinanceDashboard extends Component
     {
         return [
             'reserve' => 'reserve_cents',
-            'investment_balance' => 'investment_balance_cents',
         ];
     }
 
@@ -166,10 +163,9 @@ class FinanceDashboard extends Component
         Gate::authorize(Permission::BudgetManage->value, $workspace);
         $column = $this->indicatorColumns()[$this->editingIndicator] ?? null;
         abort_unless($column, 422);
-        $optional = $this->editingIndicator === 'investment_balance';
         $this->validate([
             'month' => ['required', 'date_format:Y-m'],
-            'indicatorValue' => [$optional ? 'nullable' : 'required', 'numeric', 'decimal:0,2', 'min:0', 'max:999999999.99'],
+            'indicatorValue' => ['required', 'numeric', 'decimal:0,2', 'min:0', 'max:999999999.99'],
         ], attributes: ['indicatorValue' => 'valor']);
         $value = $this->indicatorValue !== '' ? Money::cents($this->indicatorValue) : null;
         $workspace->budgets()->updateOrCreate(['month' => $this->month], [$column => $value]);
@@ -209,8 +205,6 @@ class FinanceDashboard extends Component
         $this->reset('synchronizingMonth');
         $budget = $this->workspace()->budgets()->where('month', $this->month)->first();
         $this->reserveInput = (string) (($budget?->reserve_cents ?? 0) / 100);
-        $this->investmentBalanceInput = $budget?->investment_balance_cents !== null
-            ? (string) ($budget->investment_balance_cents / 100) : '';
     }
 
     public function openMonth(?string $month = null): void
@@ -289,11 +283,9 @@ class FinanceDashboard extends Component
         $this->validate([
             'month' => ['required', 'date_format:Y-m'],
             'reserveInput' => ['required', 'numeric', 'decimal:0,2', 'min:0', 'max:999999999.99'],
-            'investmentBalanceInput' => ['nullable', 'numeric', 'decimal:0,2', 'min:0', 'max:999999999.99'],
         ]);
         $workspace->budgets()->updateOrCreate(['month' => $this->month], [
             'reserve_cents' => Money::cents($this->reserveInput),
-            'investment_balance_cents' => $this->investmentBalanceInput !== '' ? Money::cents($this->investmentBalanceInput) : null,
         ]);
         $this->message = 'Planejamento salvo.';
     }

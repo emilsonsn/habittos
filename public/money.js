@@ -20,7 +20,8 @@ globalThis.HabittosMoney = {
         const [integerPart, decimalPart = ""] = text.split(",");
         let whole = integerPart.replace(/\D/g, "").replace(/^0+(?=\d)/, "");
         const fraction = decimalPart.replace(/\D/g, "").slice(0, 2);
-        if (!whole && !hasDecimal) return { display: "", value: "" };
+        if (!whole && !hasDecimal)
+            return { display: negative ? "-" : "", value: "" };
         whole ||= "0";
         const sign = negative ? "-" : "";
         return {

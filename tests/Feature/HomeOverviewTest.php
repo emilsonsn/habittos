@@ -26,18 +26,19 @@ class HomeOverviewTest extends TestCase
         $this->get(route('workspaces.index'))->assertSee('Boa noite, Pessoa');
     }
 
-    public function test_investment_card_uses_latest_informed_month_without_summing_balances_or_using_empty_future_cycles(): void
+    public function test_investment_card_sums_all_months_and_withdrawals_and_ignores_manual_balances(): void
     {
         $user = User::factory()->create();
         $workspace = app(CreateWorkspace::class)->handle($user, 'Casa');
-        $workspace->budgets()->create(['month' => '2026-09', 'investment_balance_cents' => 1000000]);
-        $workspace->budgets()->create(['month' => '2026-10', 'investment_balance_cents' => 123456]);
-        $workspace->budgets()->create(['month' => '2026-11', 'starts_on' => '2026-11-04']);
+        $workspace->budgets()->create(['month' => '2026-10', 'investment_balance_cents' => 1000000]);
+        foreach ([['2025-01-01', 100000, true], ['2026-10-01', 50000, false], ['2026-11-01', -12345, true]] as [$date, $amount, $paid]) {
+            $workspace->entries()->create(['description' => 'Investimento', 'type' => 'investment', 'amount_cents' => $amount, 'date' => $date, 'paid' => $paid]);
+        }
         $this->actingAs($user)->get(route('workspaces.index'))->assertOk()
-            ->assertSee('Investimentos acumulados')->assertSee('R$ 1.234,56')->assertSee('Último registro · 10/2026')
-            ->assertDontSee('R$ 10.000,00');
-        $workspace->budgets()->where('month', '2026-11')->update(['investment_balance_cents' => 0]);
-        $this->get(route('workspaces.index'))->assertSee('R$ 0,00')->assertSee('Último registro · 11/2026');
+            ->assertSee('Investimentos acumulados')->assertSee('R$ 1.376,55')->assertSee('Todo o histórico do ambiente')
+            ->assertDontSee('R$ 10.000,00')->assertDontSee('Último registro');
+        $workspace->entries()->where('type', 'investment')->delete();
+        $this->get(route('workspaces.index'))->assertSee('R$ 0,00');
     }
 
     public function test_home_keeps_investments_scoped_to_the_selected_authorized_workspace(): void
@@ -47,7 +48,7 @@ class HomeOverviewTest extends TestCase
         $second = app(CreateWorkspace::class)->handle($user, 'Segundo');
         $private = app(CreateWorkspace::class)->handle(User::factory()->create(), 'Privado');
         foreach ([[$first, 10000], [$second, 20000], [$private, 999999]] as [$workspace, $balance]) {
-            $workspace->budgets()->create(['month' => '2026-10', 'investment_balance_cents' => $balance]);
+            $workspace->entries()->create(['description' => 'Investimento', 'type' => 'investment', 'amount_cents' => $balance, 'date' => '2026-10-01']);
         }
         $this->actingAs($user)->withSession(['active_workspace_id' => $first->id])
             ->get(route('workspaces.index'))->assertSee('R$ 100,00')->assertDontSee('R$ 200,00')->assertDontSee('R$ 9.999,99');
@@ -62,8 +63,8 @@ class HomeOverviewTest extends TestCase
         $user = User::factory()->create();
         $this->actingAs($user)->get(route('workspaces.index'))->assertOk()->assertSee('Selecione ou crie um ambiente');
         $workspace = app(CreateWorkspace::class)->handle($user, 'Casa');
-        $this->get(route('workspaces.index'))->assertSee('Nenhum saldo informado');
-        $workspace->budgets()->create(['month' => '2026-10', 'investment_balance_cents' => 123456]);
+        $this->get(route('workspaces.index'))->assertSee('R$ 0,00');
+        $workspace->entries()->create(['description' => 'Investimento', 'type' => 'investment', 'amount_cents' => 123456, 'date' => '2026-10-01']);
         $reader = User::factory()->create();
         $workspace->members()->attach($reader, ['permissions' => ['goals.view']]);
         $this->actingAs($reader)->get(route('workspaces.index'))

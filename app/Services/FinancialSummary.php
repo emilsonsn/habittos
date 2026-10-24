@@ -38,7 +38,7 @@ class FinancialSummary
 
         return compact('entries', 'income', 'expenses', 'invested', 'balance', 'reserve', 'weeklyLimit', 'weeks', 'weeklyPlan', 'monthlyLimit', 'byCategory', 'period') + [
             'available' => $balance - $reserve,
-            'investmentBalance' => $budget?->investment_balance_cents,
+            'investmentBalance' => app(InvestmentBalance::class)->forWorkspace($workspace),
             'fixedIncome' => $entries->where('type', 'income')->where('is_fixed', true)->sum('amount_cents'),
             'projected' => $income - $expenses - $reserve,
             'fixed' => $fixed,

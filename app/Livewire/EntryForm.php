@@ -74,7 +74,7 @@ class EntryForm extends Component
         if (($this->form['category_id'] ?? null) === '') {
             $this->form['category_id'] = null;
         }
-        $rules = collect(EntryRules::forWorkspace($workspace->id))->mapWithKeys(fn ($rule, $key) => ['form.'.$key => $rule])->all();
+        $rules = collect(EntryRules::forWorkspace($workspace->id, $this->form['type'] ?? null))->mapWithKeys(fn ($rule, $key) => ['form.'.$key => $rule])->all();
         $validated = $this->validate($rules)['form'];
         $validated['amount_cents'] = Money::cents($validated['amount']);
         unset($validated['amount']);

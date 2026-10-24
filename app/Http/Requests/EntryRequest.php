@@ -28,7 +28,7 @@ class EntryRequest extends FormRequest
 
     public function rules(): array
     {
-        return EntryRules::forWorkspace($this->route('workspace')->id);
+        return EntryRules::forWorkspace($this->route('workspace')->id, $this->input('type'));
     }
 
     public function entryData(): array

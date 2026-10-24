@@ -4,7 +4,7 @@
     <div class="indicator-input">
         <span aria-hidden="true">R$</span>
         <x-money-input id="indicator-{{ $editingIndicator }}" model="indicatorValue" autofocus
-            wire:keydown.escape="cancelIndicator" :required="$editingIndicator !== 'investment_balance'" />
+            wire:keydown.escape="cancelIndicator" required />
     </div>
     @error('indicatorValue')
         <span class="field-error" role="alert">{{ $message }}</span>
