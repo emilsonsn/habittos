@@ -159,9 +159,9 @@ class FinancialCalendarTest extends TestCase
         $this->entry($workspace, '2026-10-04', 5000, ['is_fixed' => true]);
         $opener = app(OpenFinancialMonth::class);
         $this->assertSame(2, $opener->handle($workspace, '2026-11', '2026-11-03', '2026-11-30'));
-        $this->assertDatabaseHas('entries', ['workspace_id' => $workspace->id, 'date' => '2026-11-03 00:00:00', 'amount_cents' => 10000, 'paid' => false]);
+        $this->assertDatabaseHas('entries', ['workspace_id' => $workspace->id, 'date' => '2026-11-03 00:00:00', 'amount_cents' => 10000, 'paid' => true]);
         // All copied fixed entries use the selected cycle start.
-        $this->assertDatabaseHas('entries', ['workspace_id' => $workspace->id, 'date' => '2026-11-03 00:00:00', 'amount_cents' => 2000, 'paid' => false]);
+        $this->assertDatabaseHas('entries', ['workspace_id' => $workspace->id, 'date' => '2026-11-03 00:00:00', 'amount_cents' => 2000, 'paid' => true]);
         $this->assertDatabaseHas('entries', ['workspace_id' => $workspace->id, 'date' => '2026-11-02 00:00:00', 'amount_cents' => 2000, 'paid' => true]);
         $this->assertCount(2, app(FinancialSummary::class)->forMonth($workspace, '2026-11')['entries']);
     }

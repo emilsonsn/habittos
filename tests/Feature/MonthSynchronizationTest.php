@@ -55,7 +55,7 @@ class MonthSynchronizationTest extends TestCase
         $this->assertCount(2, $copies);
         $this->assertSame(['expense', 'income'], $copies->pluck('type')->sort()->values()->all());
         foreach ($copies as $entry) {
-            $this->assertFalse($entry->paid);
+            $this->assertTrue($entry->paid);
             $this->assertTrue($entry->is_fixed);
             $this->assertSame(12345, $entry->amount_cents);
             $this->assertSame('Detalhes', $entry->notes);
@@ -69,6 +69,23 @@ class MonthSynchronizationTest extends TestCase
         $this->assertSame('2026-12', $calendar->monthForDate($workspace, '2026-12-04'));
         $component->call('startSynchronization')->assertHasErrors('synchronization');
         $this->assertSame(7, $workspace->entries()->count());
+    }
+
+    public function test_sync_settles_copies_and_updates_available_balance_regardless_of_source_status(): void
+    {
+        foreach ([false, true] as $paid) {
+            $workspace = $this->workspace();
+            foreach (['income' => 750000, 'expense' => 493370] as $type => $amount) {
+                $workspace->entries()->create(['description' => 'Fixo '.$type, 'type' => $type,
+                    'amount_cents' => $amount, 'date' => '2026-10-10', 'paid' => $paid, 'is_fixed' => true]);
+            }
+            $originals = $workspace->entries()->orderBy('id')->get()->toArray();
+            Livewire::test(FinanceDashboard::class, ['workspaceId' => $workspace->id, 'month' => '2026-11'])
+                ->call('startSynchronization')->call('synchronizePreviousMonth')->assertHasNoErrors()
+                ->assertSee('como efetivados')->assertViewHas('available', 256630)->assertViewHas('pending', 0);
+            $this->assertSame(2, $workspace->entries()->whereDate('date', '2026-11-01')->where('paid', true)->count());
+            $this->assertSame($originals, $workspace->entries()->whereDate('date', '2026-10-10')->orderBy('id')->get()->toArray());
+        }
     }
 
     public function test_any_existing_entry_hides_the_button_even_when_the_current_section_has_no_records(): void

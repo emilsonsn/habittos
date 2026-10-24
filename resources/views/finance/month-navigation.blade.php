@@ -42,5 +42,5 @@ $navigation = [['label' => 'Ano anterior', 'text' => '« Ano', 'month' => $selec
         <p class="field-error" role="alert">{{ $message }}</p>
     @enderror
     <small>Receitas e gastos fixos são independentes por mês. Em um mês sem lançamentos, use a sincronização para
-        copiar os fixos do mês anterior como pendentes.</small>
+        copiar os fixos do mês anterior como efetivados.</small>
 </div>

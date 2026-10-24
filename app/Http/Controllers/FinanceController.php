@@ -31,7 +31,7 @@ class FinanceController extends Controller
         $redirect = redirect()->route('finance.index', [$workspace, 'month' => $data['month']]);
 
         return $copied > 0
-            ? $redirect->with('success', $copied.' lançamento(s) fixo(s) copiado(s) do mês anterior. Os pagamentos começam pendentes.')
+            ? $redirect->with('success', $copied.' lançamento(s) fixo(s) copiado(s) do mês anterior. Receitas e despesas já estão efetivadas.')
             : $redirect;
     }
 

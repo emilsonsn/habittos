@@ -56,7 +56,7 @@ class InteractiveFrontendTest extends TestCase
         $copy = $workspace->entries()->where('id', '!=', $original->id)->firstOrFail();
         Livewire::test(FinanceDashboard::class, ['workspaceId' => $workspace->id, 'month' => '2027-01'])
             ->call('togglePaid', $copy->id)->assertHasNoErrors();
-        $this->assertTrue($copy->fresh()->paid);
+        $this->assertFalse($copy->fresh()->paid);
         $this->assertTrue($original->fresh()->paid);
     }
 

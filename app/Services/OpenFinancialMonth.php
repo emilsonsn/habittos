@@ -52,7 +52,7 @@ class OpenFinancialMonth
                     'type' => $entry->type,
                     'amount_cents' => $entry->amount_cents,
                     'date' => $cycleStart,
-                    'paid' => false,
+                    'paid' => true,
                     'is_fixed' => true,
                     'notes' => $entry->notes,
                 ]);

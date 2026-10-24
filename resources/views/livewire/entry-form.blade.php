@@ -62,7 +62,7 @@
                             investido</label>
                         <label class="checkbox"><input type="checkbox" wire:model="form.is_fixed">Lançamento fixo
                             mensal</label>
-                        <small>Receitas e despesas fixas são copiadas como pendentes ao abrir o mês seguinte.</small>
+                        <small>Receitas e despesas fixas são copiadas como efetivadas ao sincronizar o mês seguinte.</small>
                         @error('form.paid')
                             <span class="field-error">{{ $message }}</span>
                         @enderror

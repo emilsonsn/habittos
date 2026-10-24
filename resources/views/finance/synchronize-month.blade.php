@@ -13,7 +13,7 @@
                     <h2 id="sync-month-title">Sincronizar com o mês anterior?</h2>
                     <p>As receitas e os gastos fixos de {{ \Carbon\CarbonImmutable::createFromFormat('!Y-m', $month)->subMonth()->format('m/Y') }}
                         serão copiados para {{ \Carbon\CarbonImmutable::createFromFormat('!Y-m', $month)->format('m/Y') }}
-                        como pendentes. Todos os registros copiados usarão a data de início informada abaixo.
+                        como efetivados. Todos os registros copiados usarão a data de início informada abaixo.
                         Os dados do mês anterior serão preservados.</p>
                     <x-cycle-date-fields :month="$month" />
                     @error('synchronization')<p class="field-error" role="alert">{{ $message }}</p>@enderror

@@ -13,7 +13,7 @@ class FixedCashflowTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_salary_and_expenses_are_copied_independently_and_begin_pending(): void
+    public function test_salary_and_expenses_are_copied_independently_and_begin_settled(): void
     {
         $owner = User::factory()->create();
         $workspace = app(CreateWorkspace::class)->handle($owner, 'Casa');
@@ -29,7 +29,7 @@ class FixedCashflowTest extends TestCase
         $this->assertSame(0, $summary['balance']);
         $this->assertCount(2, $summary['entries']);
         foreach ($summary['entries'] as $entry) {
-            $this->assertFalse($entry->paid);
+            $this->assertTrue($entry->paid);
             $this->assertSame('2027-02-05', $entry->date->format('Y-m-d'));
         }
         $summary['entries']->firstWhere('type', 'income')->update(['amount_cents' => 120000]);

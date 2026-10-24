@@ -164,7 +164,7 @@ class HabittosTest extends TestCase
         $workspace->entries()->create(['description' => 'Passeio', 'type' => 'expense', 'amount_cents' => 5000, 'date' => '2026-12-15', 'paid' => true, 'is_fixed' => false]);
         $this->actingAs($owner)->post(route('finance.open-month', $workspace), ['month' => '2027-01', 'cycleStartInput' => '2027-01-01', 'cycleEndInput' => '2027-01-31'])->assertRedirect(route('finance.index', [$workspace, 'month' => '2027-01']));
         $copy = $workspace->entries()->where('id', '!=', $expense->id)->where('is_fixed', true)->firstOrFail();
-        $this->assertFalse($copy->paid);
+        $this->assertTrue($copy->paid);
         $this->assertSame('2027-01-01', $copy->date->format('Y-m-d'));
         $this->assertSame(100000, $copy->amount_cents);
         $this->assertSame('Contrato', $copy->notes);
