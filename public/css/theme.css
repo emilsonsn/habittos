@@ -1,0 +1,270 @@
+:root {
+    color-scheme: light;
+}
+
+.topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-shrink: 0;
+}
+.topbar {
+    gap: 12px;
+}
+.theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 9px 12px;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    background: transparent;
+    color: var(--ink);
+    font-size: 11px;
+    white-space: nowrap;
+}
+.theme-toggle:hover {
+    background: var(--soft);
+}
+.theme-sun,
+.theme-light-label {
+    display: none;
+}
+.auth-content {
+    position: relative;
+}
+.auth-theme-toggle {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+}
+
+:root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #141423;
+    --ink: #eeedf7;
+    --muted: #aaa9c2;
+    --primary: #b1a8ff;
+    --primary-hover: #c5beff;
+    --line: #35354d;
+    --green: #7cd5b5;
+    --soft: #302d50;
+    --sidebar: #191733;
+    --surface: #202032;
+    --surface-raised: #29293f;
+    --input: #1a1a2c;
+}
+[data-theme="dark"] .theme-moon,
+[data-theme="dark"] .theme-dark-label {
+    display: none;
+}
+[data-theme="dark"] .theme-sun,
+[data-theme="dark"] .theme-light-label {
+    display: inline;
+}
+[data-theme="dark"]
+    :is(.panel, .metric, .space-popover, .app-dialog, .auth-content) {
+    background: var(--surface);
+}
+[data-theme="dark"]
+    :is(
+        .topbar,
+        .space-popover,
+        .space-search,
+        .app-dialog,
+        .settings-section,
+        td,
+        .cycle-editor
+    ) {
+    border-color: var(--line);
+}
+[data-theme="dark"]
+    :is(
+        .month-navigation,
+        .check-group,
+        .entry-types,
+        .entry-advanced,
+        .create-workspace,
+        th,
+        .space-popover-footer
+    ) {
+    background: var(--surface-raised);
+}
+[data-theme="dark"]
+    :is(
+        .topbar,
+        .week strong,
+        .space-options [role="option"],
+        .planning-indicator-heading,
+        .entry-advanced > summary,
+        .fixed-empty p,
+        .empty-state h2,
+        .empty-state h3
+    ) {
+    color: var(--ink);
+}
+[data-theme="dark"]
+    :is(
+        .topbar-tag,
+        .page-heading .eyebrow,
+        .page-heading p,
+        .heading-dot,
+        .metric-label,
+        .metric small,
+        .month-navigation .eyebrow,
+        .month-navigation > small,
+        .cycle-dates,
+        .cycle-editor > small,
+        .week > span,
+        .section-heading .eyebrow,
+        th,
+        .space-search,
+        .space-options small,
+        .space-search-empty,
+        .space-popover-footer,
+        .dialog-content p,
+        .settings-description p,
+        .settings-number,
+        .welcome-page > p,
+        .auth-card .eyebrow,
+        .fixed-cashflow > p,
+        .planning-indicator-value.not-set,
+        .planning-indicator > small,
+        .indicator-input > span,
+        .entry-types span,
+        .entry-advanced > summary > small
+    ) {
+    color: var(--muted);
+}
+[data-theme="dark"] .button {
+    color: #191733;
+}
+[data-theme="dark"] .metric.balance {
+    background: #4941a6;
+}
+[data-theme="dark"]
+    :is(
+        .button.secondary,
+        .month-step.button,
+        .indicator-pencil,
+        .icon-close,
+        .round-icon,
+        .count,
+        .tag
+    ) {
+    background: var(--surface-raised);
+    color: var(--ink);
+    border-color: var(--line);
+}
+[data-theme="dark"]
+    :is(
+        .button.secondary:hover,
+        .indicator-pencil:hover,
+        .space-options [role="option"]:hover,
+        .space-options [role="option"]:focus-visible,
+        .space-options [aria-selected="true"]
+    ) {
+    background: var(--soft);
+    color: var(--primary);
+}
+[data-theme="dark"]
+    :is(input:not([type="checkbox"]), select, textarea, .indicator-input) {
+    background: var(--input);
+    border-color: var(--line);
+    color: var(--ink);
+}
+[data-theme="dark"] :is(input, select, textarea):focus {
+    border-color: var(--primary);
+}
+[data-theme="dark"] input::placeholder,
+[data-theme="dark"] textarea::placeholder {
+    color: var(--muted);
+    opacity: 1;
+}
+[data-theme="dark"] .indicator-input input,
+[data-theme="dark"] .space-search input {
+    background: transparent;
+}
+[data-theme="dark"] .checkbox input {
+    accent-color: var(--primary);
+}
+[data-theme="dark"] .entry-advanced {
+    border-color: var(--line);
+}
+[data-theme="dark"] .entry-types input:checked + span {
+    background: var(--soft);
+    color: var(--primary);
+}
+[data-theme="dark"]
+    :is(.projection, .planning-indicator-value, .selection-check) {
+    color: var(--primary);
+}
+[data-theme="dark"]
+    :is(.workspace-icon, .workspace-card-icon, .space-options .space-monogram) {
+    background: var(--soft);
+    color: var(--primary);
+}
+[data-theme="dark"] :is(.week-bar-track, progress) {
+    background: var(--surface-raised);
+}
+[data-theme="dark"] progress::-webkit-progress-bar {
+    background: var(--surface-raised);
+}
+[data-theme="dark"] .tag.settled,
+[data-theme="dark"] .notice.success {
+    background: #203c35;
+    color: #a0deba;
+}
+[data-theme="dark"] .tag.pending {
+    background: #403425;
+    color: #ebc18a;
+}
+[data-theme="dark"] :is(.negative, .danger, .field-error) {
+    color: #f49eaf !important;
+}
+[data-theme="dark"] .orange,
+[data-theme="dark"] .fixed-outgoing .fixed-cashflow-total {
+    color: #e2b58f;
+}
+[data-theme="dark"] .fixed-income .fixed-cashflow-total {
+    color: var(--green);
+}
+[data-theme="dark"] :is(.notice.error, .danger-panel) {
+    background: #3b2833;
+    color: #f3acb9;
+}
+[data-theme="dark"] :is(.danger-panel h2, .danger-panel p) {
+    color: #f3acb9;
+}
+[data-theme="dark"] .button.danger-button {
+    background: #492d3a;
+    border-color: #805065;
+    color: #ffc2cd;
+}
+[data-theme="dark"] .button.danger-button:hover {
+    background: #60394b;
+}
+[data-theme="dark"] .app-dialog::backdrop {
+    background: #080812a6;
+}
+[data-theme="dark"] .welcome-illustration span {
+    background: var(--soft);
+    color: var(--accent);
+}
+[data-theme="dark"] .fixed-expense-list {
+    scrollbar-color: #66618f transparent;
+}
+
+@media (max-width: 650px) {
+    .theme-toggle {
+        padding: 8px;
+    }
+    .theme-toggle span {
+        display: none;
+    }
+    .auth-content {
+        padding-top: 80px;
+    }
+}

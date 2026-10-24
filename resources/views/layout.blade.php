@@ -1,13 +1,15 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#1d1b4b">
     <title>@yield('title', 'Seu espaço') · habittos</title>
+    <script src="{{ asset('theme.js') }}" data-navigate-once></script>
     <link rel="stylesheet" href="{{ asset('css/app.css') }}" data-navigate-track>
     <link rel="stylesheet" href="{{ asset('css/interface.css') }}" data-navigate-track>
+    <link rel="stylesheet" href="{{ asset('css/theme.css') }}" data-navigate-track>
     @livewireStyles
 </head>
 
@@ -56,8 +58,12 @@
             </aside>
             <main class="main">
                 <header class="topbar"><span>{{ $activeWorkspace?->name ?? 'Meu espaço' }}<span
-                            class="breadcrumb-divider">/</span><span class="muted">@yield('title')</span></span><span
-                        class="topbar-tag"><span class="tiny-dot"></span> Um passo de cada vez</span></header>
+                            class="breadcrumb-divider">/</span><span class="muted">@yield('title')</span></span>
+                    <div class="topbar-actions">
+                        <span class="topbar-tag"><span class="tiny-dot"></span> Um passo de cada vez</span>
+                        <x-theme-toggle />
+                    </div>
+                </header>
                 <div class="content page-enter">
                     @include('partials.feedback')
                     @yield('content')
@@ -73,6 +79,7 @@
                 <div class="auth-art"><span>Organizar</span><span>Planejar</span><span>Realizar</span></div>
             </div>
             <div class="auth-content">
+                <div class="auth-theme-toggle"><x-theme-toggle /></div>
                 @include('partials.feedback')
                 @yield('content')
             </div>

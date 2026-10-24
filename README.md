@@ -158,6 +158,8 @@ A navegação entre páginas usa `wire:navigate`. O framework atualiza o conteú
 
 A identidade visual usa índigo como cor principal, navegação em azul profundo e superfícies claras. Os estilos estão separados entre fundamentos (`app.css`) e identidade/componentes (`interface.css`). O carregamento de ações, as mensagens de resultado e os estados vazios fazem parte dos componentes.
 
+O botão no cabeçalho alterna entre modo claro e escuro, inclusive no celular. Ele também aparece nas telas de entrada e cadastro. A preferência é salva no `localStorage` com a chave `habittos.theme`, aplicada antes da exibição da página e preservada nas navegações Livewire. Sem preferência salva, o tema inicial é escuro. Alterações são sincronizadas entre abas; se o navegador bloquear o armazenamento, a troca continua funcionando durante a navegação atual. A paleta escura e o botão ficam em `public/css/theme.css`, e o comportamento em `public/theme.js`.
+
 ### Home
 
 `/ambientes` mostra uma saudação pelo horário de `America/Fortaleza`: bom dia das 05h às 11h59, boa tarde das 12h às 17h59 e boa noite nos demais horários. O indicador de investimentos acumulados consulta o último mês com `investment_balance_cents` informado no ambiente ativo, sem somar saldos entre meses, e exibe a referência em mês/ano. Zero informado é um valor válido; meses com apenas configuração do ciclo e saldo nulo são ignorados. O valor exige `finance.view` e não mistura ambientes. Há três cartões genéricos reservados para indicadores futuros. A resolução do ambiente ativo é compartilhada entre a home e o layout por `SelectWorkspace::current`, revalidando a participação.
