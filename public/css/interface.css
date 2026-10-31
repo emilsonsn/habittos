@@ -1215,6 +1215,20 @@ textarea:focus {
 .profile {
     flex-shrink: 0;
 }
+@media (min-width: 651px) {
+    .sidebar {
+        overflow: hidden;
+    }
+    .sidebar nav {
+        flex: 1;
+        min-height: 0;
+        align-content: start;
+        padding-bottom: 16px;
+    }
+    .sidebar > .profile {
+        margin-top: auto;
+    }
+}
 .finance-nav {
     margin: 0;
     padding: 0;
