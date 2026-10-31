@@ -25,6 +25,9 @@ class FinanceDashboard extends Component
     #[Url(history: true)]
     public string $month = '';
 
+    #[Url(as: 'category', except: [])]
+    public array $categoryFilter = [];
+
     #[Locked]
     public string $section = 'dashboard';
 
@@ -323,6 +326,20 @@ class FinanceDashboard extends Component
         $this->validate(['month' => ['required', 'date_format:Y-m']]);
         $workspace = $this->workspace();
 
-        return view('livewire.finance-dashboard', app(FinancialSummary::class)->forMonth($workspace, $this->month) + ['workspace' => $workspace, 'financeSection' => FinanceSection::from($this->section)]);
+        $summary = app(FinancialSummary::class)->forMonth($workspace, $this->month);
+        if ($this->section === FinanceSection::Entries->value && $this->categoryFilter !== []) {
+            $selectedCategories = array_map('strval', $this->categoryFilter);
+            $summary['entries'] = $summary['entries']->filter(fn ($entry) => in_array(
+                $entry->category_id === null ? 'uncategorized' : (string) $entry->category_id,
+                $selectedCategories,
+                true,
+            ));
+        }
+
+        return view('livewire.finance-dashboard', $summary + [
+            'workspace' => $workspace,
+            'financeSection' => FinanceSection::from($this->section),
+            'categories' => $workspace->categories()->orderBy('name')->get(),
+        ]);
     }
 }

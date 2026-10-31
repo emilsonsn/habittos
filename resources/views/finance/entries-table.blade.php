@@ -1,16 +1,40 @@
+@php($showCategory = $financeSection === \App\Enums\FinanceSection::Entries)
 <section class="panel transactions">
     <div class="section-heading">
         <div><span class="eyebrow">CADA MOVIMENTO CONTA</span>
             <h2>{{ $heading ?? 'Lançamentos do mês' }} <span class="count">{{ $entries->count() }}</span></h2>
         </div>
+        @if ($showCategory)
+            <details class="entry-category-filter">
+                <summary>Categorias <span>{{ count($categoryFilter) ? count($categoryFilter).' '.(count($categoryFilter) === 1 ? 'selecionada' : 'selecionadas') : 'Todas as categorias' }}</span></summary>
+                <div class="entry-category-options">
+                    <fieldset>
+                        <legend class="sr-only">Filtrar por categorias</legend>
+                        <label class="checkbox"><input type="checkbox" wire:model.live="categoryFilter" value="uncategorized">Sem categoria</label>
+                        @foreach ($categories as $category)
+                            <label class="checkbox" wire:key="category-filter-{{ $category->id }}"><input type="checkbox" wire:model.live="categoryFilter" value="{{ $category->id }}">{{ $category->name }}</label>
+                        @endforeach
+                    </fieldset>
+                    @if ($categoryFilter !== [])
+                        <button type="button" class="text-button" wire:click="$set('categoryFilter', [])">Limpar filtro</button>
+                    @endif
+                </div>
+            </details>
+        @endif
     </div>
     @if ($entries->isEmpty())
         <div class="empty-state"><span>↗</span>
-            <h3>{{ $emptyTitle ?? 'Um primeiro passo para ter clareza.' }}</h3>
-            <p>{{ $emptyDescription ?? 'Registre sua renda e suas despesas para acompanhar o mês.' }}</p>
-            @can('finance.create', $workspace)
+            @if ($showCategory && $categoryFilter !== [])
+                <h3>Nenhum lançamento nas categorias selecionadas neste mês.</h3>
+                <p>Escolha outras categorias ou volte a exibir todos os lançamentos.</p>
+                <button type="button" class="button secondary" wire:click="$set('categoryFilter', [])">Limpar filtro</button>
+            @else
+                <h3>{{ $emptyTitle ?? 'Um primeiro passo para ter clareza.' }}</h3>
+                <p>{{ $emptyDescription ?? 'Registre sua renda e suas despesas para acompanhar o mês.' }}</p>
+                @can('finance.create', $workspace)
                 <button type="button" class="button secondary" wire:click="createEntry" wire:loading.attr="disabled">Criar primeiro lançamento</button>
-            @endcan
+                @endcan
+            @endif
         </div>
     @else
         <div class="table-scroll">
@@ -18,6 +42,9 @@
                 <thead>
                     <tr>
                         <th>Descrição</th>
+                        @if ($showCategory)
+                            <th scope="col">Categoria</th>
+                        @endif
                         <th>Data</th>
                         <th>Status</th>
                         <th class="number">Valor</th>
@@ -27,8 +54,16 @@
                 <tbody>
                     @foreach ($entries as $entry)
                         <tr wire:key="entry-{{ $entry->id }}">
-                            <td><strong>{{ $entry->description }}</strong><small>{{ $entry->category?->name ?? 'Sem categoria' }}{{ $entry->is_fixed ? ' · Fixo' : '' }}</small>
+                            <td><strong>{{ $entry->description }}</strong>
+                                @if ($showCategory)
+                                    @if ($entry->is_fixed)<small>Fixo</small>@endif
+                                @else
+                                    <small>{{ $entry->category?->name ?? 'Sem categoria' }}{{ $entry->is_fixed ? ' · Fixo' : '' }}</small>
+                                @endif
                             </td>
+                            @if ($showCategory)
+                                <td>{{ $entry->category?->name ?? 'Sem categoria' }}</td>
+                            @endif
                             <td>{{ $entry->date->format('d/m') }}</td>
                             <td>
                                 @can('finance.update', $workspace)

@@ -68,6 +68,45 @@ class FinanceSectionsTest extends TestCase
             ->assertDontSee('conic-gradient')->assertSee('As categorias aparecem conforme você registra despesas.');
     }
 
+    public function test_monthly_entries_filter_categories_without_crossing_workspace_or_cycle_boundaries(): void
+    {
+        $workspace = $this->workspace();
+        $transport = $workspace->categories()->firstOrFail();
+        $leisure = $workspace->categories()->where('id', '!=', $transport->id)->firstOrFail();
+        $workspace->budgets()->create(['month' => '2026-10', 'starts_on' => '2026-10-05']);
+        $workspace->budgets()->create(['month' => '2026-11', 'starts_on' => '2026-11-03']);
+        foreach ([['Ônibus', $transport->id, '2026-11-02'], ['Cinema', $leisure->id, '2026-10-10'], ['Avulso', null, '2026-10-10'], ['Próximo ciclo', $transport->id, '2026-11-03']] as [$description, $category, $date]) {
+            $workspace->entries()->create(['description' => $description, 'category_id' => $category, 'type' => 'expense', 'amount_cents' => 1000, 'date' => $date]);
+        }
+        $other = app(CreateWorkspace::class)->handle(auth()->user(), 'Outro');
+        $foreign = $other->categories()->create(['name' => 'Categoria privada']);
+        $other->entries()->create(['description' => 'Registro privado', 'category_id' => $foreign->id, 'type' => 'expense', 'amount_cents' => 1000, 'date' => '2026-10-10']);
+
+        Livewire::test(FinanceDashboard::class, ['workspaceId' => $workspace->id, 'month' => '2026-10', 'section' => 'entries'])
+            ->assertSee('<th scope="col">Categoria</th>', false)
+            ->assertSee('Ônibus')->assertSee('Cinema')->assertSee('Avulso')->assertDontSee('Próximo ciclo')->assertDontSee('Categoria privada')
+            ->set('categoryFilter', [(string) $transport->id])
+            ->assertSee('Ônibus')->assertDontSee('Cinema')->assertDontSee('Avulso')
+            ->assertViewHas('entries', fn ($entries) => $entries->count() === 1)
+            ->set('categoryFilter', [(string) $transport->id, (string) $leisure->id])
+            ->assertSee('Ônibus')->assertSee('Cinema')->assertDontSee('Avulso')
+            ->assertViewHas('entries', fn ($entries) => $entries->count() === 2)
+            ->set('categoryFilter', [(string) $transport->id, 'uncategorized'])
+            ->assertSee('Ônibus')->assertSee('Avulso')->assertDontSee('Cinema')
+            ->set('categoryFilter', [(string) $transport->id])
+            ->call('openMonth', '2026-11')->assertSet('categoryFilter', [(string) $transport->id])
+            ->assertSee('Próximo ciclo')->assertDontSee('Ônibus')
+            ->call('openMonth', '2026-10')
+            ->set('categoryFilter', ['uncategorized'])->assertSee('Avulso')->assertDontSee('Ônibus')->assertDontSee('Cinema')
+            ->set('categoryFilter', [(string) $foreign->id])->assertDontSee('Registro privado')
+            ->assertSee('Nenhum lançamento nas categorias selecionadas')->assertSee('Limpar filtro')
+            ->set('categoryFilter', [])->assertSee('Ônibus')->assertSee('Cinema')->assertSee('Avulso');
+
+        Livewire::withQueryParams(['category' => [(string) $leisure->id, 'uncategorized']])
+            ->test(FinanceDashboard::class, ['workspaceId' => $workspace->id, 'month' => '2026-10', 'section' => 'entries'])
+            ->assertSet('categoryFilter', [(string) $leisure->id, 'uncategorized'])->assertSee('Cinema')->assertSee('Avulso')->assertDontSee('Ônibus');
+    }
+
     public function test_investments_reuse_entry_actions_and_follow_cycle_and_workspace_filters(): void
     {
         $workspace = $this->workspace();
