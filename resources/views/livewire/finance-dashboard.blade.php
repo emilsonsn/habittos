@@ -35,7 +35,7 @@
                 <strong>{{ $money($income) }}</strong><small>Total recebido e a receber</small>
             </div>
             <div class="metric">
-                <div class="metric-label">Despesas <span class="orange">↗</span></div>
+                <div class="metric-label">Despesas Fixas <span class="orange">↗</span></div>
                 <strong>{{ $money($expenses) }}</strong><small>{{ $money($fixed) }} em compromissos fixos</small>
             </div>
             <div class="metric">
