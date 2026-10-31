@@ -86,7 +86,6 @@
                 <div class="auth-art"><span>Organizar</span><span>Planejar</span><span>Realizar</span></div>
             </div>
             <div class="auth-content">
-                <div class="auth-theme-toggle"><x-theme-toggle /></div>
                 @include('partials.feedback')
                 @yield('content')
             </div>

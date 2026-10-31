@@ -35,11 +35,6 @@
 .auth-content {
     position: relative;
 }
-.auth-theme-toggle {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-}
 
 :root[data-theme="dark"] {
     color-scheme: dark;

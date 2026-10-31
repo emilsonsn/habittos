@@ -158,7 +158,7 @@ A navegação entre páginas usa `wire:navigate`. O framework atualiza o conteú
 
 A identidade visual usa índigo como cor principal, navegação em azul profundo e superfícies claras. Os estilos estão separados entre fundamentos (`app.css`) e identidade/componentes (`interface.css`). O carregamento de ações, as mensagens de resultado e os estados vazios fazem parte dos componentes.
 
-O botão no cabeçalho alterna entre modo claro e escuro, inclusive no celular. Ele também aparece nas telas de entrada e cadastro. A preferência é salva no `localStorage` com a chave `habittos.theme`, aplicada antes da exibição da página e preservada nas navegações Livewire. Sem preferência salva, o tema inicial é escuro. Alterações são sincronizadas entre abas; se o navegador bloquear o armazenamento, a troca continua funcionando durante a navegação atual. A paleta escura e o botão ficam em `public/css/theme.css`, e o comportamento em `public/theme.js`.
+O botão no cabeçalho alterna entre modo claro e escuro, inclusive no celular. Ele aparece apenas na área autenticada. A preferência é salva no `localStorage` com a chave `habittos.theme`, aplicada antes da exibição da página e preservada nas navegações Livewire. Sem preferência salva, o tema inicial é escuro. Alterações são sincronizadas entre abas; se o navegador bloquear o armazenamento, a troca continua funcionando durante a navegação atual. A paleta escura e o botão ficam em `public/css/theme.css`, e o comportamento em `public/theme.js`.
 
 ### Home
 
