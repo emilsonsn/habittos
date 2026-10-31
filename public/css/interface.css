@@ -1263,6 +1263,11 @@ textarea:focus {
     padding: 0;
     border: 0;
 }
+.entry-balance-note {
+    font-size: 12px;
+    line-height: 1.6;
+    margin: 0 0 16px;
+}
 .entry-category-filter > summary {
     padding: 10px 12px;
     border: 1px solid var(--line);

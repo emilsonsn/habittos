@@ -22,6 +22,9 @@
             </details>
         @endif
     </div>
+    @if ($showCategory)
+        <p class="muted entry-balance-note">Saldo acumulado desde o início do ciclo: receitas menos despesas, incluindo pendentes. Investimentos não alteram o saldo. O filtro de categorias preserva o saldo completo. Mais recentes primeiro.</p>
+    @endif
     @if ($entries->isEmpty())
         <div class="empty-state"><span>↗</span>
             @if ($showCategory && $categoryFilter !== [])
@@ -48,6 +51,9 @@
                         <th>Data</th>
                         <th>Status</th>
                         <th class="number">Valor</th>
+                        @if ($showCategory)
+                            <th scope="col" class="number">Saldo</th>
+                        @endif
                         <th><span class="sr-only">Ações</span></th>
                     </tr>
                 </thead>
@@ -80,6 +86,12 @@
                                 {{ $entry->type === 'expense' || $entry->amount_cents < 0 ? '−' : '+' }}
                                 {{ $money(abs($entry->amount_cents)) }}<small>{{ ['income' => 'Receita', 'expense' => 'Despesa', 'investment' => 'Investimento'][$entry->type] }}</small>
                             </td>
+                            @if ($showCategory)
+                                <td class="number {{ $entryBalances[$entry->id]['after'] < 0 ? 'negative' : '' }}">
+                                    <strong>{{ $money($entryBalances[$entry->id]['after']) }}</strong>
+                                    <small>Antes: {{ $money($entryBalances[$entry->id]['before']) }}</small>
+                                </td>
+                            @endif
                             <td>
                                 <div class="row-actions">
                                     @can('finance.update', $workspace)

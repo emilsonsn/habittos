@@ -16,6 +16,18 @@ class FinancialSummary
         // Short transition cycles still have four non-overlapping ranges.
         $weekLength = min(7, max(1, intdiv((int) $start->diffInDays($end), 3)));
         $entries = $workspace->entries()->with('category')->where('date', '>=', $start->toDateString())->where('date', '<', $end->toDateString())->orderByDesc('date')->orderByDesc('id')->get();
+        $runningBalance = 0;
+        $entryBalances = [];
+        // Reverse the date/id ordering to calculate each step before category filtering.
+        foreach ($entries->reverse() as $entry) {
+            $before = $runningBalance;
+            $runningBalance += match ($entry->type) {
+                'income' => $entry->amount_cents,
+                'expense' => -$entry->amount_cents,
+                default => 0,
+            };
+            $entryBalances[$entry->id] = ['before' => $before, 'after' => $runningBalance];
+        }
         $income = $entries->where('type', 'income')->sum('amount_cents');
         $expenses = $entries->where('type', 'expense')->sum('amount_cents');
         $fixed = $entries->where('type', 'expense')->where('is_fixed', true)->sum('amount_cents');
@@ -36,7 +48,7 @@ class FinancialSummary
         $weeklyPlan = $this->weeklyPlan($start, $end, $weekLength, $weeklyLimit, $weeks);
         $byCategory = $entries->where('type', 'expense')->groupBy(fn ($entry) => $entry->category?->name ?? 'Sem categoria')->map(fn ($items) => $items->sum('amount_cents'))->sortDesc();
 
-        return compact('entries', 'income', 'expenses', 'invested', 'balance', 'reserve', 'weeklyLimit', 'weeks', 'weeklyPlan', 'monthlyLimit', 'byCategory', 'period') + [
+        return compact('entries', 'entryBalances', 'income', 'expenses', 'invested', 'balance', 'reserve', 'weeklyLimit', 'weeks', 'weeklyPlan', 'monthlyLimit', 'byCategory', 'period') + [
             'available' => $balance - $reserve,
             'investmentBalance' => app(InvestmentBalance::class)->forWorkspace($workspace),
             'fixedIncome' => $entries->where('type', 'income')->where('is_fixed', true)->sum('amount_cents'),
