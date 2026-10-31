@@ -1267,10 +1267,38 @@ textarea:focus {
     text-align: center;
 }
 .category-pie {
+    position: relative;
     width: min(100%, 250px);
     aspect-ratio: 1;
     border-radius: 50%;
     margin: 0 auto 20px;
+}
+.category-tooltip {
+    position: absolute;
+    z-index: 5;
+    left: 50%;
+    top: 65%;
+    transform: translateX(-50%);
+    width: max-content;
+    max-width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--bg);
+    color: var(--ink);
+    box-shadow: 0 4px 16px #0003;
+    pointer-events: none;
+    font-size: 13px;
+    overflow-wrap: anywhere;
+}
+.category-tooltip-name {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+.category-tooltip small {
+    margin-left: 8px;
+    color: var(--muted);
 }
 .category-chart figcaption {
     color: var(--muted);

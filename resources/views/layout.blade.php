@@ -91,6 +91,7 @@
     @endauth
     <script src="{{ asset('money.js') }}" data-navigate-once></script>
     <script src="{{ asset('cover-position.js') }}" data-navigate-once></script>
+    <script src="{{ asset('category-pie.js') }}" data-navigate-once></script>
     <script src="{{ asset('app.js') }}" data-navigate-once></script>
     @livewireScripts
 </body>

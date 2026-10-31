@@ -11,7 +11,9 @@
         $percentage = $amount / $total * 100;
         $end = min(100, $offset + $percentage);
         $segments[] = $color.' '.$offset.'% '.$end.'%';
-        $slices[] = compact('name', 'amount', 'color', 'percentage');
+        $value = \App\Services\Money::format($amount);
+        $share = number_format($percentage, 1, ',', '.').'%';
+        $slices[] = compact('name', 'amount', 'color', 'percentage', 'end', 'value', 'share');
         $offset = $end;
     }
 @endphp
@@ -19,7 +21,16 @@
     <div class="category-distribution">
         <figure class="category-chart">
             <div class="category-pie" role="img" aria-label="Gráfico de pizza das despesas por categoria. Valores e percentuais na legenda."
-                style="background: conic-gradient({{ implode(', ', $segments) }})"></div>
+                x-data="{ active: null }" data-slices="{{ json_encode($slices) }}"
+                @pointermove="active = HabittosCategoryPie.at($event, JSON.parse($el.dataset.slices))"
+                @pointerleave="active = null" @pointercancel="active = null"
+                style="background: conic-gradient({{ implode(', ', $segments) }})">
+                <div class="category-tooltip" x-cloak x-show="active" aria-hidden="true">
+                    <span class="category-tooltip-name" x-text="active?.name"></span>
+                    <strong x-text="active?.value"></strong>
+                    <small x-text="active?.share"></small>
+                </div>
+            </div>
             <figcaption>Total de despesas <strong>{{ \App\Services\Money::format($total) }}</strong></figcaption>
         </figure>
         <ul class="category-legend" aria-label="Valores das despesas por categoria">
