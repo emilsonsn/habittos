@@ -6,6 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#1d1b4b">
     <title>@yield('title', 'Seu espaço') · habittos</title>
+    <link rel="icon" type="image/svg+xml" href="{{ asset('imgs/habbitos-icone.svg') }}">
+    <link rel="icon" type="image/png" href="{{ asset('imgs/habbitos-icone.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('imgs/habbitos-icone.png') }}">
     <script src="{{ asset('theme.js') }}" data-navigate-once></script>
     <link rel="stylesheet" href="{{ asset('css/app.css') }}" data-navigate-track>
     <link rel="stylesheet" href="{{ asset('css/interface.css') }}" data-navigate-track>
@@ -17,8 +20,8 @@
     @auth
         <div class="app-shell">
             <aside class="sidebar">
-                <a wire:navigate class="brand" href="{{ route('home') }}"><span
-                        class="brand-mark">h</span>habittos<span class="brand-dot">.</span></a>
+                <a wire:navigate class="brand" href="{{ route('home') }}"><img class="brand-icon"
+                        src="{{ asset('imgs/habbitos-icone.svg') }}" width="44" height="44" alt="">habittos<span class="brand-dot">.</span></a>
                 <livewire:workspace-switcher :active-id="$activeWorkspace?->id" :module="request()->routeIs('home') ? 'home' : (request()->routeIs('finance.*') ? request()->route()->getName() : (request()->routeIs('settings.*')
                     ? 'settings'
                     : (request()->routeIs('goals.*')
@@ -76,8 +79,8 @@
         </div>
     @else
         <main class="auth-shell">
-            <div class="auth-intro"><a wire:navigate class="brand" href="/">habittos<span
-                        class="brand-dot">.</span></a><span class="eyebrow">ESPAÇO PARA O QUE IMPORTA</span>
+            <div class="auth-intro"><a wire:navigate class="brand" href="/"><img class="brand-logo"
+                        src="{{ asset('imgs/logo-completa.svg') }}" width="240" height="161" alt="Habittos — Evolua todo dia"></a><span class="eyebrow">ESPAÇO PARA O QUE IMPORTA</span>
                 <h1>Pequenos hábitos.<br>Uma vida mais leve.</h1>
                 <p>Suas finanças, seus planos e as pessoas que fazem parte deles. Tudo no mesmo lugar.</p>
                 <div class="auth-art"><span>Organizar</span><span>Planejar</span><span>Realizar</span></div>
