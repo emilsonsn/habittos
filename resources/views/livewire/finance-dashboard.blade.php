@@ -11,8 +11,8 @@
         <div class="actions">
             <form wire:submit="openMonth" class="month-filter">
                 <label class="sr-only" for="month">Mês de referência</label>
-                <input id="month" type="month" wire:model="selectedMonth" required>
-                <button class="button secondary" wire:loading.attr="disabled">Ver mês</button>
+                <input id="month" type="month" wire:model.live="selectedMonth" required>
+                <button type="button" class="button secondary" wire:click="openCurrentMonth" wire:loading.attr="disabled">Mês atual</button>
             </form>
             @can('finance.create', $workspace)
                 <button type="button" class="button" wire:click="createEntry" wire:loading.attr="disabled">+ Novo lançamento</button>

@@ -150,6 +150,39 @@ class FinancialCalendarTest extends TestCase
         $this->assertDatabaseMissing('financial_months', ['workspace_id' => $workspace->id, 'month' => '2026-11']);
     }
 
+    public function test_current_month_button_uses_today_in_the_app_timezone_and_the_workspace_cycle(): void
+    {
+        $workspace = $this->workspace();
+        $this->configure($workspace);
+        // Already November 3 in UTC, still November 2 in Fortaleza.
+        $this->travelTo(CarbonImmutable::parse('2026-11-03 01:30:00', 'UTC'));
+        $component = Livewire::test(FinanceDashboard::class, ['workspaceId' => $workspace->id, 'month' => '2025-01', 'section' => 'entries'])
+            ->assertSee('Mês atual')->assertDontSee('Ver mês')
+            ->set('categoryFilter', ['uncategorized'])
+            ->call('openCurrentMonth')->assertHasNoErrors()
+            ->assertSet('month', '2026-10')->assertSet('selectedMonth', '2026-10')
+            ->assertSet('section', 'entries')->assertSet('categoryFilter', ['uncategorized'])
+            ->assertDispatched('financial-month-changed', month: '2026-10');
+        $this->travelTo(CarbonImmutable::parse('2026-11-03 03:00:00', 'UTC'));
+        $component->call('openCurrentMonth')->assertSet('month', '2026-11')->assertSet('selectedMonth', '2026-11');
+        $other = app(CreateWorkspace::class)->handle(auth()->user(), 'Calendário padrão');
+        $this->travelTo(CarbonImmutable::parse('2027-01-01 12:00:00', config('app.timezone')));
+        Livewire::test(FinanceDashboard::class, ['workspaceId' => $other->id, 'month' => '2026-10'])
+            ->call('openCurrentMonth')->assertSet('month', '2027-01');
+        $this->assertDatabaseCount('financial_months', 0);
+        $this->assertDatabaseCount('entries', 0);
+        $this->assertDatabaseCount('budgets', 2);
+    }
+
+    public function test_month_picker_opens_the_selected_month_without_using_the_current_month_button(): void
+    {
+        $workspace = $this->workspace();
+        Livewire::test(FinanceDashboard::class, ['workspaceId' => $workspace->id, 'month' => '2026-10'])
+            ->set('selectedMonth', '2025-03')->assertHasNoErrors()
+            ->assertSet('month', '2025-03')->assertSet('selectedMonth', '2025-03')
+            ->assertDispatched('financial-month-changed', month: '2025-03');
+    }
+
     public function test_sync_uses_previous_cycle_and_selected_start_without_changing_source_dates(): void
     {
         $workspace = $this->workspace();

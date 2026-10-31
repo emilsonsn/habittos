@@ -210,6 +210,17 @@ class FinanceDashboard extends Component
         $this->reserveInput = (string) (($budget?->reserve_cents ?? 0) / 100);
     }
 
+    public function openCurrentMonth(): void
+    {
+        $month = app(FinancialCalendar::class)->monthForDate($this->workspace(), now(config('app.timezone'))->toDateString());
+        $this->openMonth($month);
+    }
+
+    public function updatedSelectedMonth(): void
+    {
+        $this->openMonth();
+    }
+
     public function openMonth(?string $month = null): void
     {
         $target = $month ?? $this->selectedMonth;
