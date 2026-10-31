@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\FinanceController;
 use App\Http\Controllers\GoalController;
 use App\Http\Controllers\WorkspaceController;
+use App\Http\Middleware\EnsureFirstWorkspace;
 use App\Models\Workspace;
 use Illuminate\Support\Facades\Route;
 
@@ -15,8 +16,9 @@ Route::middleware('guest')->group(function () {
     Route::view('/cadastro', 'auth.register')->name('register');
     Route::post('/cadastro', [AuthController::class, 'register'])->middleware('throttle:6,1');
 });
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', EnsureFirstWorkspace::class])->group(function () {
     Route::post('/sair', [AuthController::class, 'logout'])->name('logout');
+    Route::view('/primeiro-ambiente', 'workspaces.onboarding')->name('onboarding');
     Route::get('/home', [WorkspaceController::class, 'index'])->name('home');
     Route::redirect('/ambientes', '/home')->name('workspaces.index');
     Route::post('/ambientes', [WorkspaceController::class, 'store'])->name('workspaces.store');

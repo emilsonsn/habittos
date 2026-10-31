@@ -3,32 +3,25 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use App\Services\CreateWorkspace;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
-    public function register(Request $request, CreateWorkspace $creator)
+    public function register(Request $request)
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:120'],
             'email' => ['required', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'confirmed', Password::min(10)->letters()->numbers()],
         ]);
-        $user = DB::transaction(function () use ($data, $creator) {
-            $user = User::create($data);
-            $creator->handle($user, 'Meu ambiente');
-
-            return $user;
-        });
+        $user = User::create($data);
         Auth::login($user);
         $request->session()->regenerate();
 
-        return redirect()->route('home');
+        return redirect()->route('onboarding');
     }
 
     public function login(Request $request)
@@ -38,6 +31,10 @@ class AuthController extends Controller
             throw ValidationException::withMessages(['email' => 'E-mail ou senha incorretos.']);
         }
         $request->session()->regenerate();
+
+        if (! $request->user()->workspaces()->exists()) {
+            return redirect()->route('onboarding');
+        }
 
         return redirect()->intended(route('home'));
     }

@@ -18,6 +18,20 @@
 
 <body>
     @auth
+        @if (request()->routeIs('onboarding'))
+            <header class="onboarding-header">
+                <a class="brand" href="{{ route('onboarding') }}"><img class="brand-icon" src="{{ asset('imgs/habbitos-icone.svg') }}" width="44" height="44" alt="">habittos<span class="brand-dot">.</span></a>
+                <div class="actions">
+                    <x-theme-toggle />
+                    <form method="POST" action="{{ route('logout') }}">@csrf<button class="text-button">Sair da conta</button></form>
+                </div>
+            </header>
+            <main class="main onboarding-main">
+                <div class="content">
+                    @yield('content')
+                </div>
+            </main>
+        @else
         <div class="app-shell">
             <aside class="sidebar">
                 <a wire:navigate class="brand" href="{{ route('home') }}"><img class="brand-icon"
@@ -77,6 +91,7 @@
                 </div>
             </main>
         </div>
+        @endif
     @else
         <main class="auth-shell">
             <div class="auth-intro"><a wire:navigate class="brand" href="/"><img class="brand-logo"

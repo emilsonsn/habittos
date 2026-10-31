@@ -21,21 +21,21 @@ class HabittosTest extends TestCase
         return [$owner, $workspace];
     }
 
-    public function test_registration_creates_a_private_environment_and_hashes_password(): void
+    public function test_registration_creates_only_the_user_and_hashes_password(): void
     {
-        $this->post('/cadastro', ['name' => 'Pessoa', 'email' => 'person@example.com', 'password' => 'password1234', 'password_confirmation' => 'password1234'])->assertRedirect('/home');
+        $this->post('/cadastro', ['name' => 'Pessoa', 'email' => 'person@example.com', 'password' => 'password1234', 'password_confirmation' => 'password1234'])->assertRedirect('/primeiro-ambiente');
         $user = User::first();
         $this->assertAuthenticatedAs($user);
         $this->assertNotSame('password1234', $user->password);
-        $this->assertCount(1, $user->workspaces);
-        $this->assertDatabaseCount('categories', 8);
+        $this->assertCount(0, $user->workspaces);
+        $this->assertDatabaseCount('categories', 0);
     }
 
     public function test_login_and_logout(): void
     {
         $user = User::factory()->create(['password' => 'password1234']);
         $this->post('/entrar', ['email' => $user->email, 'password' => 'incorrect'])->assertSessionHasErrors('email');
-        $this->post('/entrar', ['email' => $user->email, 'password' => 'password1234'])->assertRedirect('/home');
+        $this->post('/entrar', ['email' => $user->email, 'password' => 'password1234'])->assertRedirect('/primeiro-ambiente');
         $this->assertAuthenticatedAs($user);
         $this->post('/sair')->assertRedirect('/entrar');
         $this->assertGuest();
@@ -49,7 +49,9 @@ class HabittosTest extends TestCase
     public function test_foreign_workspace_cannot_be_read(): void
     {
         [, $workspace] = $this->environment();
-        $this->actingAs(User::factory()->create())->get(route('finance.index', $workspace))->assertNotFound();
+        $other = User::factory()->create();
+        app(CreateWorkspace::class)->handle($other, 'Outro');
+        $this->actingAs($other)->get(route('finance.index', $workspace))->assertNotFound();
     }
 
     public function test_read_only_member_cannot_write_even_by_direct_request(): void
@@ -72,7 +74,7 @@ class HabittosTest extends TestCase
         $this->actingAs($owner)->post(route('members.store', $workspace), ['email' => $reader->email, 'permissions' => []])->assertSessionHasNoErrors();
         $this->actingAs($reader)->get(route('finance.index', $workspace))->assertForbidden();
         $this->actingAs($owner)->delete(route('members.destroy', [$workspace, $reader]))->assertRedirect();
-        $this->actingAs($reader)->get(route('finance.index', $workspace))->assertNotFound();
+        $this->actingAs($reader)->get(route('finance.index', $workspace))->assertRedirect(route('onboarding'));
     }
 
     public function test_administrator_cannot_remove_owner_or_delegate_administration(): void

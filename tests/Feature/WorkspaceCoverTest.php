@@ -37,13 +37,14 @@ class WorkspaceCoverTest extends TestCase
     {
         Storage::fake('local');
         $user = User::factory()->create();
+        app(CreateWorkspace::class)->handle($user, 'Existente');
         $this->actingAs($user)->post(route('workspaces.store'), ['name' => 'Casa', 'cover' => UploadedFile::fake()->image('capa.png')])
             ->assertSessionHasNoErrors()->assertRedirect();
-        Storage::disk('local')->assertExists($user->workspaces()->firstOrFail()->cover_path);
+        Storage::disk('local')->assertExists($user->workspaces()->where('name', 'Casa')->firstOrFail()->cover_path);
         foreach ([UploadedFile::fake()->create('documento.pdf', 10), UploadedFile::fake()->image('grande.jpg')->size(5121)] as $file) {
             $this->post(route('workspaces.store'), ['name' => 'Inválido', 'cover' => $file])->assertSessionHasErrors('cover');
         }
-        $this->assertDatabaseCount('workspaces', 1);
+        $this->assertDatabaseCount('workspaces', 2);
     }
 
     public function test_settings_replace_and_remove_only_the_selected_workspaces_cover(): void
@@ -94,7 +95,9 @@ class WorkspaceCoverTest extends TestCase
             ->set('cover', UploadedFile::fake()->image('proibida.jpg'))->call('saveCover')->assertForbidden();
         Livewire::test(WorkspaceSettings::class, ['workspaceId' => $workspace->id])->call('removeCover')->assertForbidden();
         Storage::disk('local')->assertExists($workspace->cover_path);
-        $this->actingAs(User::factory()->create())->get($workspace->coverUrl())->assertNotFound();
+        $outsider = User::factory()->create();
+        app(CreateWorkspace::class)->handle($outsider, 'Outro');
+        $this->actingAs($outsider)->get($workspace->coverUrl())->assertNotFound();
         $this->withSession(['active_workspace_id' => $workspace->id])->get(route('home'))->assertOk()->assertDontSee($workspace->coverUrl(), false);
     }
 

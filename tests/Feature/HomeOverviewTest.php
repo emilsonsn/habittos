@@ -61,7 +61,7 @@ class HomeOverviewTest extends TestCase
     public function test_missing_balances_empty_membership_and_missing_finance_permission_have_clear_empty_states(): void
     {
         $user = User::factory()->create();
-        $this->actingAs($user)->get(route('home'))->assertOk()->assertSee('Selecione ou crie um ambiente');
+        $this->actingAs($user)->get(route('home'))->assertRedirect(route('onboarding'));
         $workspace = app(CreateWorkspace::class)->handle($user, 'Casa');
         $this->get(route('home'))->assertSee('R$ 0,00');
         $workspace->entries()->create(['description' => 'Investimento', 'type' => 'investment', 'amount_cents' => 123456, 'date' => '2026-10-01']);
@@ -72,6 +72,6 @@ class HomeOverviewTest extends TestCase
         $workspace->members()->updateExistingPivot($reader->id, ['permissions' => ['finance.view']]);
         $this->get(route('home'))->assertSee('R$ 1.234,56');
         $workspace->members()->detach($reader);
-        $this->get(route('home'))->assertDontSee('R$ 1.234,56')->assertSee('Selecione ou crie um ambiente');
+        $this->get(route('home'))->assertRedirect(route('onboarding'));
     }
 }

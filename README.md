@@ -11,7 +11,7 @@ composer run setup
 composer run dev
 ```
 
-Abra http://localhost:8000 e crie uma conta. O cadastro cria um ambiente privado com categorias iniciais. O banco padrão é SQLite; para usar MySQL ou PostgreSQL, configure `DB_*` no `.env` antes das migrations. Nunca versione `.env` ou o banco local.
+Abra http://localhost:8000 e crie uma conta. O cadastro cria apenas a conta. No primeiro acesso, o onboarding obrigatório em `/primeiro-ambiente` pede o nome do ambiente e oferece capa opcional com ajuste do enquadramento. O ambiente e as categorias iniciais só são criados ao confirmar o formulário. Enquanto não houver um ambiente próprio ou compartilhado, as rotas internas redirecionam para esse onboarding; sair da conta continua disponível. Ao concluir, o novo ambiente é selecionado e a Home é aberta. O banco padrão é SQLite; para usar MySQL ou PostgreSQL, configure `DB_*` no `.env` antes das migrations. Nunca versione `.env` ou o banco local.
 
 Em uma instalação já configurada, use `composer install` e `php artisan migrate`. Gere a chave somente na primeira instalação; trocar `APP_KEY` invalida dados criptografados e sessões existentes.
 
@@ -158,7 +158,7 @@ A navegação entre páginas usa `wire:navigate`. O framework atualiza o conteú
 
 A identidade visual usa índigo como cor principal, navegação em azul profundo e superfícies claras. Os estilos estão separados entre fundamentos (`app.css`) e identidade/componentes (`interface.css`). O carregamento de ações, as mensagens de resultado e os estados vazios fazem parte dos componentes.
 
-O botão no cabeçalho alterna entre modo claro e escuro, inclusive no celular. Ele aparece apenas na área autenticada. A preferência é salva no `localStorage` com a chave `habittos.theme`, aplicada antes da exibição da página e preservada nas navegações Livewire. Sem preferência salva, o tema inicial é escuro. Alterações são sincronizadas entre abas; se o navegador bloquear o armazenamento, a troca continua funcionando durante a navegação atual. A paleta escura e o botão ficam em `public/css/theme.css`, e o comportamento em `public/theme.js`.
+O botão no cabeçalho alterna entre modo claro e escuro, inclusive no celular. Ele aparece apenas na área autenticada, incluindo o onboarding. A preferência é salva no `localStorage` com a chave `habittos.theme`, aplicada antes da exibição da página e preservada nas navegações Livewire. Sem preferência salva, o tema inicial é escuro. Alterações são sincronizadas entre abas; se o navegador bloquear o armazenamento, a troca continua funcionando durante a navegação atual. A paleta escura e o botão ficam em `public/css/theme.css`, e o comportamento em `public/theme.js`.
 
 ### Home
 

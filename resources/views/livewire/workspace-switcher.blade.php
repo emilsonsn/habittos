@@ -66,12 +66,7 @@
                 <h2 id="create-space-title">O que vamos organizar?</h2>
                 <p class="muted">Um espaço para você ou para compartilhar seus planos.</p>
             </div>
-            <label>Nome do ambiente<input wire:model="name" maxlength="100" placeholder="Ex.: Nossa casa"
-                    autocomplete="off" required autofocus></label>
-            @error('name')
-                <p class="field-error" role="alert">{{ $message }}</p>
-            @enderror
-            <x-workspace-cover-upload id="create-workspace-cover" :upload="$cover" :ready="$coverReady" :upload-x="$positionX" :upload-y="$positionY" :version="$coverVersion" />
+            @include('workspaces.create-fields')
             <div class="dialog-actions"><button type="button" class="button secondary"
                     @click="$refs.createDialog.close()">Cancelar</button><button class="button"
                     wire:loading.attr="disabled"><span wire:loading.remove wire:target="createWorkspace">Criar

@@ -172,6 +172,7 @@ class FinanceSectionsTest extends TestCase
             $this->get(route($section->routeName(), $workspace))->assertForbidden();
         }
         $workspace->members()->detach($reader);
+        app(CreateWorkspace::class)->handle($reader, 'Outro');
         foreach (FinanceSection::cases() as $section) {
             $this->get(route($section->routeName(), $workspace))->assertNotFound();
         }

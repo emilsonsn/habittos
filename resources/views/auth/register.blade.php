@@ -3,7 +3,7 @@
 @section('content')
     <div class="auth-card"><span class="eyebrow">UM NOVO COMEÇO</span>
         <h1>Faça espaço<br>para seus planos.</h1>
-        <p class="muted">Seu primeiro ambiente será criado junto com a conta.</p>
+        <p class="muted">Crie sua conta. Em seguida, vamos preparar seu primeiro ambiente juntos.</p>
         <form method="POST" action="{{ route('register') }}" class="form-stack">@csrf
             <label>Seu nome<input name="name" value="{{ old('name') }}" maxlength="120" autocomplete="name" required
                     autofocus></label>
