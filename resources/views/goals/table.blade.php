@@ -1,7 +1,7 @@
 <div class="table-scroll" tabindex="0" role="region" aria-label="Tabela de metas">
     <table class="goals-table">
         <thead><tr>
-            @foreach (['Nome da meta', 'Prioridade', 'Progresso', 'Categoria', 'Status', 'Prazo'] as $column)
+            @foreach (['Nome da meta', 'Status', 'Prioridade', 'Progresso', 'Prazo'] as $column)
                 <th scope="col">{{ $column }}</th>
             @endforeach
         </tr></thead>
@@ -12,10 +12,9 @@
                         <button type="button" class="text-button goal-title-button" wire:click="openDetails({{ $goal->id }})">{{ $goal->title }}</button>
                         @if ($goal->parent)<small>↳ {{ $goal->parent->title }}</small>@endif
                     </td>
+                    <td><span class="goal-status {{ $goal->status }}">{{ \App\Models\Goal::STATUSES[$goal->status] }}</span></td>
                     <td><span class="goal-priority {{ $goal->priority }}">{{ \App\Models\Goal::PRIORITIES[$goal->priority] }}</span></td>
                     <td>@include('goals.progress')</td>
-                    <td>{{ $goal->category ?? '—' }}</td>
-                    <td><span class="goal-status {{ $goal->status }}">{{ \App\Models\Goal::STATUSES[$goal->status] }}</span></td>
                     <td @class(['negative' => $goal->due_date?->isBefore(today()) && $goal->status !== 'completed'])>{{ $goal->due_date?->format('d/m/Y') ?? '—' }}</td>
                 </tr>
             @endforeach

@@ -19,7 +19,7 @@ A criação usa o período aberto na página. O formulário não exibe nem permi
 
 Cada página de metas alterna entre tabela e kanban, preservando os filtros. A ordenação padrão é por prioridade: Alta, Média e Baixa, tanto na tabela quanto dentro de cada coluna do kanban. Em caso de empate, o prazo mais próximo vem primeiro, seguido das metas sem prazo e, por fim, do ID para manter uma ordem estável.
 
-A **tabela** exibe apenas Nome da meta, Prioridade, Progresso, Categoria, Status, Prazo e Feito (%). Possui paginação de 15 registros e rolagem horizontal em telas menores. Clicar no nome da meta abre seus dados no popup.
+A **tabela** exibe, nesta ordem, Nome da meta, Status, Prioridade, Progresso e Prazo. Possui paginação de 15 registros e rolagem horizontal em telas menores. Clicar no nome da meta abre seus dados no popup.
 
 O **kanban** possui as colunas Não iniciado, Em andamento, Concluído e Não realizado, nesta ordem. Cada cartão exibe apenas prioridade, categoria, título e percentual. Arrastar e soltar entre colunas altera o status e preserva o progresso. O comportamento usa eventos de ponteiro para mouse e toque; Alt com as setas esquerda/direita é a alternativa por teclado. Clique ou Enter abre o popup preenchido. Soltar fora das colunas cancela o movimento.
 
