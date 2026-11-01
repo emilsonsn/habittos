@@ -25,7 +25,7 @@ O **kanban** possui as colunas Não iniciado, Em andamento, Concluído e Não re
 
 O **popup** mostra, inicialmente, Nome da meta, Descrição, Status, Prioridade e Categoria (select). A seção **Avançado** contém Prazo, Feito (%) e vínculo opcional com uma meta maior. A exclusão fica no popup de edição, com confirmação. Cancelar ou pressionar Escape não grava alterações. Quem só tem permissão de consulta pode abrir os detalhes, com os campos desabilitados.
 
-Filtros de busca por nome, status, prioridade, categoria e intervalo inclusivo de prazo são os mesmos nas duas visualizações e ficam na URL. Limpar filtros preserva o período aberto. Um intervalo de prazo inválido mostra erro e nenhum resultado até a correção.
+Filtros de busca por nome, status, prioridade, categoria e intervalo inclusivo de prazo são os mesmos nas duas visualizações e ficam na URL. O painel começa recolhido nas páginas anuais, mensais e semanais e pode ser aberto pelo botão Mostrar filtros, ao lado da contagem de metas. O botão informa a quantidade de filtros ativos; ocultar o painel preserva os filtros aplicados. Limpar filtros preserva o período aberto. Um intervalo de prazo inválido mostra erro e nenhum resultado até a correção.
 
 ## Campos e regras
 

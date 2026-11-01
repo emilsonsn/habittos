@@ -22,16 +22,31 @@
             <button type="button" class="button secondary" wire:click="navigatePeriod(1)" wire:loading.attr="disabled" aria-label="{{ ['annual' => 'Próximo ano', 'monthly' => 'Próximo mês', 'weekly' => 'Próxima semana'][$period] }}">{{ ['annual' => 'Ano', 'monthly' => 'Mês', 'weekly' => 'Semana'][$period] }} ›</button>
         </div>
     </div>
-    <section class="panel goals-workspace" id="goals-results" aria-label="Metas do período">
+    @php
+        $activeFilterCount = collect([$search, $statusFilter, $priorityFilter, $categoryFilter, $dateFrom, $dateTo])->filter(fn ($value) => trim($value) !== '')->count();
+    @endphp
+    <section class="panel goals-workspace" id="goals-results" aria-label="Metas do período" x-data="{ filtersOpen: false }">
         <div class="goals-toolbar">
             <div class="goal-display-toggle" role="group" aria-label="Visualização das metas">
                 @foreach (['table' => 'Tabela', 'kanban' => 'Kanban'] as $value => $label)
                     <button type="button" wire:click="selectDisplay('{{ $value }}')" aria-pressed="{{ $display === $value ? 'true' : 'false' }}">{{ $label }}</button>
                 @endforeach
             </div>
-            <span class="muted" role="status">{{ $total }} {{ $total === 1 ? 'meta encontrada' : 'metas encontradas' }}</span>
+            <div class="goal-filter-actions">
+                <span class="muted" role="status">{{ $total }} {{ $total === 1 ? 'meta encontrada' : 'metas encontradas' }}</span>
+                <button type="button" class="button secondary goal-filters-toggle" @click="filtersOpen = !filtersOpen"
+                    :aria-expanded="filtersOpen" aria-expanded="false" aria-controls="goal-filters-panel">
+                    <span x-text="filtersOpen ? 'Ocultar filtros' : 'Mostrar filtros'">Mostrar filtros</span>
+                    @if ($activeFilterCount)<span class="count">{{ $activeFilterCount }} {{ $activeFilterCount === 1 ? 'ativo' : 'ativos' }}</span>@endif
+                </button>
+            </div>
         </div>
-        @include('goals.filters')
+        <div id="goal-filters-panel" x-cloak x-show="filtersOpen">
+            @include('goals.filters')
+        </div>
+        @if ($errors->has('dateFrom') || $errors->has('dateTo'))
+            <p class="field-error" role="alert" x-show="!filtersOpen">Revise o intervalo de prazo nos filtros.</p>
+        @endif
         @if ($total === 0)
             <div class="empty-state">
                 <span>◎</span><h2>Nenhuma meta encontrada.</h2>

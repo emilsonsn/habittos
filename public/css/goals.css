@@ -13,6 +13,20 @@
 .goals-toolbar > span {
     font-size: 12px;
 }
+.goal-filter-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 12px;
+}
+.goal-filters-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    font-size: 12px;
+}
 .goal-display-toggle {
     display: flex;
     padding: 4px;
@@ -48,14 +62,6 @@
     width: 100%;
     padding: 10px 12px;
     font-size: 12px;
-}
-.goal-more-filters {
-    margin-top: 16px;
-    padding-top: 14px;
-}
-.goal-more-filters > summary {
-    color: var(--ink);
-    margin-bottom: 14px;
 }
 .goal-filter-footer {
     margin: 18px 0;
