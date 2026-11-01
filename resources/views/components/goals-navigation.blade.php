@@ -1,5 +1,5 @@
 @props(['workspace'])
-<details class="finance-nav" @if (request()->routeIs('goals.*')) open @endif>
+<details class="finance-nav" name="sidebar-navigation" @if (request()->routeIs('goals.*')) open @endif>
     <summary class="finance-nav-trigger {{ request()->routeIs('goals.*') ? 'active' : '' }}">
         <x-icon name="goals" /><span>Metas</span><span class="finance-nav-chevron" aria-hidden="true">⌄</span>
     </summary>
