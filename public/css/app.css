@@ -549,6 +549,9 @@ td small {
     color: #91859f;
     margin-left: 4px;
 }
+.category-breakdown {
+    margin-bottom: 1.5rem;
+}
 .category-item {
     margin: 23px 0;
 }

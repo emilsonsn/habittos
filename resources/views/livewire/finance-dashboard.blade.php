@@ -85,8 +85,8 @@
             </section>
             @include('finance.planning-indicators')
         </div>
-        @include('finance.fixed-expenses')
         @include('finance.category-breakdown')
+        @include('finance.fixed-expenses')
     @else
         @switch($financeSection)
             @case(\App\Enums\FinanceSection::FixedIncome)

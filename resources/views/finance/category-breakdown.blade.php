@@ -1,4 +1,4 @@
-<section class="panel category-breakdown">
+<section class="panel category-breakdown mb-4">
     <div class="section-heading">
         <div><span class="eyebrow">PARA ONDE VAI</span>
             <h2>Despesas por categoria</h2>
