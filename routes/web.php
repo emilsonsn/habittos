@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\FinanceSection;
+use App\Enums\GoalSection;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\FinanceController;
 use App\Http\Controllers\GoalController;
@@ -42,7 +43,10 @@ Route::middleware(['auth', EnsureFirstWorkspace::class])->group(function () {
         Route::get('/membros', [WorkspaceController::class, 'members'])->middleware('workspace:members.manage')->name('members.index');
         Route::post('/membros', [WorkspaceController::class, 'saveMember'])->middleware('workspace:members.manage')->name('members.store');
         Route::delete('/membros/{user}', [WorkspaceController::class, 'removeMember'])->middleware('workspace:members.manage')->name('members.destroy');
-        Route::get('/metas', [GoalController::class, 'index'])->middleware('workspace:goals.view')->name('goals.index');
+        foreach (GoalSection::cases() as $section) {
+            Route::get($section->path(), [GoalController::class, 'index'])->defaults('section', $section->value)
+                ->middleware('workspace:goals.view')->name($section->routeName());
+        }
         Route::post('/metas', [GoalController::class, 'store'])->middleware('workspace:goals.manage')->name('goals.store');
         Route::put('/metas/{goal}', [GoalController::class, 'update'])->middleware('workspace:goals.manage')->name('goals.update');
         Route::delete('/metas/{goal}', [GoalController::class, 'destroy'])->middleware('workspace:goals.manage')->name('goals.destroy');

@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="{{ asset('css/app.css') }}" data-navigate-track>
     <link rel="stylesheet" href="{{ asset('css/interface.css') }}" data-navigate-track>
     <link rel="stylesheet" href="{{ asset('css/theme.css') }}" data-navigate-track>
+    <link rel="stylesheet" href="{{ asset('css/goals.css') }}" data-navigate-track>
     @livewireStyles
 </head>
 
@@ -39,7 +40,7 @@
                 <livewire:workspace-switcher :active-id="$activeWorkspace?->id" :module="request()->routeIs('home') ? 'home' : (request()->routeIs('finance.*') ? request()->route()->getName() : (request()->routeIs('settings.*')
                     ? 'settings'
                     : (request()->routeIs('goals.*')
-                        ? 'goals'
+                        ? request()->route()->getName()
                         : (request()->routeIs('members.*')
                             ? 'members'
                             : 'finance'))))" :month="$month ??
@@ -56,9 +57,7 @@
                                 :month="$month ?? (isset($entry) ? $entry->date->format('Y-m') : request('month', app(\App\Services\FinancialCalendar::class)->monthForDate($activeWorkspace, now()->toDateString())))" />
                         @endcan
                         @can('goals.view', $activeWorkspace)
-                            <a wire:navigate class="{{ request()->routeIs('goals.*') ? 'active' : '' }}"
-                                href="{{ route('goals.index', $activeWorkspace) }}"><x-icon
-                                    name="goals" /><span>Metas</span></a>
+                            <x-goals-navigation :workspace="$activeWorkspace" />
                         @endcan
                         @can('members.manage', $activeWorkspace)
                             <a wire:navigate class="{{ request()->routeIs('members.*') ? 'active' : '' }}"
@@ -109,6 +108,7 @@
     <script src="{{ asset('money.js') }}" data-navigate-once></script>
     <script src="{{ asset('cover-position.js') }}" data-navigate-once></script>
     <script src="{{ asset('category-pie.js') }}" data-navigate-once></script>
+    <script src="{{ asset('goals-kanban.js') }}" data-navigate-once></script>
     <script src="{{ asset('app.js') }}" data-navigate-once></script>
     @livewireScripts
 </body>

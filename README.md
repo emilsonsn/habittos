@@ -27,7 +27,7 @@ Em uma instalação já configurada, use `composer install` e `php artisan migra
 - Interface própria com navegação Livewire, dropdown de ambientes com busca e teclado, criação em modal, estados de carregamento e layout responsivo.
 - Configurações do ambiente com alteração do nome e exclusão exclusiva do proprietário mediante confirmação pelo nome.
 
-Os módulos de metas começam com objetivos monetários. Objetivos não financeiros e outros módulos de hábitos podem ser adicionados sem alterar a associação dos dados aos ambientes.
+Metas são planos pessoais independentes do financeiro. O menu reúne Dashboard, Metas anuais, mensais e semanais. As páginas de metas oferecem tabela e kanban com os mesmos filtros, criação e edição em popup e os campos da exportação do Notion. Consulte [METAS.md](documentation/METAS.md) para o contrato, vínculos opcionais e importação.
 
 ## Acessos
 
@@ -184,7 +184,7 @@ O dashboard é um componente Livewire: navegação de mês/ano, planejamento, cr
 
 O formulário de lançamento usa Livewire, validação de campos, estado de salvamento e seleção visual entre receita, despesa e investimento. A validação e a persistência são compartilhadas com os endpoints HTTP existentes. Criação e edição abrem um diálogo na listagem atual, sem tela separada. O tipo (Despesa, Receita ou Investimento) fica sempre visível, fora de “Avançado”, com Despesa selecionada por padrão na criação. “Salvar” fecha o diálogo e atualiza a tabela e os indicadores, preservando a seção e o mês selecionados; “Salvar e lançar outro” atualiza os dados e mantém o diálogo aberto, limpa os campos e devolve o foco à descrição. Erros de validação preservam os valores preenchidos. A edição mantém apenas o salvamento que fecha o diálogo. Cancelar ou pressionar Escape fecha o diálogo sem salvar. Não há gravação automática de rascunhos.
 
-Metas e pessoas também usam componentes Livewire. Criar metas, atualizar progresso, excluir metas, conceder acesso e editar permissões atualizam as telas sem carregamento completo. As ações de domínio são compartilhadas com os endpoints HTTP tradicionais para manter uma única regra de negócio.
+Metas e pessoas também usam componentes Livewire. Criar e editar metas em popup, mover seu status no kanban, excluir metas, conceder acesso e editar permissões atualizam as telas sem carregamento completo. As ações de domínio são compartilhadas com os endpoints HTTP tradicionais para manter uma única regra de negócio.
 
 ### Configurações e exclusão
 
@@ -210,6 +210,6 @@ Os limites mensal e semanal são automáticos e não possuem edição manual, in
 
 Novo lançamento mostra descrição, valor e categoria. O painel “Avançado” reúne tipo, data, pagamento, recorrência e observações. Os padrões de criação são despesa, data de hoje no fuso da aplicação, pago, não fixo e observações nulas. Abrir o formulário a partir de outro mês não altera a data de hoje. A edição preserva os dados já existentes; observações vazias ou compostas apenas de espaços são salvas como null. Erros nos campos avançados abrem o painel para correção.
 
-Todos os campos monetários usam `x-money-input`: lançamentos, metas/progresso e indicadores do planejamento. A tela apresenta separador de milhar e vírgula decimal, enquanto o estado Livewire permanece decimal com ponto. O componente usa Alpine, suporta colar moeda com R$, preserva centavos e aplica a formatação completa ao sair do campo. O backend continua validando limites e precisão antes de converter para centavos inteiros. Os scripts locais de máscara são carregados antes do Livewire registrar o Alpine.
+Todos os campos monetários usam `x-money-input`: lançamentos e indicadores do planejamento. A tela apresenta separador de milhar e vírgula decimal, enquanto o estado Livewire permanece decimal com ponto. O componente usa Alpine, suporta colar moeda com R$, preserva centavos e aplica a formatação completa ao sair do campo. O backend continua validando limites e precisão antes de converter para centavos inteiros. Os scripts locais de máscara são carregados antes do Livewire registrar o Alpine.
 
 Execute `npm test` para verificar a máscara, além de `composer test` para os fluxos e regras de persistência.

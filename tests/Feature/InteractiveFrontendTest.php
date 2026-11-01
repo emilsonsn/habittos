@@ -167,13 +167,14 @@ class InteractiveFrontendTest extends TestCase
         $user = User::factory()->create();
         $workspace = app(CreateWorkspace::class)->handle($user, 'Pessoal');
         $this->actingAs($user);
-        $component = Livewire::test(GoalsBoard::class, ['workspaceId' => $workspace->id])
-            ->set('title', 'Reserva')->set('target', '500.00')->set('period', 'monthly')
-            ->call('createGoal')->assertHasErrors('month')->set('month', 11)
-            ->call('createGoal')->assertHasNoErrors()->assertSee('Reserva');
+        $component = Livewire::test(GoalsBoard::class, ['workspaceId' => $workspace->id, 'period' => 'monthly'])
+            ->set('yearFilter', 2026)->set('monthFilter', '11')
+            ->call('openCreate')->set('form.title', 'Ler um livro')->set('form.month', null)
+            ->call('saveGoal')->assertHasNoErrors()->assertSee('Ler um livro');
         $goal = $workspace->goals()->firstOrFail();
-        $component->set('progress.'.$goal->id, '125.25')->call('updateProgress', $goal->id)->assertHasNoErrors();
-        $this->assertSame(12525, $goal->fresh()->current_cents);
+        $component->call('openEdit', $goal->id)->set('form.progress_percent', '25.25')->call('saveGoal')->assertHasNoErrors();
+        $this->assertSame('25.25', $goal->fresh()->progress_percent);
+        $this->assertSame(11, $goal->fresh()->month);
         $component->call('deleteGoal', $goal->id)->assertHasNoErrors();
         $this->assertNull($goal->fresh());
     }

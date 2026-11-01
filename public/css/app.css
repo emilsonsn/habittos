@@ -755,27 +755,6 @@ legend {
     font-size: 10px;
     margin: 10px 0 0;
 }
-.goals-list {
-    display: grid;
-    gap: 20px;
-}
-.goal-progress {
-    display: flex;
-    gap: 10px;
-    align-items: baseline;
-    margin-bottom: 16px;
-}
-.goal-progress strong {
-    font-size: 25px;
-    font-weight: 600;
-}
-.goal-progress span {
-    font-size: 12px;
-}
-.goals-list progress + p {
-    font-size: 11px;
-    margin-top: 14px;
-}
 .inline-form {
     display: flex;
     align-items: end;
@@ -1035,9 +1014,6 @@ legend {
     }
     .panel-footer > .muted {
         margin-left: 0;
-    }
-    .goal-progress {
-        flex-wrap: wrap;
     }
 }
 

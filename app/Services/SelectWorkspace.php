@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\FinanceSection;
+use App\Enums\GoalSection;
 use App\Enums\Permission;
 use App\Models\User;
 use App\Models\Workspace;
@@ -38,6 +39,11 @@ class SelectWorkspace
             $module = 'finance';
         }
 
+        $goalSection = collect(GoalSection::cases())->first(fn ($section) => $section->routeName() === $module);
+        if ($goalSection) {
+            $module = 'goals';
+        }
+
         $modules = ['finance' => Permission::FinanceView, 'goals' => Permission::GoalsView, 'members' => Permission::MembersManage];
         foreach (array_unique([$module, ...array_keys($modules)]) as $candidate) {
             if (! isset($modules[$candidate]) || ! $workspace->allows($user, $modules[$candidate])) {
@@ -49,7 +55,7 @@ class SelectWorkspace
                 return route(($financeSection ?? FinanceSection::Dashboard)->routeName(), [$workspace, 'month' => $month]);
             }
 
-            return route($candidate === 'goals' ? 'goals.index' : 'members.index', $workspace);
+            return route($candidate === 'goals' ? ($goalSection ?? GoalSection::Dashboard)->routeName() : 'members.index', $workspace);
         }
 
         return route('home');

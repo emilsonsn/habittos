@@ -140,10 +140,10 @@ class HabittosTest extends TestCase
     {
         [$owner, $workspace] = $this->environment();
         $other = app(CreateWorkspace::class)->handle($owner, 'Outro');
-        $goal = $other->goals()->create(['title' => 'Viagem', 'period' => 'annual', 'year' => 2026, 'target_cents' => 50000]);
-        $this->actingAs($owner)->put(route('goals.update', [$workspace, $goal]), ['current' => '10.00'])->assertNotFound();
-        $this->post(route('goals.store', $workspace), ['title' => 'Reserva', 'period' => 'monthly', 'year' => 2026, 'target' => '500'])->assertSessionHasErrors('month');
-        $this->post(route('goals.store', $workspace), ['title' => 'Reserva', 'period' => 'annual', 'year' => 2026, 'target' => '500'])->assertSessionHasNoErrors();
+        $goal = $other->goals()->create(['title' => 'Viagem', 'period' => 'annual', 'year' => 2026, 'priority' => 'high', 'status' => 'not_done', 'progress_percent' => 0]);
+        $this->actingAs($owner)->put(route('goals.update', [$workspace, $goal]), ['title' => 'Viagem', 'period' => 'annual', 'year' => 2026, 'priority' => 'high', 'status' => 'not_done', 'progress_percent' => 10])->assertNotFound();
+        $this->post(route('goals.store', $workspace), ['title' => 'Reserva', 'period' => 'monthly', 'year' => 2026, 'priority' => 'high', 'status' => 'not_done', 'progress_percent' => 0])->assertSessionHasErrors('month');
+        $this->post(route('goals.store', $workspace), ['title' => 'Reserva', 'period' => 'annual', 'year' => 2026, 'priority' => 'high', 'status' => 'not_done', 'progress_percent' => 0])->assertSessionHasNoErrors();
         $reader = User::factory()->create();
         $workspace->members()->attach($reader, ['permissions' => ['goals.view']]);
         $this->actingAs($reader)->get(route('goals.index', $workspace))->assertOk();

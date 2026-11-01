@@ -1,5 +1,9 @@
 @extends('layout')
-@section('title', 'Metas')
+@section('title', $goalSection->label())
 @section('content')
-    <livewire:goals-board :workspace-id="$workspace->id" />
+    @if ($goalSection === \App\Enums\GoalSection::Dashboard)
+        <livewire:goals-dashboard :workspace-id="$workspace->id" />
+    @else
+        <livewire:goals-board :workspace-id="$workspace->id" :period="$goalSection->value" />
+    @endif
 @endsection

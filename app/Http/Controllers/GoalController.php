@@ -2,30 +2,32 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\GoalSection;
 use App\Models\Workspace;
 use App\Services\ManageGoals;
 use Illuminate\Http\Request;
 
 class GoalController extends Controller
 {
-    public function index(Workspace $workspace)
+    public function index(Workspace $workspace, string $section = 'dashboard')
     {
-        return view('goals.index', compact('workspace'));
+        $goalSection = GoalSection::from($section);
+
+        return view('goals.index', compact('workspace', 'goalSection'));
     }
 
     public function store(Request $request, Workspace $workspace, ManageGoals $goals)
     {
-        $goals->create($workspace, $request->all());
+        $goals->save($workspace, $request->all());
 
         return back()->with('success', 'Meta criada.');
     }
 
     public function update(Request $request, Workspace $workspace, int $goal, ManageGoals $goals)
     {
-        $data = $request->validate(['current' => ['required', 'numeric', 'decimal:0,2', 'min:0', 'max:999999999.99']]);
-        $goals->progress($workspace, $goal, (string) $data['current']);
+        $goals->save($workspace, $request->all(), $goal);
 
-        return back()->with('success', 'Progresso atualizado.');
+        return back()->with('success', 'Meta atualizada.');
     }
 
     public function destroy(Workspace $workspace, int $goal, ManageGoals $goals)
