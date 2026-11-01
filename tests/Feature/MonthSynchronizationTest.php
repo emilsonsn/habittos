@@ -55,7 +55,7 @@ class MonthSynchronizationTest extends TestCase
         $this->assertCount(2, $copies);
         $this->assertSame(['expense', 'income'], $copies->pluck('type')->sort()->values()->all());
         foreach ($copies as $entry) {
-            $this->assertTrue($entry->paid);
+            $this->assertFalse($entry->paid);
             $this->assertTrue($entry->is_fixed);
             $this->assertSame(12345, $entry->amount_cents);
             $this->assertSame('Detalhes', $entry->notes);
@@ -71,7 +71,7 @@ class MonthSynchronizationTest extends TestCase
         $this->assertSame(7, $workspace->entries()->count());
     }
 
-    public function test_sync_settles_copies_and_updates_available_balance_regardless_of_source_status(): void
+    public function test_sync_creates_pending_copies_without_changing_available_balance_regardless_of_source_status(): void
     {
         foreach ([false, true] as $paid) {
             $workspace = $this->workspace();
@@ -82,8 +82,9 @@ class MonthSynchronizationTest extends TestCase
             $originals = $workspace->entries()->orderBy('id')->get()->toArray();
             Livewire::test(FinanceDashboard::class, ['workspaceId' => $workspace->id, 'month' => '2026-11'])
                 ->call('startSynchronization')->call('synchronizePreviousMonth')->assertHasNoErrors()
-                ->assertSee('como efetivados')->assertViewHas('available', 256630)->assertViewHas('pending', 0);
-            $this->assertSame(2, $workspace->entries()->whereDate('date', '2026-11-01')->where('paid', true)->count());
+                ->assertSee('como pendentes')->assertViewHas('available', 0)->assertViewHas('pending', 493370)
+                ->assertViewHas('projected', 256630);
+            $this->assertSame(2, $workspace->entries()->whereDate('date', '2026-11-01')->where('paid', false)->count());
             $this->assertSame($originals, $workspace->entries()->whereDate('date', '2026-10-10')->orderBy('id')->get()->toArray());
         }
     }
