@@ -16,6 +16,7 @@ class ManageGoals
     {
         return [
             'title' => ['required', 'string', 'max:200'],
+            'description' => ['nullable', 'string', 'max:20000'],
             'period' => ['required', Rule::in(array_keys(Goal::PERIODS))],
             'year' => ['required', 'integer', 'between:2000,2100'],
             'month' => ['nullable', 'required_if:period,monthly', 'integer', 'between:1,12'],
@@ -52,6 +53,9 @@ class ManageGoals
                 'title' => 'nome da meta', 'year' => 'ano', 'month' => 'mês', 'week' => 'semana',
                 'progress_percent' => 'feito (%)', 'parent_id' => 'meta maior',
             ])->validate();
+            if (array_key_exists('description', $data)) {
+                $data['description'] = app(GoalDescription::class)->sanitize($data['description']);
+            }
             $data['month'] = $data['period'] === 'monthly' ? $data['month'] : null;
             $data['week'] = $data['period'] === 'weekly' ? $data['week'] : null;
             if ($data['period'] === 'weekly') {

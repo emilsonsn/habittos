@@ -109,6 +109,7 @@
     <script src="{{ asset('cover-position.js') }}" data-navigate-once></script>
     <script src="{{ asset('category-pie.js') }}" data-navigate-once></script>
     <script src="{{ asset('goals-kanban.js') }}" data-navigate-once></script>
+    <script src="{{ asset('goal-description.js') }}" data-navigate-once></script>
     <script src="{{ asset('app.js') }}" data-navigate-once></script>
     @livewireScripts
 </body>

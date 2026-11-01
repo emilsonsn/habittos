@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\Goal;
 use App\Models\Workspace;
+use App\Services\GoalDescription;
 use App\Services\ManageGoals;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
@@ -163,7 +164,7 @@ class GoalsBoard extends Component
         Gate::authorize('goals.manage', $this->workspace());
         $this->editingId = null;
         $this->form = [
-            'title' => '', 'period' => $this->period, 'year' => $this->yearFilter,
+            'title' => '', 'description' => '', 'period' => $this->period, 'year' => $this->yearFilter,
             'month' => $this->period === 'monthly' ? ($this->monthFilter ?: now()->month) : null,
             'week' => $this->period === 'weekly' ? ($this->weekFilter ?: now()->isoWeek()) : null,
             'priority' => 'medium', 'category' => '', 'status' => 'not_started', 'due_date' => '',
@@ -190,6 +191,7 @@ class GoalsBoard extends Component
         $goal = $query->findOrFail($id);
         $this->editingId = $goal->id;
         $this->form = Arr::only($goal->toArray(), array_keys(ManageGoals::rules()));
+        $this->form['description'] = app(GoalDescription::class)->sanitize($goal->description) ?? '';
         $this->form['due_date'] = $goal->due_date?->toDateString() ?? '';
         $this->showForm();
     }

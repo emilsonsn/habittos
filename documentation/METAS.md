@@ -23,7 +23,7 @@ A **tabela** exibe apenas Nome da meta, Prioridade, Progresso, Categoria, Status
 
 O **kanban** possui as colunas Não iniciado, Em andamento, Concluído e Não realizado, nesta ordem. Cada cartão exibe apenas prioridade, categoria, título e percentual. Arrastar e soltar entre colunas altera o status e preserva o progresso. O comportamento usa eventos de ponteiro para mouse e toque; Alt com as setas esquerda/direita é a alternativa por teclado. Clique ou Enter abre o popup preenchido. Soltar fora das colunas cancela o movimento.
 
-O **popup** mostra, inicialmente, Nome da meta, Status, Prioridade e Categoria (select). A seção **Avançado** contém Prazo, Feito (%) e vínculo opcional com uma meta maior. A exclusão fica no popup de edição, com confirmação. Cancelar ou pressionar Escape não grava alterações. Quem só tem permissão de consulta pode abrir os detalhes, com os campos desabilitados.
+O **popup** mostra, inicialmente, Nome da meta, Descrição, Status, Prioridade e Categoria (select). A seção **Avançado** contém Prazo, Feito (%) e vínculo opcional com uma meta maior. A exclusão fica no popup de edição, com confirmação. Cancelar ou pressionar Escape não grava alterações. Quem só tem permissão de consulta pode abrir os detalhes, com os campos desabilitados.
 
 Filtros de busca por nome, status, prioridade, categoria e intervalo inclusivo de prazo são os mesmos nas duas visualizações e ficam na URL. Limpar filtros preserva o período aberto. Um intervalo de prazo inválido mostra erro e nenhum resultado até a correção.
 
@@ -32,6 +32,7 @@ Filtros de busca por nome, status, prioridade, categoria e intervalo inclusivo d
 | Campo | Contrato | Regra |
 | --- | --- | --- |
 | Nome da meta | `title` | Obrigatório, até 200 caracteres |
+| Descrição | `description` | Opcional; HTML formatado com até 20.000 caracteres, incluindo marcação |
 | Prioridade | `priority` | `high` (Alta), `medium` (Média), `low` (Baixa) |
 | Progresso | derivado de `progress_percent` | Mesmo percentual de Feito (%), exibido com barra |
 | Categoria | `category` | Opcional, até 80 caracteres; independente das categorias financeiras |
@@ -77,3 +78,9 @@ A importação é transacional: uma linha inválida desfaz a operação inteira.
 ## Substituição da estrutura anterior
 
 A migration de reconstrução apaga a tabela financeira antiga de metas e cria a estrutura de planejamento pessoal. Ela não altera lançamentos, orçamentos ou outros dados financeiros. Os registros financeiros antigos de metas não são convertidos. Antes de aplicar em outra instalação com dados existentes, faça uma cópia da tabela antiga. O rollback recria o esquema antigo, mas não recupera registros apagados; a recuperação depende do backup. As migrations seguintes removem colunas transitórias de instalações que receberam a primeira versão do novo módulo.
+
+## Descrição formatada
+
+A descrição aparece no popup de criação, edição e consulta. O editor oferece negrito, itálico, sublinhado, listas com marcadores, listas numeradas e citação. A formatação é preservada ao salvar e reabrir; cancelar descarta alterações. Colar insere texto simples, que pode ser formatado no editor.
+
+O servidor aceita apenas parágrafos, quebras de linha, divisões, negrito, itálico, sublinhado, tachado, listas e citações, removendo atributos, scripts, imagens, links e conteúdo incorporado. Descrições vazias são salvas como `null`. Quem possui apenas `goals.view` vê o texto formatado sem editor. A importação do Notion preserva descrições já cadastradas. A migration `2026_11_01_000001_add_description_to_goals` adiciona o campo sem alterar as metas existentes.
