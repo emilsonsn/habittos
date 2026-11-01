@@ -108,6 +108,24 @@ class GoalsPlanningTest extends TestCase
             ->call('clearFilters')->assertHasNoErrors()->assertViewHas('total', 1);
     }
 
+    public function test_table_and_kanban_order_each_period_by_priority_before_deadline(): void
+    {
+        $workspace = $this->workspace();
+        foreach (['annual', 'monthly', 'weekly'] as $period) {
+            $context = ['period' => $period, 'month' => 11, 'week' => 45];
+            $low = $this->goal($workspace, $context + ['priority' => 'low', 'due_date' => '2026-01-01']);
+            $medium = $this->goal($workspace, $context + ['priority' => 'medium', 'due_date' => '2026-02-01']);
+            $highWithoutDeadline = $this->goal($workspace, $context + ['priority' => 'high', 'due_date' => null]);
+            $high = $this->goal($workspace, $context + ['priority' => 'high', 'due_date' => '2026-12-31']);
+            $expected = [$high->id, $highWithoutDeadline->id, $medium->id, $low->id];
+            Livewire::test(GoalsBoard::class, ['workspaceId' => $workspace->id, 'period' => $period])
+                ->set('yearFilter', 2026)->set('monthFilter', '11')->set('weekFilter', '45')
+                ->assertViewHas('goals', fn ($goals) => $goals->pluck('id')->all() === $expected)
+                ->call('selectDisplay', 'kanban')
+                ->assertViewHas('goals', fn ($goals) => $goals->pluck('id')->all() === $expected);
+        }
+    }
+
     public function test_not_started_is_the_default_and_can_be_filtered_moved_and_counted(): void
     {
         $workspace = $this->workspace();

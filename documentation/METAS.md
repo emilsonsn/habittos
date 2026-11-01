@@ -17,7 +17,7 @@ A criação usa o período aberto na página. O formulário não exibe nem permi
 
 ## Tabela, kanban e popup
 
-Cada página de metas alterna entre tabela e kanban, preservando os filtros.
+Cada página de metas alterna entre tabela e kanban, preservando os filtros. A ordenação padrão é por prioridade: Alta, Média e Baixa, tanto na tabela quanto dentro de cada coluna do kanban. Em caso de empate, o prazo mais próximo vem primeiro, seguido das metas sem prazo e, por fim, do ID para manter uma ordem estável.
 
 A **tabela** exibe apenas Nome da meta, Prioridade, Progresso, Categoria, Status, Prazo e Feito (%). Possui paginação de 15 registros e rolagem horizontal em telas menores. Clicar no nome da meta abre seus dados no popup.
 

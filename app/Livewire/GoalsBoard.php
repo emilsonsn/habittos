@@ -298,7 +298,8 @@ class GoalsBoard extends Component
             $query->whereDate('due_date', '<=', $this->dateTo);
         }
 
-        return $query->orderByRaw('due_date IS NULL')->orderBy('due_date')->orderBy('id');
+        return $query->orderByRaw("CASE priority WHEN 'high' THEN 0 WHEN 'medium' THEN 1 WHEN 'low' THEN 2 ELSE 3 END")
+            ->orderByRaw('due_date IS NULL')->orderBy('due_date')->orderBy('id');
     }
 
     public function render()
