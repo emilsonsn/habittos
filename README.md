@@ -223,3 +223,7 @@ Toda lista fechada de opções de domínio deve ter um enum específico em `app/
 As metas usam `GoalCategory`, `GoalStatus`, `GoalPriority`, `GoalPeriod` e `GoalDisplay`; os lançamentos usam `EntryType`; indicadores financeiros usam `FinancialIndicator`; a seleção de ambientes usa `WorkspaceModule` junto aos enums de seções. Cores de status e hierarquia de períodos também pertencem aos respectivos enums. Permissões e seções já são enums específicos.
 
 Listas que o usuário cadastra, como categorias financeiras e pastas de notas, continuam em tabelas por ambiente. As categorias financeiras iniciais são apenas sugestões para cadastro, não um catálogo fechado. Intervalos de datas, IDs, flags booleanas e listas técnicas de sanitização não são catálogos de opções de domínio.
+
+## Confirmações de ações críticas
+
+Exclusões e remoções usam um diálogo compartilhado com o nome do registro, consequências da ação e botão específico de confirmação. O mesmo componente atende à sincronização mensal, às alterações de acesso e à exclusão de ambiente com confirmação digitada. Consulte [CONFIRMACOES.md](documentation/CONFIRMACOES.md) para reutilizar o componente em novas ações.

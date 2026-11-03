@@ -43,7 +43,7 @@
             @can('goals.manage', $workspace)
                 @if ($editingId)
                     <button type="button" class="text-button danger goal-delete-button" wire:click="deleteGoal({{ $editingId }})"
-                        wire:confirm="Excluir esta meta? As metas vinculadas serão preservadas sem o vínculo." wire:loading.attr="disabled">Excluir meta</button>
+                        data-confirm="A meta será excluída definitivamente. As metas vinculadas serão preservadas, sem o vínculo." data-confirm-title="Excluir meta?" data-confirm-label="Excluir meta" data-confirm-subject="{{ $form['title'] ?? '' }}" wire:loading.attr="disabled">Excluir meta</button>
                 @endif
                 <button type="button" class="button secondary" wire:click="closeForm">Cancelar</button>
                 <button class="button" wire:loading.attr="disabled">{{ $editingId ? 'Salvar alterações' : 'Criar meta' }}</button>

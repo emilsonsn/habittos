@@ -1,9 +1,3 @@
-// Delegação mantém as confirmações funcionando após navegações Livewire.
-document.addEventListener("submit", (event) => {
-    const form = event.target.closest("form[data-confirm]");
-    if (form && !window.confirm(form.dataset.confirm)) event.preventDefault();
-});
-
 // Registrado antes do Livewire iniciar o Alpine; reutilizado em toda navegação.
 document.addEventListener("alpine:init", () => {
     Alpine.data("moneyInput", (wire, model) => ({

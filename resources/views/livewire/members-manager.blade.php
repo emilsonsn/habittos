@@ -22,11 +22,11 @@
                         (auth()->id() === $workspace->owner_id || !in_array('members.manage', $member->pivot->permissions ?? [])))
                         <div><button type="button" class="text-button danger"
                                 wire:click="removeMember({{ $member->id }})"
-                                wire:confirm="Remover o acesso desta pessoa ao ambiente?"
+                                data-confirm="Esta pessoa perderá o acesso ao ambiente. Sua conta e os dados que ela já registrou serão preservados." data-confirm-title="Remover acesso?" data-confirm-label="Remover acesso" data-confirm-subject="{{ $member->name }}"
                                 wire:loading.attr="disabled">Remover acesso</button>
                             <details>
                                 <summary>Editar permissões</summary>
-                                <form wire:submit="savePermissions({{ $member->id }})" class="form-stack">
+                                <form wire:submit="savePermissions({{ $member->id }})" data-confirm="As permissões selecionadas passarão a definir quais dados e ações esta pessoa pode acessar no ambiente." data-confirm-title="Alterar permissões?" data-confirm-label="Salvar permissões" data-confirm-subject="{{ $member->name }}" data-confirm-tone="{{ \App\Enums\ConfirmationTone::Warning->value }}" class="form-stack">
                                     @foreach ($permissionOptions as $permission)
                                         @if ($permission->value !== 'members.manage' || auth()->id() === $workspace->owner_id)
                                             <label class="checkbox"><input type="checkbox"
@@ -47,7 +47,7 @@
             <h2>Adicionar uma pessoa</h2>
             <p class="muted">A pessoa deve criar uma conta no habittos antes de receber acesso. Nenhum e-mail será
                 enviado.</p>
-            <form wire:submit="addMember" class="form-stack"><label>E-mail da conta<input type="email"
+            <form wire:submit="addMember" data-confirm="A pessoa terá acesso a este ambiente conforme as permissões selecionadas. Confira o e-mail e os acessos antes de continuar." data-confirm-title="Adicionar pessoa ao ambiente?" data-confirm-label="Adicionar pessoa" data-confirm-tone="{{ \App\Enums\ConfirmationTone::Warning->value }}" class="form-stack"><label>E-mail da conta<input type="email"
                         wire:model="email" required></label>
                 @error('email')
                     <span class="field-error">{{ $message }}</span>

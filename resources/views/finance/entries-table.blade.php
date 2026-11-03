@@ -99,7 +99,7 @@
                                         @endcan @can('finance.delete', $workspace)
                                         <button type="button" class="text-button danger"
                                             wire:click="deleteEntry({{ $entry->id }})"
-                                            wire:confirm="Excluir este lançamento?"
+                                            data-confirm="Este lançamento será excluído definitivamente e os saldos e resumos serão recalculados." data-confirm-title="Excluir lançamento?" data-confirm-label="Excluir lançamento" data-confirm-subject="{{ $entry->description }}"
                                             wire:loading.attr="disabled">Excluir</button>
                                     @endcan
                                 </div>

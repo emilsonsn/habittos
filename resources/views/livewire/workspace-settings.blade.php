@@ -47,7 +47,7 @@
                             <span wire:loading wire:target="saveCover">Salvando…</span>
                         </button>
                         @if ($workspace->cover_path)
-                            <button type="button" class="text-button danger" wire:click="removeCover"
+                            <button type="button" class="text-button danger" wire:click="removeCover" data-confirm="A imagem de capa será removida deste ambiente. Os demais dados serão preservados." data-confirm-title="Remover capa?" data-confirm-label="Remover capa" data-confirm-subject="{{ $workspace->name }}"
                                 wire:loading.attr="disabled" wire:target="cover,saveCover,removeCover">Remover capa</button>
                         @endif
                     </div>
@@ -84,28 +84,23 @@
             </div>
             <div class="panel danger-panel">
                 <h2>Encerrar este espaço</h2>
-                <p>Todos os lançamentos, metas, categorias, orçamentos e acessos deste ambiente serão excluídos. As
+                <p>Todos os lançamentos, metas, notas, categorias, orçamentos e acessos deste ambiente serão excluídos. As
                     contas dos participantes e os outros ambientes serão preservados.</p><button type="button"
                     class="button danger-button" @click="$refs.deleteDialog.showModal()">Excluir ambiente</button>
             </div>
-            <dialog class="app-dialog" x-ref="deleteDialog" wire:ignore.self aria-labelledby="delete-space-title"
-                @click="if ($event.target === $el) $el.close()">
-                <form wire:submit="deleteWorkspace" class="dialog-content form-stack">
-                    <div class="dialog-top"><span class="eyebrow danger">EXCLUSÃO DEFINITIVA</span><button
-                            type="button" class="icon-close" aria-label="Fechar"
-                            @click="$refs.deleteDialog.close()">×</button></div>
-                    <h2 id="delete-space-title">Excluir {{ $workspace->name }}?</h2>
-                    <p>Os dados financeiros e as metas deste ambiente serão apagados para todos os participantes. Não
-                        será possível desfazer.</p><label>Digite “{{ $workspace->name }}” para confirmar<input
-                            wire:model="confirmation" autocomplete="off" required></label>
-                    @error('confirmation')
-                        <p class="field-error" role="alert">{{ $message }}</p>
-                    @enderror
-                    <div class="dialog-actions"><button type="button" class="button secondary"
-                            @click="$refs.deleteDialog.close()">Cancelar</button><button class="button danger-button"
-                            wire:loading.attr="disabled">Excluir definitivamente</button></div>
+            <x-confirmation-dialog id="delete-space" x-ref="deleteDialog" wire:ignore.self
+                :title="'Excluir '.$workspace->name.'?'"
+                description="Todos os lançamentos, metas, notas, pastas, categorias, orçamentos e acessos deste ambiente serão apagados. As contas dos participantes e os outros ambientes serão preservados. Esta ação não pode ser desfeita."
+                close-action="$refs.deleteDialog.close()" @click="if ($event.target === $el) $el.close()">
+                <form wire:submit="deleteWorkspace" class="form-stack">
+                    <label>Digite “{{ $workspace->name }}” para confirmar<input wire:model="confirmation" autocomplete="off" required></label>
+                    @error('confirmation')<p class="field-error" role="alert">{{ $message }}</p>@enderror
+                    <div class="dialog-actions confirmation-actions">
+                        <button type="button" class="button secondary" @click="$refs.deleteDialog.close()">Cancelar</button>
+                        <button class="button confirmation-accept" wire:loading.attr="disabled" wire:target="deleteWorkspace">Excluir definitivamente</button>
+                    </div>
                 </form>
-            </dialog>
+            </x-confirmation-dialog>
         </section>
     @endif
     @if ($positioning && $cover && !$errors->has('cover'))

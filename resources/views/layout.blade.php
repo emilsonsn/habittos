@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="{{ asset('css/goals.css') }}" data-navigate-track>
     <link rel="stylesheet" href="{{ asset('css/rich-text.css') }}" data-navigate-track>
     <link rel="stylesheet" href="{{ asset('css/notes.css') }}" data-navigate-track>
+    <link rel="stylesheet" href="{{ asset('css/confirmation.css') }}" data-navigate-track>
     @livewireStyles
 </head>
 
@@ -115,6 +116,8 @@
     <script src="{{ asset('category-pie.js') }}" data-navigate-once></script>
     <script src="{{ asset('goals-kanban.js') }}" data-navigate-once></script>
     <script src="{{ asset('rich-text.js') }}" data-navigate-once></script>
+    <x-action-confirmation />
+    <script src="{{ asset('confirmation.js') }}" data-navigate-once></script>
     <script src="{{ asset('app.js') }}" data-navigate-once></script>
     @livewireScripts
 </body>
