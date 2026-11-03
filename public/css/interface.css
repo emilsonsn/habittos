@@ -533,7 +533,7 @@ textarea:focus {
     position: absolute;
     left: 0;
     top: calc(100% + 9px);
-    width: 288px;
+    width: 100%;
     background: #ffffff;
     color: var(--ink);
     border: 1px solid #d9d9e7;
@@ -551,6 +551,7 @@ textarea:focus {
     color: #7d7c9e;
 }
 .space-search input {
+    min-width: 0;
     border: 0;
     background: transparent;
     padding: 10px 0;
@@ -583,8 +584,12 @@ textarea:focus {
     background: #e6e6f4;
 }
 .space-options .space-monogram {
+    flex-shrink: 0;
     background: #dcdbed;
     color: #4c4a82;
+}
+.space-options [role="option"] > span:nth-child(2) {
+    min-width: 0;
 }
 .space-options strong {
     font-size: 12px;
@@ -897,10 +902,6 @@ textarea:focus {
     .create-space {
         width: 42px;
         height: 42px;
-    }
-    .space-popover {
-        width: calc(100% - 50px);
-        min-width: 250px;
     }
     .profile {
         top: 22px;
