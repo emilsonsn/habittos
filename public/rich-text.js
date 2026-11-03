@@ -1,11 +1,10 @@
-globalThis.HabittosGoalDescription = {
-    create(wire) {
+globalThis.HabittosRichText = {
+    create(wire, model) {
         return {
             range: null,
 
             init() {
-                this.$refs.editor.innerHTML =
-                    wire.$get("form.description") ?? "";
+                this.$refs.editor.innerHTML = wire.$get(model) ?? "";
             },
 
             remember() {
@@ -20,11 +19,7 @@ globalThis.HabittosGoalDescription = {
             },
 
             sync() {
-                wire.$set(
-                    "form.description",
-                    this.$refs.editor.innerHTML,
-                    false,
-                );
+                wire.$set(model, this.$refs.editor.innerHTML, false);
                 this.remember();
             },
 

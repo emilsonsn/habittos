@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="{{ asset('css/interface.css') }}" data-navigate-track>
     <link rel="stylesheet" href="{{ asset('css/theme.css') }}" data-navigate-track>
     <link rel="stylesheet" href="{{ asset('css/goals.css') }}" data-navigate-track>
+    <link rel="stylesheet" href="{{ asset('css/rich-text.css') }}" data-navigate-track>
     @livewireStyles
 </head>
 
@@ -109,7 +110,7 @@
     <script src="{{ asset('cover-position.js') }}" data-navigate-once></script>
     <script src="{{ asset('category-pie.js') }}" data-navigate-once></script>
     <script src="{{ asset('goals-kanban.js') }}" data-navigate-once></script>
-    <script src="{{ asset('goal-description.js') }}" data-navigate-once></script>
+    <script src="{{ asset('rich-text.js') }}" data-navigate-once></script>
     <script src="{{ asset('app.js') }}" data-navigate-once></script>
     @livewireScripts
 </body>

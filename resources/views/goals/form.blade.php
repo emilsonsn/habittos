@@ -6,35 +6,8 @@
     <form wire:submit="saveGoal" class="form-stack">
         <fieldset class="goal-form-fields" @cannot('goals.manage', $workspace) disabled @endcannot>
             <label>Nome da meta<input wire:model="form.title" maxlength="200" required autofocus x-init="$el.focus()"></label>
-            <div class="goal-description-field">
-                <span id="goal-description-label">Descrição <span class="muted">(opcional)</span></span>
-                @can('goals.manage', $workspace)
-                    <div class="goal-description-editor" wire:ignore x-data="HabittosGoalDescription.create($wire)">
-                        <div class="goal-description-toolbar" role="toolbar" aria-label="Formatação da descrição" @mousedown.prevent>
-                            <button type="button" @click="format('bold')" aria-label="Negrito" title="Negrito"><strong>B</strong></button>
-                            <button type="button" @click="format('italic')" aria-label="Itálico" title="Itálico"><em>I</em></button>
-                            <button type="button" @click="format('underline')" aria-label="Sublinhado" title="Sublinhado"><u>U</u></button>
-                            <button type="button" @click="format('insertUnorderedList')" aria-label="Lista com marcadores" title="Lista com marcadores">• Lista</button>
-                            <button type="button" @click="format('insertOrderedList')" aria-label="Lista numerada" title="Lista numerada">1. Lista</button>
-                            <button type="button" @click="format('formatBlock', 'blockquote')" aria-label="Citação" title="Citação">❝</button>
-                            <button type="button" @click="format('removeFormat')" aria-label="Limpar formatação" title="Limpar formatação">Limpar</button>
-                        </div>
-                        <div x-ref="editor" class="goal-rich-text" contenteditable="true" role="textbox" aria-multiline="true"
-                            aria-labelledby="goal-description-label" aria-describedby="goal-description-help"
-                            @input="sync()" @keyup="remember()" @mouseup="remember()" @blur="remember()"
-                            @paste="paste($event)" @drop.prevent></div>
-                    </div>
-                    <small id="goal-description-help" class="muted">Até 20.000 caracteres, incluindo a formatação.</small>
-                @else
-                    <div class="goal-rich-text goal-description-readonly" role="region" aria-labelledby="goal-description-label">
-                        @if ($form['description'] ?? '')
-                            {!! app(\App\Services\GoalDescription::class)->sanitize($form['description']) !!}
-                        @else
-                            <span class="muted">Sem descrição.</span>
-                        @endif
-                    </div>
-                @endcan
-            </div>
+            <x-rich-text-editor model="form.description" label="Descrição" editor-id="goal-description" :optional="true"
+                :value="$form['description'] ?? ''" :readonly="!$workspace->allows(auth()->user(), \App\Enums\Permission::GoalsManage)" />
             <div class="form-grid">
                 <label>Status<select wire:model="form.status">
                     @foreach (\App\Models\Goal::STATUSES as $value => $label)<option value="{{ $value }}">{{ $label }}</option>@endforeach
