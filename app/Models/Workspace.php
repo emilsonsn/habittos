@@ -58,4 +58,14 @@ class Workspace extends Model
     {
         return $this->hasMany(Goal::class);
     }
+
+    public function notes(): HasMany
+    {
+        return $this->hasMany(Note::class);
+    }
+
+    public function noteCategories(): HasMany
+    {
+        return $this->hasMany(NoteCategory::class);
+    }
 }

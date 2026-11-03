@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="{{ asset('css/theme.css') }}" data-navigate-track>
     <link rel="stylesheet" href="{{ asset('css/goals.css') }}" data-navigate-track>
     <link rel="stylesheet" href="{{ asset('css/rich-text.css') }}" data-navigate-track>
+    <link rel="stylesheet" href="{{ asset('css/notes.css') }}" data-navigate-track>
     @livewireStyles
 </head>
 
@@ -40,7 +41,7 @@
                         src="{{ asset('imgs/habbitos-icone.svg') }}" width="44" height="44" alt="">habittos<span class="brand-dot">.</span></a>
                 <livewire:workspace-switcher :active-id="$activeWorkspace?->id" :module="request()->routeIs('home') ? 'home' : (request()->routeIs('finance.*') ? request()->route()->getName() : (request()->routeIs('settings.*')
                     ? 'settings'
-                    : (request()->routeIs('goals.*')
+                    : (request()->routeIs('goals.*', 'notes.*')
                         ? request()->route()->getName()
                         : (request()->routeIs('members.*')
                             ? 'members'
@@ -59,6 +60,9 @@
                         @endcan
                         @can('goals.view', $activeWorkspace)
                             <x-goals-navigation :workspace="$activeWorkspace" />
+                        @endcan
+                        @can('notes.view', $activeWorkspace)
+                            <x-notes-navigation :workspace="$activeWorkspace" />
                         @endcan
                         @can('members.manage', $activeWorkspace)
                             <a wire:navigate class="{{ request()->routeIs('members.*') ? 'active' : '' }}"

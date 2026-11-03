@@ -11,6 +11,8 @@ enum Permission: string
     case BudgetManage = 'budget.manage';
     case GoalsView = 'goals.view';
     case GoalsManage = 'goals.manage';
+    case NotesView = 'notes.view';
+    case NotesManage = 'notes.manage';
     case MembersManage = 'members.manage';
 
     public function label(): string
@@ -23,6 +25,8 @@ enum Permission: string
             self::BudgetManage => 'Gerenciar orçamento e categorias',
             self::GoalsView => 'Visualizar metas',
             self::GoalsManage => 'Gerenciar metas',
+            self::NotesView => 'Visualizar notas',
+            self::NotesManage => 'Gerenciar notas e pastas',
             self::MembersManage => 'Gerenciar membros e permissões',
         };
     }

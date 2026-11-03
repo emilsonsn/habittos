@@ -29,6 +29,8 @@ Em uma instalação já configurada, use `composer install` e `php artisan migra
 
 Metas são planos pessoais independentes do financeiro. O menu reúne Dashboard, Metas anuais, mensais e semanais. As páginas de metas oferecem tabela e kanban com os mesmos filtros, criação e edição em popup e os campos da exportação do Notion. Consulte [METAS.md](documentation/METAS.md) para o contrato, vínculos opcionais e importação.
 
+O menu **Notas** reúne Dashboard, Favoritos e Notas, com pastas e subpastas por ambiente. As notas têm apenas título, texto formatado e pasta opcional; criar dentro de uma pasta já preenche esse vínculo. Os favoritos são compartilhados por todos os membros do ambiente. Consulte [NOTAS.md](documentation/NOTAS.md) para as regras, navegação e permissões.
+
 ## Acessos
 
 Todos os registros de domínio pertencem a um `Workspace`. O usuário tem acesso por meio da associação `user_workspace`. Não existe ambiente global nem acesso implícito aos ambientes de outra pessoa.
