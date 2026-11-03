@@ -67,7 +67,7 @@
                     </a>
                 @endforeach
             </div>
-            <p class="muted goal-chart-footnote">Status e progresso são independentes. Os vínculos não somam percentuais.</p>
+            <p class="muted goal-chart-footnote">Concluir uma meta define Feito (%) como 100. Os vínculos não somam percentuais.</p>
         </section>
     </div>
     <div class="goal-deadlines-grid">

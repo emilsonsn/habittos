@@ -57,6 +57,9 @@ class ManageGoals
                 'title' => 'nome da meta', 'year' => 'ano', 'month' => 'mês', 'week' => 'semana',
                 'progress_percent' => 'feito (%)', 'parent_id' => 'meta maior',
             ])->validate();
+            if ($data['status'] === GoalStatus::Completed->value) {
+                $data['progress_percent'] = 100;
+            }
             if (array_key_exists('description', $data)) {
                 $data['description'] = app(GoalDescription::class)->sanitize($data['description']);
             }
@@ -95,7 +98,11 @@ class ManageGoals
     {
         $this->authorize($workspace);
         validator(['status' => $status], ['status' => ['required', Rule::enum(GoalStatus::class)]])->validate();
-        $workspace->goals()->findOrFail($id)->update(['status' => $status]);
+        $data = ['status' => $status];
+        if ($status === GoalStatus::Completed->value) {
+            $data['progress_percent'] = 100;
+        }
+        $workspace->goals()->findOrFail($id)->update($data);
     }
 
     public function delete(Workspace $workspace, int $id): void

@@ -13,7 +13,7 @@ class NotionGoalsImportTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_complete_import_preserves_all_rows_fields_independent_status_and_is_idempotent(): void
+    public function test_complete_import_sets_completed_goals_to_full_progress_and_is_idempotent(): void
     {
         $user = User::factory()->create();
         $workspace = app(CreateWorkspace::class)->handle($user, 'Pessoal');
@@ -23,7 +23,7 @@ class NotionGoalsImportTest extends TestCase
         $this->assertSame(['created' => 3, 'updated' => 0, 'rows' => 3], $result);
         $goal = $workspace->goals()->where('title', 'Aprender inglês')->firstOrFail();
         $this->assertSame('75.00', $goal->progress_percent);
-        $this->assertDatabaseHas('goals', ['title' => 'Ler um livro', 'status' => 'completed', 'progress_percent' => 40]);
+        $this->assertDatabaseHas('goals', ['title' => 'Ler um livro', 'status' => 'completed', 'progress_percent' => 100]);
         $this->assertDatabaseHas('goals', ['title' => 'Correr 10 km', 'year' => 2026, 'due_date' => '2027-03-31 00:00:00']);
         $second = app(ImportNotionGoals::class)->import($workspace, $path, 2026);
         $this->assertSame(['created' => 0, 'updated' => 3, 'rows' => 3], $second);

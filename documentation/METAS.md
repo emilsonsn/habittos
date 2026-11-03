@@ -21,7 +21,7 @@ Cada página de metas alterna entre tabela e kanban, preservando os filtros. A o
 
 A **tabela** exibe, nesta ordem, Nome da meta, Status, Prioridade, Progresso e Prazo. Possui paginação de 15 registros e rolagem horizontal em telas menores. Clicar no nome da meta abre seus dados no popup.
 
-O **kanban** possui as colunas Não iniciado, Em andamento, Concluído e Não realizado, nesta ordem. Cada cartão exibe apenas prioridade, categoria, título e percentual. Arrastar e soltar entre colunas altera o status e preserva o progresso. O comportamento usa eventos de ponteiro para mouse e toque; Alt com as setas esquerda/direita é a alternativa por teclado. Clique ou Enter abre o popup preenchido. Soltar fora das colunas cancela o movimento.
+O **kanban** possui as colunas Não iniciado, Em andamento, Concluído e Não realizado, nesta ordem. Cada cartão exibe apenas prioridade, categoria, título e percentual. Arrastar e soltar entre colunas altera o status; ao concluir, Feito (%) passa para 100. Nos demais status, o percentual é preservado. O comportamento usa eventos de ponteiro para mouse e toque; Alt com as setas esquerda/direita é a alternativa por teclado. Clique ou Enter abre o popup preenchido. Soltar fora das colunas cancela o movimento.
 
 O **popup** mostra, inicialmente, Nome da meta, Descrição, Status, Prioridade e Categoria (select). A seção **Avançado** contém Prazo, Feito (%) e vínculo opcional com uma meta maior. A exclusão fica no popup de edição, com confirmação. Cancelar ou pressionar Escape não grava alterações. Quem só tem permissão de consulta pode abrir os detalhes, com os campos desabilitados.
 
@@ -41,7 +41,7 @@ Filtros de busca por nome, status, prioridade, categoria e intervalo inclusivo d
 | Feito (%) | `progress_percent` | 0 a 100, até duas casas decimais; começa em zero |
 | Meta maior | `parent_id` | Vínculo opcional com uma meta de período maior do mesmo ambiente |
 
-Toda meta tem escala de 0 a 100%. Status e progresso são independentes, conforme os dados exportados: uma meta concluída pode ter progresso menor que 100. Não há soma automática de progresso entre metas vinculadas.
+Toda meta tem escala de 0 a 100%. Salvar ou mover uma meta para Concluído define Feito (%) como 100, inclusive na importação. Reabrir a meta preserva o percentual. Não há soma automática de progresso entre metas vinculadas.
 
 O tempo (`period`, `year`, `month`, `week`) pertence ao contexto de navegação, não aos campos editáveis do popup. O ano varia de 2000 a 2100; semanas são validadas conforme o ano ISO. O prazo é independente do tempo de planejamento: uma meta anual de 2026 pode ter prazo em 2027.
 
@@ -71,7 +71,7 @@ Use o CSV completo (`_all.csv`) para incluir também as metas que não aparecem 
 php artisan goals:import-notion '/caminho/Metas_all.csv' --workspace=1 --year=2026
 ```
 
-O comando administrativo local exige ambiente e ano explícitos e executa as regras de domínio como proprietário do ambiente. Cada linha vira uma meta anual, incluindo concluídas e não realizadas. Nome, prioridade, categoria, status, prazo e Feito (%) são preservados. Progresso é apresentado a partir de Feito (%). Colunas extras do arquivo são ignoradas, e o arquivo original não é copiado para o código-fonte.
+O comando administrativo local exige ambiente e ano explícitos e executa as regras de domínio como proprietário do ambiente. Cada linha vira uma meta anual, incluindo concluídas e não realizadas. Nome, prioridade, categoria, status e prazo são preservados quando válidos nos enums. Feito (%) é preservado, exceto nas metas concluídas, que recebem 100%. Progresso é apresentado a partir de Feito (%). Colunas extras do arquivo são ignoradas, e o arquivo original não é copiado para o código-fonte.
 
 A importação é transacional: uma linha inválida desfaz a operação inteira. Uma chave formada por origem Notion, período anual, ano e nome normalizado evita duplicar uma reimportação no mesmo ambiente. Reimportar atualiza as metas importadas correspondentes; outros anos e ambientes são independentes.
 

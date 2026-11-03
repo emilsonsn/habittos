@@ -69,15 +69,17 @@ class GoalsPlanningTest extends TestCase
             ->set('form.due_date', '2027-03-31')->set('form.year', 2026)
             ->call('saveGoal')->assertHasNoErrors()->assertSet('formOpen', false)->assertSee('Aprender inglês');
         $goal = $workspace->goals()->firstOrFail();
-        $this->assertSame('70.00', $goal->progress_percent);
+        $this->assertSame('100.00', $goal->progress_percent);
         $this->assertSame('completed', $goal->status);
         $this->assertSame('2027-03-31', $goal->due_date->toDateString());
-        $component->call('openEdit', $goal->id)->set('form.title', 'Aprender inglês melhor')->call('saveGoal')->assertHasNoErrors();
+        $component->call('openEdit', $goal->id)->set('form.title', 'Aprender inglês melhor')
+            ->set('form.progress_percent', 30)->call('saveGoal')->assertHasNoErrors();
         $this->assertSame('Aprender inglês melhor', $goal->fresh()->title);
+        $this->assertSame('100.00', $goal->fresh()->progress_percent);
         $this->assertSame(0, $workspace->entries()->count());
     }
 
-    public function test_table_and_kanban_share_filters_and_status_changes_preserve_progress(): void
+    public function test_table_and_kanban_share_filters_and_completing_a_goal_sets_full_progress(): void
     {
         $workspace = $this->workspace();
         $goal = $this->goal($workspace);
@@ -95,7 +97,7 @@ class GoalsPlanningTest extends TestCase
             ->call('changeStatus', $goal->id, 'completed')->assertViewHas('total', 0)
             ->call('clearFilters')->assertViewHas('total', 2)->assertSee('Correr 5 km')
             ->call('selectDisplay', 'table')->assertViewHas('total', 2);
-        $this->assertSame('40.25', $goal->fresh()->progress_percent);
+        $this->assertSame('100.00', $goal->fresh()->progress_percent);
         $component->set('dateTo', '')->set('dateFrom', '2027-01-01')->assertViewHas('total', 0);
     }
 
@@ -306,5 +308,17 @@ class GoalsPlanningTest extends TestCase
         Livewire::test(GoalsBoard::class, ['workspaceId' => $workspace->id])
             ->call('changeStatus', $goal->id, 'fora-do-catalogo')->assertHasErrors('status')
             ->call('selectDisplay', 'fora-do-catalogo')->assertHasErrors('display');
+    }
+
+    public function test_other_status_changes_preserve_progress(): void
+    {
+        $workspace = $this->workspace();
+        $goal = $this->goal($workspace);
+        foreach ([['not_started', '40.25'], ['not_done', '40.25'], ['in_progress', '40.25'], ['completed', '100.00'], ['in_progress', '100.00']] as [$status, $progress]) {
+            app(ManageGoals::class)->changeStatus($workspace, $goal->id, $status);
+            $goal->refresh();
+            $this->assertSame($status, $goal->status);
+            $this->assertSame($progress, $goal->progress_percent);
+        }
     }
 }
