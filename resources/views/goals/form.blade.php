@@ -10,10 +10,10 @@
                 :value="$form['description'] ?? ''" :readonly="!$workspace->allows(auth()->user(), \App\Enums\Permission::GoalsManage)" />
             <div class="form-grid">
                 <label>Status<select wire:model="form.status">
-                    @foreach (\App\Models\Goal::STATUSES as $value => $label)<option value="{{ $value }}">{{ $label }}</option>@endforeach
+                    @foreach (\App\Enums\GoalStatus::options() as $value => $label)<option value="{{ $value }}">{{ $label }}</option>@endforeach
                 </select></label>
                 <label>Prioridade<select wire:model="form.priority">
-                    @foreach (\App\Models\Goal::PRIORITIES as $value => $label)<option value="{{ $value }}">{{ $label }}</option>@endforeach
+                    @foreach (\App\Enums\GoalPriority::options() as $value => $label)<option value="{{ $value }}">{{ $label }}</option>@endforeach
                 </select></label>
                 <label>Categoria<select wire:model="form.category"><option value="">Sem categoria</option>
                     @foreach ($categoryOptions as $category)<option value="{{ $category }}">{{ $category }}</option>@endforeach
@@ -26,7 +26,7 @@
                         <label>Prazo<input type="date" wire:model="form.due_date"></label>
                         <label>Feito (%)<input type="number" wire:model="form.progress_percent" min="0" max="100" step="0.01" required><small>Este percentual é o progresso da meta.</small></label>
                     </div>
-                    @if ($period !== 'annual')
+                    @if ($period !== \App\Enums\GoalPeriod::Annual->value)
                         <label>Meta maior <span class="muted">(opcional)</span><select wire:model="form.parent_id"><option value="">Sem vínculo</option>
                             @foreach ($parentOptions as $parent)<option value="{{ $parent->id }}">{{ $parent->title }} · {{ $parent->periodLabel() }}</option>@endforeach
                         </select></label>

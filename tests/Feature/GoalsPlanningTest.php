@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\GoalCategory;
 use App\Enums\GoalSection;
 use App\Livewire\GoalsBoard;
 use App\Livewire\GoalsDashboard;
@@ -275,5 +276,35 @@ class GoalsPlanningTest extends TestCase
             ->assertViewHas('byStatus', fn ($items) => $items->sum('count') === 0)
             ->assertViewHas('byCategory', fn ($items) => $items->isEmpty())
             ->assertSee('Nenhuma meta neste ano.')->assertDontSee('NaN')->assertDontSee('INF');
+    }
+
+    public function test_goal_category_catalog_is_available_without_existing_goals_and_can_be_saved(): void
+    {
+        $workspace = $this->workspace();
+        $component = Livewire::test(GoalsBoard::class, ['workspaceId' => $workspace->id])
+            ->assertViewHas('categoryOptions', fn ($options) => $options->all() === collect(GoalCategory::values())->sort()->values()->all())
+            ->call('openCreate');
+        foreach (GoalCategory::cases() as $category) {
+            $component->assertSee($category->label());
+            $goal = $this->goal($workspace, ['category' => $category->value]);
+            $this->assertSame($category->value, $goal->category);
+        }
+    }
+
+    public function test_goal_endpoints_reject_values_outside_the_fixed_catalogs(): void
+    {
+        $workspace = $this->workspace();
+        $goal = $this->goal($workspace);
+        foreach (['period', 'priority', 'status', 'category'] as $field) {
+            $this->post(route('goals.store', $workspace), array_replace($goal->toArray(), [$field => 'fora-do-catalogo']))
+                ->assertSessionHasErrors($field);
+            $this->put(route('goals.update', [$workspace, $goal]), array_replace($goal->toArray(), [$field => 'fora-do-catalogo']))
+                ->assertSessionHasErrors($field);
+        }
+        $this->assertDatabaseCount('goals', 1);
+        $this->assertSame('Saúde', $goal->fresh()->category);
+        Livewire::test(GoalsBoard::class, ['workspaceId' => $workspace->id])
+            ->call('changeStatus', $goal->id, 'fora-do-catalogo')->assertHasErrors('status')
+            ->call('selectDisplay', 'fora-do-catalogo')->assertHasErrors('display');
     }
 }

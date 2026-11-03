@@ -5,12 +5,17 @@
         </div>
         <span class="round-icon" aria-hidden="true">◎</span>
     </div>
-    @foreach ([['key' => 'monthly_limit', 'label' => 'Limite mensal', 'value' => $monthlyLimit, 'description' => 'Receitas menos despesas fixas e reserva planejada. Orçamento para gastos variáveis.'], ['key' => 'reserve', 'label' => 'Reserva planejada', 'value' => $reserve, 'description' => 'Valor separado para investir e metas do mês.']] as $indicator)
+    @foreach (\App\Enums\FinancialIndicator::cases() as $indicatorType)
+        @php
+            $indicator = ['key' => $indicatorType->value, 'label' => $indicatorType->label(),
+                'description' => $indicatorType->description(),
+                'value' => $indicatorType === \App\Enums\FinancialIndicator::MonthlyLimit ? $monthlyLimit : $reserve];
+        @endphp
         <div class="planning-indicator" wire:key="planning-{{ $indicator['key'] }}">
             <div class="planning-indicator-heading">
                 <span>{{ $indicator['label'] }}</span>
                 @can('budget.manage', $workspace)
-                    @if ($indicator['key'] !== 'monthly_limit' && $editingIndicator !== $indicator['key'])
+                    @if ($indicatorType->editableColumn() !== null && $editingIndicator !== $indicator['key'])
                         <button type="button" class="indicator-pencil"
                             wire:click="startEditingIndicator('{{ $indicator['key'] }}')" wire:loading.attr="disabled"
                             aria-label="Editar {{ mb_strtolower($indicator['label']) }}" title="Editar valor">

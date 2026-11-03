@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\GoalPeriod;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,12 +10,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Goal extends Model
 {
-    public const PERIODS = ['annual' => 'Anual', 'monthly' => 'Mensal', 'weekly' => 'Semanal'];
-
-    public const PRIORITIES = ['high' => 'Alta', 'medium' => 'Média', 'low' => 'Baixa'];
-
-    public const STATUSES = ['not_started' => 'Não iniciado', 'in_progress' => 'Em andamento', 'completed' => 'Concluído', 'not_done' => 'Não realizado'];
-
     protected $fillable = ['title', 'description', 'period', 'year', 'month', 'week', 'priority', 'category', 'status', 'due_date', 'progress_percent', 'parent_id', 'import_key'];
 
     protected function casts(): array
@@ -35,8 +30,8 @@ class Goal extends Model
     public function periodLabel(): string
     {
         return match ($this->period) {
-            'monthly' => CarbonImmutable::create($this->year, $this->month, 1)->locale('pt_BR')->translatedFormat('F / Y'),
-            'weekly' => 'Semana '.$this->week.' / '.$this->year,
+            GoalPeriod::Monthly->value => CarbonImmutable::create($this->year, $this->month, 1)->locale('pt_BR')->translatedFormat('F / Y'),
+            GoalPeriod::Weekly->value => 'Semana '.$this->week.' / '.$this->year,
             default => (string) $this->year,
         };
     }

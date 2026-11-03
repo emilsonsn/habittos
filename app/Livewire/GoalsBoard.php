@@ -2,7 +2,11 @@
 
 namespace App\Livewire;
 
-use App\Models\Goal;
+use App\Enums\GoalCategory;
+use App\Enums\GoalDisplay;
+use App\Enums\GoalPeriod;
+use App\Enums\GoalPriority;
+use App\Enums\GoalStatus;
 use App\Models\Workspace;
 use App\Services\GoalDescription;
 use App\Services\ManageGoals;
@@ -25,10 +29,10 @@ class GoalsBoard extends Component
     public int $workspaceId;
 
     #[Locked]
-    public string $period = 'annual';
+    public string $period = GoalPeriod::Annual->value;
 
     #[Url(as: 'view')]
-    public string $display = 'table';
+    public string $display = GoalDisplay::Table->value;
 
     #[Url(as: 'year')]
     public int $yearFilter = 0;
@@ -70,14 +74,14 @@ class GoalsBoard extends Component
 
     public string $message = '';
 
-    public function mount(int $workspaceId, string $period = 'annual'): void
+    public function mount(int $workspaceId, string $period = GoalPeriod::Annual->value): void
     {
         $this->workspaceId = $workspaceId;
         $this->period = $period;
-        $this->yearFilter = $this->yearFilter ?: ($period === 'weekly' ? now()->isoWeekYear() : now()->year);
-        if ($period === 'monthly') {
+        $this->yearFilter = $this->yearFilter ?: ($period === GoalPeriod::Weekly->value ? now()->isoWeekYear() : now()->year);
+        if ($period === GoalPeriod::Monthly->value) {
             $this->monthFilter = $this->monthFilter ?: (string) now()->month;
-        } elseif ($period === 'weekly') {
+        } elseif ($period === GoalPeriod::Weekly->value) {
             $this->weekFilter = $this->weekFilter ?: (string) now()->isoWeek();
         }
         $this->workspace();
@@ -94,7 +98,7 @@ class GoalsBoard extends Component
 
     public function selectDisplay(string $display): void
     {
-        validator(['display' => $display], ['display' => Rule::in(['table', 'kanban'])])->validate();
+        validator(['display' => $display], ['display' => Rule::enum(GoalDisplay::class)])->validate();
         $this->display = $display;
         $this->resetPage();
     }
@@ -122,8 +126,8 @@ class GoalsBoard extends Component
         ])->validate();
 
         return match ($this->period) {
-            'monthly' => CarbonImmutable::create($this->yearFilter, (int) $this->monthFilter, 1),
-            'weekly' => CarbonImmutable::now()->setISODate($this->yearFilter, (int) $this->weekFilter, 1)->startOfDay(),
+            GoalPeriod::Monthly->value => CarbonImmutable::create($this->yearFilter, (int) $this->monthFilter, 1),
+            GoalPeriod::Weekly->value => CarbonImmutable::now()->setISODate($this->yearFilter, (int) $this->weekFilter, 1)->startOfDay(),
             default => CarbonImmutable::create($this->yearFilter, 1, 1),
         };
     }
@@ -133,8 +137,8 @@ class GoalsBoard extends Component
         abort_unless(in_array($direction, [-1, 1], true), 422);
         $date = $this->periodDate();
         $date = match ($this->period) {
-            'monthly' => $date->addMonths($direction),
-            'weekly' => $date->addWeeks($direction),
+            GoalPeriod::Monthly->value => $date->addMonths($direction),
+            GoalPeriod::Weekly->value => $date->addWeeks($direction),
             default => $date->addYears($direction),
         };
         $this->applyPeriodDate($date);
@@ -147,12 +151,12 @@ class GoalsBoard extends Component
 
     private function applyPeriodDate(CarbonImmutable $date): void
     {
-        $year = $this->period === 'weekly' ? $date->isoWeekYear() : $date->year;
+        $year = $this->period === GoalPeriod::Weekly->value ? $date->isoWeekYear() : $date->year;
         abort_unless($year >= 2000 && $year <= 2100, 422);
         $this->yearFilter = $year;
-        if ($this->period === 'monthly') {
+        if ($this->period === GoalPeriod::Monthly->value) {
             $this->monthFilter = (string) $date->month;
-        } elseif ($this->period === 'weekly') {
+        } elseif ($this->period === GoalPeriod::Weekly->value) {
             $this->weekFilter = (string) $date->isoWeek();
         }
         $this->closeForm();
@@ -165,9 +169,9 @@ class GoalsBoard extends Component
         $this->editingId = null;
         $this->form = [
             'title' => '', 'description' => '', 'period' => $this->period, 'year' => $this->yearFilter,
-            'month' => $this->period === 'monthly' ? ($this->monthFilter ?: now()->month) : null,
-            'week' => $this->period === 'weekly' ? ($this->weekFilter ?: now()->isoWeek()) : null,
-            'priority' => 'medium', 'category' => '', 'status' => 'not_started', 'due_date' => '',
+            'month' => $this->period === GoalPeriod::Monthly->value ? ($this->monthFilter ?: now()->month) : null,
+            'week' => $this->period === GoalPeriod::Weekly->value ? ($this->weekFilter ?: now()->isoWeek()) : null,
+            'priority' => GoalPriority::Medium->value, 'category' => '', 'status' => GoalStatus::NotStarted->value, 'due_date' => '',
             'progress_percent' => '0', 'parent_id' => null,
         ];
         $this->showForm();
@@ -183,9 +187,9 @@ class GoalsBoard extends Component
     {
         $workspace = $this->workspace();
         $query = $workspace->goals()->where('period', $this->period)->where('year', $this->yearFilter);
-        if ($this->period === 'monthly') {
+        if ($this->period === GoalPeriod::Monthly->value) {
             $query->where('month', $this->monthFilter);
-        } elseif ($this->period === 'weekly') {
+        } elseif ($this->period === GoalPeriod::Weekly->value) {
             $query->where('week', $this->weekFilter);
         }
         $goal = $query->findOrFail($id);
@@ -216,8 +220,8 @@ class GoalsBoard extends Component
         abort_unless($this->formOpen, 422);
         $this->form['period'] = $this->period;
         $this->form['year'] = $this->yearFilter;
-        $this->form['month'] = $this->period === 'monthly' ? (int) $this->monthFilter : null;
-        $this->form['week'] = $this->period === 'weekly' ? (int) $this->weekFilter : null;
+        $this->form['month'] = $this->period === GoalPeriod::Monthly->value ? (int) $this->monthFilter : null;
+        $this->form['week'] = $this->period === GoalPeriod::Weekly->value ? (int) $this->weekFilter : null;
         $this->form['title'] = trim((string) ($this->form['title'] ?? ''));
         $this->validate(collect(ManageGoals::rules())->mapWithKeys(fn ($rules, $key) => ['form.'.$key => array_map(
             fn ($rule) => is_string($rule) ? str_replace('required_if:period,', 'required_if:form.period,', $rule) : $rule,
@@ -259,8 +263,8 @@ class GoalsBoard extends Component
     private function filteredGoals(Workspace $workspace): Builder
     {
         validator($this->only(['period', 'display', 'yearFilter']), [
-            'period' => ['required', Rule::in(array_keys(Goal::PERIODS))],
-            'display' => ['required', Rule::in(['table', 'kanban'])],
+            'period' => ['required', Rule::enum(GoalPeriod::class)],
+            'display' => ['required', Rule::enum(GoalDisplay::class)],
             'yearFilter' => ['required', 'integer', 'between:2000,2100'],
         ])->validate();
         $query = $workspace->goals()->getQuery()->with('parent')->where('period', $this->period)->where('year', $this->yearFilter);
@@ -285,10 +289,10 @@ class GoalsBoard extends Component
                 $this->$property === '__empty__' ? $query->whereNull($column) : $query->where($column, $this->$property);
             }
         }
-        if ($this->period === 'monthly' && $this->monthFilter !== '') {
+        if ($this->period === GoalPeriod::Monthly->value && $this->monthFilter !== '') {
             $query->where('month', $this->monthFilter);
         }
-        if ($this->period === 'weekly' && $this->weekFilter !== '') {
+        if ($this->period === GoalPeriod::Weekly->value && $this->weekFilter !== '') {
             $query->where('week', $this->weekFilter);
         }
         if ($this->dateFrom !== '') {
@@ -298,7 +302,7 @@ class GoalsBoard extends Component
             $query->whereDate('due_date', '<=', $this->dateTo);
         }
 
-        return $query->orderByRaw("CASE priority WHEN 'high' THEN 0 WHEN 'medium' THEN 1 WHEN 'low' THEN 2 ELSE 3 END")
+        return $query->orderByRaw('CASE priority WHEN ? THEN 0 WHEN ? THEN 1 WHEN ? THEN 2 ELSE 3 END', GoalPriority::values())
             ->orderByRaw('due_date IS NULL')->orderBy('due_date')->orderBy('id');
     }
 
@@ -307,18 +311,17 @@ class GoalsBoard extends Component
         $workspace = $this->workspace();
         $periodDate = $this->periodDate();
         $timeLabel = match ($this->period) {
-            'monthly' => ucfirst($periodDate->locale('pt_BR')->translatedFormat('F \\d\\e Y')),
-            'weekly' => 'Semana '.$this->weekFilter.' de '.$this->yearFilter,
+            GoalPeriod::Monthly->value => ucfirst($periodDate->locale('pt_BR')->translatedFormat('F \\d\\e Y')),
+            GoalPeriod::Weekly->value => 'Semana '.$this->weekFilter.' de '.$this->yearFilter,
             default => (string) $this->yearFilter,
         };
         $query = $this->filteredGoals($workspace);
         $total = (clone $query)->count();
-        $goals = $this->display === 'table' ? $query->paginate(15) : $query->get();
-        $categories = $workspace->goals()->whereNotNull('category')->distinct()->orderBy('category')->pluck('category');
-        $categoryOptions = collect(['Saúde', 'Profissional', 'Vida pessoal'])->merge($categories)->unique()->sort()->values();
+        $goals = $this->display === GoalDisplay::Table->value ? $query->paginate(15) : $query->get();
+        $categoryOptions = collect(GoalCategory::values())->sort()->values();
         $parentOptions = collect();
-        if ($this->formOpen && $this->period !== 'annual') {
-            $periods = $this->period === 'weekly' ? ['annual', 'monthly'] : ['annual'];
+        if ($this->formOpen && $this->period !== GoalPeriod::Annual->value) {
+            $periods = $this->period === GoalPeriod::Weekly->value ? [GoalPeriod::Annual->value, GoalPeriod::Monthly->value] : [GoalPeriod::Annual->value];
             $parentOptions = $workspace->goals()->whereIn('period', $periods)->orderByDesc('year')->orderBy('title')->get();
         }
 

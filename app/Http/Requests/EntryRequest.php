@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\EntryType;
 use App\Services\EntryRules;
 use App\Services\Money;
 use Illuminate\Foundation\Http\FormRequest;
@@ -17,7 +18,7 @@ class EntryRequest extends FormRequest
     {
         if ($this->isMethod('POST')) {
             $this->mergeIfMissing([
-                'type' => 'expense',
+                'type' => EntryType::Expense->value,
                 'date' => now()->toDateString(),
                 'paid' => true,
                 'is_fixed' => false,

@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Enums\WorkspaceModule;
 use App\Livewire\Concerns\HandlesWorkspaceCover;
 use App\Services\CreateWorkspace;
 use App\Services\SelectWorkspace;
@@ -17,14 +18,14 @@ class WorkspaceSwitcher extends Component
     public ?int $activeId = null;
 
     #[Locked]
-    public string $module = 'finance';
+    public string $module = WorkspaceModule::Finance->value;
 
     #[Locked]
     public string $month = '';
 
     public string $name = '';
 
-    public function mount(?int $activeId = null, string $module = 'finance', ?string $month = null): void
+    public function mount(?int $activeId = null, string $module = WorkspaceModule::Finance->value, ?string $month = null): void
     {
         abort_unless(auth()->check(), 401);
         $this->activeId = $activeId;

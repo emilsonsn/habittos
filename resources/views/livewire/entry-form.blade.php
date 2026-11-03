@@ -13,7 +13,7 @@
     @endif
     <form wire:submit="save" class="form-stack" wire:key="entry-form-{{ $formVersion }}">
         <div class="entry-types">
-            @foreach (['expense' => 'Despesa', 'income' => 'Receita', 'investment' => 'Investimento'] as $value => $label)
+            @foreach (\App\Enums\EntryType::options() as $value => $label)
                 <label><input type="radio" wire:model="form.type"
                         value="{{ $value }}"><span>{{ $label }}</span></label>
             @endforeach

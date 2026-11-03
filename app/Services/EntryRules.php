@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\EntryType;
 use Illuminate\Validation\Rule;
 
 class EntryRules
@@ -10,8 +11,8 @@ class EntryRules
     {
         return [
             'description' => ['required', 'string', 'max:180'],
-            'type' => ['required', Rule::in(['income', 'expense', 'investment'])],
-            'amount' => ['bail', 'required', 'numeric', 'decimal:0,2', $type === 'investment' ? 'min:-999999999.99' : 'min:0.01', 'max:999999999.99', function ($attribute, $value, $fail) {
+            'type' => ['required', Rule::enum(EntryType::class)],
+            'amount' => ['bail', 'required', 'numeric', 'decimal:0,2', $type === EntryType::Investment->value ? 'min:-999999999.99' : 'min:0.01', 'max:999999999.99', function ($attribute, $value, $fail) {
                 if ((float) $value === 0.0) {
                     $fail('Informe um valor diferente de zero.');
                 }

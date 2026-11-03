@@ -2,10 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\FinanceSection;
-use App\Enums\GoalSection;
-use App\Enums\NoteSection;
 use App\Enums\Permission;
+use App\Enums\WorkspaceModule;
 use App\Models\User;
 use App\Models\Workspace;
 use App\Services\CreateWorkspace;
@@ -24,7 +22,7 @@ class WorkspaceController extends Controller
     {
         $data = $request->validate([
             'workspace_id' => ['required', 'integer'],
-            'module' => ['required', Rule::in(['home', 'finance', 'goals', 'notes', 'members', 'settings', ...array_map(fn ($section) => $section->routeName(), FinanceSection::cases()), ...array_map(fn ($section) => $section->routeName(), GoalSection::cases()), ...array_map(fn ($section) => $section->routeName(), NoteSection::cases())])],
+            'module' => ['required', Rule::in(WorkspaceModule::selectionValues())],
             'month' => ['nullable', 'date_format:Y-m'],
         ]);
         $url = app(SelectWorkspace::class)->handle(

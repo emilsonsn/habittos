@@ -90,14 +90,14 @@
     @else
         @switch($financeSection)
             @case(\App\Enums\FinanceSection::FixedIncome)
-                @include('finance.fixed-entries', ['entryType' => 'income', 'heading' => 'Receitas fixas', 'total' => $fixedIncome])
+                @include('finance.fixed-entries', ['entryType' => \App\Enums\EntryType::Income->value, 'heading' => 'Receitas fixas', 'total' => $fixedIncome])
                 @break
             @case(\App\Enums\FinanceSection::FixedExpenses)
-                @include('finance.fixed-entries', ['entryType' => 'expense', 'heading' => 'Gastos fixos', 'total' => $fixed])
+                @include('finance.fixed-entries', ['entryType' => \App\Enums\EntryType::Expense->value, 'heading' => 'Gastos fixos', 'total' => $fixed])
                 @break
             @case(\App\Enums\FinanceSection::Investments)
                 @include('finance.entries-table', [
-                    'entries' => $entries->where('type', 'investment'),
+                    'entries' => $entries->where('type', \App\Enums\EntryType::Investment->value),
                     'heading' => 'Investimentos do mês',
                     'emptyTitle' => 'Nenhum investimento neste mês.',
                     'emptyDescription' => 'Registre seus aportes para acompanhar os investimentos do ciclo selecionado.',

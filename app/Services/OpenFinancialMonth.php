@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\EntryType;
 use App\Models\Workspace;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
@@ -27,7 +28,7 @@ class OpenFinancialMonth
             $this->assertEmpty($workspace, CarbonImmutable::parse($cycleStart), CarbonImmutable::parse($cycleEnd)->addDay());
             $previous = $calendar->period($workspace, $start->subMonth()->format('Y-m'));
             $fixedEntries = $workspace->entries()
-                ->whereIn('type', ['income', 'expense'])
+                ->whereIn('type', [EntryType::Income->value, EntryType::Expense->value])
                 ->where('is_fixed', true)
                 ->where('date', '>=', $previous['start']->toDateString())
                 ->where('date', '<', $previous['end']->toDateString())

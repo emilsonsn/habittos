@@ -215,3 +215,11 @@ Novo lançamento mostra descrição, valor e categoria. O painel “Avançado”
 Todos os campos monetários usam `x-money-input`: lançamentos e indicadores do planejamento. A tela apresenta separador de milhar e vírgula decimal, enquanto o estado Livewire permanece decimal com ponto. O componente usa Alpine, suporta colar moeda com R$, preserva centavos e aplica a formatação completa ao sair do campo. O backend continua validando limites e precisão antes de converter para centavos inteiros. Os scripts locais de máscara são carregados antes do Livewire registrar o Alpine.
 
 Execute `npm test` para verificar a máscara, além de `composer test` para os fluxos e regras de persistência.
+
+## Listas fixas e enums
+
+Toda lista fechada de opções de domínio deve ter um enum específico em `app/Enums`. Formulários, filtros, validações e regras de negócio devem consumir o mesmo enum, sem recriar arrays de valores ou rótulos. Use `Rule::enum` para entradas fechadas e `cases()`, `values()` ou `options()` para montar opções. Os enums com rótulos compartilham `Concerns/HasOptions`. Valores persistidos e parâmetros de URL continuam escalares; use `->value` nessas fronteiras.
+
+As metas usam `GoalCategory`, `GoalStatus`, `GoalPriority`, `GoalPeriod` e `GoalDisplay`; os lançamentos usam `EntryType`; indicadores financeiros usam `FinancialIndicator`; a seleção de ambientes usa `WorkspaceModule` junto aos enums de seções. Cores de status e hierarquia de períodos também pertencem aos respectivos enums. Permissões e seções já são enums específicos.
+
+Listas que o usuário cadastra, como categorias financeiras e pastas de notas, continuam em tabelas por ambiente. As categorias financeiras iniciais são apenas sugestões para cadastro, não um catálogo fechado. Intervalos de datas, IDs, flags booleanas e listas técnicas de sanitização não são catálogos de opções de domínio.

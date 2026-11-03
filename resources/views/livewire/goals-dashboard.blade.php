@@ -61,7 +61,7 @@
                     <a wire:navigate class="goal-period-chart" href="{{ route('goals.'.$period, [$workspace, 'year' => $year]) }}">
                         <span class="goal-period-chart-title">{{ \App\Enums\GoalSection::from($period)->label() }} <span aria-hidden="true">↗</span></span>
                         <strong>{{ $summary['total'] }} <small>{{ $summary['total'] === 1 ? 'meta' : 'metas' }}</small></strong>
-                        <progress value="{{ $summary['average'] }}" max="100" aria-label="Progresso médio das metas {{ ['annual' => 'anuais', 'monthly' => 'mensais', 'weekly' => 'semanais'][$period] }}">{{ $summary['average'] }}%</progress>
+                        <progress value="{{ $summary['average'] }}" max="100" aria-label="Progresso médio das metas {{ \App\Enums\GoalPeriod::from($period)->plural() }}">{{ $summary['average'] }}%</progress>
                         <span class="goal-period-chart-average">{{ number_format($summary['average'], 1, ',', '.') }}% de progresso médio</span>
                         <span class="goal-period-chart-caption">{{ $summary['completed'] }} concluídas · {{ $summary['in_progress'] }} em andamento</span>
                     </a>
@@ -86,7 +86,7 @@
             <div class="goal-deadline-list">
                 @forelse ($overdue->take(6) as $goal)
                     <a wire:navigate class="goal-deadline-row" href="{{ $goalUrl($goal) }}">
-                        <span><strong>{{ $goal->title }}</strong><small>{{ \App\Models\Goal::STATUSES[$goal->status] }} · {{ $goal->periodLabel() }}</small></span><time datetime="{{ $goal->due_date->toDateString() }}" class="negative">{{ $goal->due_date->format('d/m/Y') }}</time>
+                        <span><strong>{{ $goal->title }}</strong><small>{{ \App\Enums\GoalStatus::options()[$goal->status] }} · {{ $goal->periodLabel() }}</small></span><time datetime="{{ $goal->due_date->toDateString() }}" class="negative">{{ $goal->due_date->format('d/m/Y') }}</time>
                     </a>
                 @empty<div class="goal-chart-empty"><span aria-hidden="true">✓</span><p>Nenhuma meta em aberto com prazo vencido.</p></div>@endforelse
             </div>

@@ -1,6 +1,6 @@
 # Metas pessoais
 
-Metas pertencem a um ambiente e não têm vínculo automático com receitas, despesas ou investimentos. As categorias são próprias das metas, com as opções Saúde, Profissional e Vida pessoal e as demais já existentes no ambiente.
+Metas pertencem a um ambiente e não têm vínculo automático com receitas, despesas ou investimentos. As categorias são próprias das metas, definidas pelo enum `GoalCategory`: Saúde, Profissional, Vida pessoal, Finanças, Estudos, Espiritualidade, Família e relacionamentos, Casa, Lazer e Projetos pessoais. Não há cadastro livre de categorias de metas.
 
 ## Páginas e navegação no tempo
 
@@ -35,7 +35,7 @@ Filtros de busca por nome, status, prioridade, categoria e intervalo inclusivo d
 | Descrição | `description` | Opcional; HTML formatado com até 20.000 caracteres, incluindo marcação |
 | Prioridade | `priority` | `high` (Alta), `medium` (Média), `low` (Baixa) |
 | Progresso | derivado de `progress_percent` | Mesmo percentual de Feito (%), exibido com barra |
-| Categoria | `category` | Opcional, até 80 caracteres; independente das categorias financeiras |
+| Categoria | `category` | Opcional, valor de `GoalCategory`; independente das categorias financeiras |
 | Status | `status` | `not_started` (Não iniciado), `in_progress` (Em andamento), `completed` (Concluído), `not_done` (Não realizado); novas metas começam como Não iniciado |
 | Prazo | `due_date` | Data opcional `YYYY-MM-DD` |
 | Feito (%) | `progress_percent` | 0 a 100, até duas casas decimais; começa em zero |

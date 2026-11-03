@@ -2,7 +2,9 @@
 
 namespace App\Services;
 
-use App\Models\Goal;
+use App\Enums\GoalPeriod;
+use App\Enums\GoalPriority;
+use App\Enums\GoalStatus;
 use App\Models\Workspace;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
@@ -44,8 +46,8 @@ class ImportNotionGoals
             Workspace::whereKey($workspace->id)->lockForUpdate()->firstOrFail();
             $created = 0;
             $updated = 0;
-            $priorities = ['Alta' => 'high', 'Média' => 'medium', 'Baixa' => 'low'];
-            $statuses = array_flip(Goal::STATUSES);
+            $priorities = array_flip(GoalPriority::options());
+            $statuses = array_flip(GoalStatus::options());
             foreach ($rows as $row) {
                 $key = hash('sha256', 'notion|annual|'.$year.'|'.mb_strtolower(trim($row['Nome da meta'])));
                 $existing = $workspace->goals()->where('import_key', $key)->first();
@@ -55,7 +57,7 @@ class ImportNotionGoals
                     throw ValidationException::withMessages(['file' => 'Prazo inválido em '.$row['Nome da meta']]);
                 }
                 $data = [
-                    'title' => $row['Nome da meta'], 'period' => 'annual', 'year' => $year,
+                    'title' => $row['Nome da meta'], 'period' => GoalPeriod::Annual->value, 'year' => $year,
                     'priority' => $priorities[trim($row['Prioridade'])] ?? '',
                     'status' => $statuses[trim($row['Status'])] ?? '',
                     'category' => $row['Categoria'],

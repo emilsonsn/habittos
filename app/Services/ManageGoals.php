@@ -2,6 +2,10 @@
 
 namespace App\Services;
 
+use App\Enums\GoalCategory;
+use App\Enums\GoalPeriod;
+use App\Enums\GoalPriority;
+use App\Enums\GoalStatus;
 use App\Models\Goal;
 use App\Models\Workspace;
 use Carbon\CarbonImmutable;
@@ -17,13 +21,13 @@ class ManageGoals
         return [
             'title' => ['required', 'string', 'max:200'],
             'description' => ['nullable', 'string', 'max:20000'],
-            'period' => ['required', Rule::in(array_keys(Goal::PERIODS))],
+            'period' => ['required', Rule::enum(GoalPeriod::class)],
             'year' => ['required', 'integer', 'between:2000,2100'],
-            'month' => ['nullable', 'required_if:period,monthly', 'integer', 'between:1,12'],
-            'week' => ['nullable', 'required_if:period,weekly', 'integer', 'between:1,53'],
-            'priority' => ['required', Rule::in(array_keys(Goal::PRIORITIES))],
-            'status' => ['required', Rule::in(array_keys(Goal::STATUSES))],
-            'category' => ['nullable', 'string', 'max:80'],
+            'month' => ['nullable', 'required_if:period,'.GoalPeriod::Monthly->value, 'integer', 'between:1,12'],
+            'week' => ['nullable', 'required_if:period,'.GoalPeriod::Weekly->value, 'integer', 'between:1,53'],
+            'priority' => ['required', Rule::enum(GoalPriority::class)],
+            'status' => ['required', Rule::enum(GoalStatus::class)],
+            'category' => ['nullable', Rule::enum(GoalCategory::class)],
             'due_date' => ['nullable', 'date_format:Y-m-d'],
             'progress_percent' => ['required', 'numeric', 'decimal:0,2', 'between:0,100'],
             'parent_id' => ['nullable', 'integer'],
@@ -56,23 +60,22 @@ class ManageGoals
             if (array_key_exists('description', $data)) {
                 $data['description'] = app(GoalDescription::class)->sanitize($data['description']);
             }
-            $data['month'] = $data['period'] === 'monthly' ? $data['month'] : null;
-            $data['week'] = $data['period'] === 'weekly' ? $data['week'] : null;
-            if ($data['period'] === 'weekly') {
+            $data['month'] = $data['period'] === GoalPeriod::Monthly->value ? $data['month'] : null;
+            $data['week'] = $data['period'] === GoalPeriod::Weekly->value ? $data['week'] : null;
+            if ($data['period'] === GoalPeriod::Weekly->value) {
                 $date = CarbonImmutable::now()->setISODate((int) $data['year'], (int) $data['week'], 1);
                 if ($date->isoWeekYear() !== (int) $data['year']) {
                     throw ValidationException::withMessages(['week' => 'Esta semana não existe no ano informado.']);
                 }
             }
-            $ranks = ['annual' => 0, 'monthly' => 1, 'weekly' => 2];
             $parentId = $data['parent_id'] ?? null;
             if ($parentId) {
                 $parent = $workspace->goals()->findOrFail($parentId);
-                if ($parent->id === $goal?->id || $ranks[$parent->period] >= $ranks[$data['period']]) {
+                if ($parent->id === $goal?->id || GoalPeriod::from($parent->period)->rank() >= GoalPeriod::from($data['period'])->rank()) {
                     throw ValidationException::withMessages(['parent_id' => 'Escolha uma meta de um período maior deste ambiente.']);
                 }
             }
-            if ($goal && $goal->children()->get()->contains(fn ($child) => $ranks[$child->period] <= $ranks[$data['period']])) {
+            if ($goal && $goal->children()->get()->contains(fn ($child) => GoalPeriod::from($child->period)->rank() <= GoalPeriod::from($data['period'])->rank())) {
                 throw ValidationException::withMessages(['period' => 'Desvincule as metas menores antes de alterar este período.']);
             }
             foreach (['category', 'due_date', 'parent_id'] as $key) {
@@ -91,7 +94,7 @@ class ManageGoals
     public function changeStatus(Workspace $workspace, int $id, string $status): void
     {
         $this->authorize($workspace);
-        validator(['status' => $status], ['status' => ['required', Rule::in(array_keys(Goal::STATUSES))]])->validate();
+        validator(['status' => $status], ['status' => ['required', Rule::enum(GoalStatus::class)]])->validate();
         $workspace->goals()->findOrFail($id)->update(['status' => $status]);
     }
 
@@ -103,4 +106,5 @@ class ManageGoals
             $workspace->goals()->findOrFail($id)->delete();
         });
     }
+
 }

@@ -82,9 +82,9 @@
                                         class="tag {{ $entry->paid ? 'settled' : 'pending' }}">{{ $entry->paid ? 'Efetivado' : 'Pendente' }}</span>
                                 @endcan
                             </td>
-                            <td class="number {{ $entry->amount_cents < 0 ? 'negative' : ($entry->type !== 'expense' ? 'green' : '') }}">
-                                {{ $entry->type === 'expense' || $entry->amount_cents < 0 ? '−' : '+' }}
-                                {{ $money(abs($entry->amount_cents)) }}<small>{{ ['income' => 'Receita', 'expense' => 'Despesa', 'investment' => 'Investimento'][$entry->type] }}</small>
+                            <td class="number {{ $entry->amount_cents < 0 ? 'negative' : ($entry->type !== \App\Enums\EntryType::Expense->value ? 'green' : '') }}">
+                                {{ $entry->type === \App\Enums\EntryType::Expense->value || $entry->amount_cents < 0 ? '−' : '+' }}
+                                {{ $money(abs($entry->amount_cents)) }}<small>{{ \App\Enums\EntryType::from($entry->type)->label() }}</small>
                             </td>
                             @if ($showCategory)
                                 <td class="number {{ $entryBalances[$entry->id]['after'] < 0 ? 'negative' : '' }}">

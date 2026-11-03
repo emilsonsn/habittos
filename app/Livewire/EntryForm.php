@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Enums\EntryType;
 use App\Models\Entry;
 use App\Models\Workspace;
 use App\Services\EntryRules;
@@ -57,7 +58,7 @@ class EntryForm extends Component
     {
         return [
             'description' => '',
-            'type' => 'expense',
+            'type' => EntryType::Expense->value,
             'amount' => '',
             'date' => now()->toDateString(),
             'category_id' => null,

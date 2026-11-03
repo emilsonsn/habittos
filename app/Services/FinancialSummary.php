@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\EntryType;
 use App\Models\Workspace;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
@@ -22,18 +23,18 @@ class FinancialSummary
         foreach ($entries->reverse() as $entry) {
             $before = $runningBalance;
             $runningBalance += match ($entry->type) {
-                'income' => $entry->amount_cents,
-                'expense' => -$entry->amount_cents,
+                EntryType::Income->value => $entry->amount_cents,
+                EntryType::Expense->value => -$entry->amount_cents,
                 default => 0,
             };
             $entryBalances[$entry->id] = ['before' => $before, 'after' => $runningBalance];
         }
-        $income = $entries->where('type', 'income')->sum('amount_cents');
-        $expenses = $entries->where('type', 'expense')->sum('amount_cents');
-        $fixed = $entries->where('type', 'expense')->where('is_fixed', true)->sum('amount_cents');
-        $invested = $entries->where('type', 'investment')->sum('amount_cents');
+        $income = $entries->where('type', EntryType::Income->value)->sum('amount_cents');
+        $expenses = $entries->where('type', EntryType::Expense->value)->sum('amount_cents');
+        $fixed = $entries->where('type', EntryType::Expense->value)->where('is_fixed', true)->sum('amount_cents');
+        $invested = $entries->where('type', EntryType::Investment->value)->sum('amount_cents');
         $settled = $entries->where('paid', true);
-        $balance = $settled->where('type', 'income')->sum('amount_cents') - $settled->where('type', 'expense')->sum('amount_cents');
+        $balance = $settled->where('type', EntryType::Income->value)->sum('amount_cents') - $settled->where('type', EntryType::Expense->value)->sum('amount_cents');
         $budget = $workspace->budgets()->where('month', $month)->first();
         $reserve = $budget?->reserve_cents ?? 0;
         $monthlyLimit = max(0, $income - $fixed - $reserve);
@@ -41,20 +42,20 @@ class FinancialSummary
         $weeks = collect(range(1, 4))->map(function ($week) use ($entries, $weeklyLimit, $start, $end, $weekLength) {
             $weekStart = $start->addDays(($week - 1) * $weekLength);
             $weekEnd = $week === 4 ? $end : $weekStart->addDays($weekLength)->min($end);
-            $spent = $entries->where('type', 'expense')->where('is_fixed', false)->filter(fn ($entry) => $entry->date->gte($weekStart) && $entry->date->lt($weekEnd))->sum('amount_cents');
+            $spent = $entries->where('type', EntryType::Expense->value)->where('is_fixed', false)->filter(fn ($entry) => $entry->date->gte($weekStart) && $entry->date->lt($weekEnd))->sum('amount_cents');
 
             return ['number' => $week, 'spent' => $spent, 'limit' => $weeklyLimit, 'startDay' => $weekStart->day, 'endDay' => $weekEnd->subDay()->day, 'dateLabel' => $weekStart->lt($weekEnd) ? $weekStart->format('d/m').'–'.$weekEnd->subDay()->format('d/m') : 'Sem dias neste ciclo'];
         });
         $weeklyPlan = $this->weeklyPlan($start, $end, $weekLength, $weeklyLimit, $weeks);
-        $byCategory = $entries->where('type', 'expense')->groupBy(fn ($entry) => $entry->category?->name ?? 'Sem categoria')->map(fn ($items) => $items->sum('amount_cents'))->sortDesc();
+        $byCategory = $entries->where('type', EntryType::Expense->value)->groupBy(fn ($entry) => $entry->category?->name ?? 'Sem categoria')->map(fn ($items) => $items->sum('amount_cents'))->sortDesc();
 
         return compact('entries', 'entryBalances', 'income', 'expenses', 'invested', 'balance', 'reserve', 'weeklyLimit', 'weeks', 'weeklyPlan', 'monthlyLimit', 'byCategory', 'period') + [
             'available' => $balance - $reserve,
             'investmentBalance' => app(InvestmentBalance::class)->forWorkspace($workspace),
-            'fixedIncome' => $entries->where('type', 'income')->where('is_fixed', true)->sum('amount_cents'),
+            'fixedIncome' => $entries->where('type', EntryType::Income->value)->where('is_fixed', true)->sum('amount_cents'),
             'projected' => $income - $expenses - $reserve,
             'fixed' => $fixed,
-            'pending' => $entries->where('paid', false)->where('type', 'expense')->sum('amount_cents'),
+            'pending' => $entries->where('paid', false)->where('type', EntryType::Expense->value)->sum('amount_cents'),
         ];
     }
 

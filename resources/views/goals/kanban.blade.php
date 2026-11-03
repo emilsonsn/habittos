@@ -4,10 +4,10 @@
         <p class="sr-only" id="goal-kanban-help">Arraste uma meta para outra coluna para mudar seu status. Use Enter para editar ou Alt com as setas esquerda e direita para mover entre as colunas.</p>
     @endcan
     <div class="goal-drag-preview" x-cloak x-show="dragged !== null" :style="{ left: (x + 14) + 'px', top: (y + 14) + 'px' }" x-text="title" aria-hidden="true"></div>
-    @foreach (\App\Models\Goal::STATUSES as $status => $label)
+    @foreach (\App\Enums\GoalStatus::options() as $status => $label)
         @php
             $cards = $goals->where('status', $status);
-            $statuses = array_keys(\App\Models\Goal::STATUSES);
+            $statuses = array_keys(\App\Enums\GoalStatus::options());
             $statusIndex = array_search($status, $statuses, true);
         @endphp
         <section class="goal-kanban-column" aria-label="{{ $label }}" wire:key="goal-column-{{ $status }}"
@@ -32,7 +32,7 @@
                                 @keydown.alt.arrow-right.prevent="$wire.changeStatus({{ $goal->id }}, '{{ $statuses[$statusIndex + 1] }}')"
                             @endif
                         @endcan>
-                        <div class="goal-card-tags"><span class="goal-priority {{ $goal->priority }}">{{ \App\Models\Goal::PRIORITIES[$goal->priority] }}</span>
+                        <div class="goal-card-tags"><span class="goal-priority {{ $goal->priority }}">{{ \App\Enums\GoalPriority::options()[$goal->priority] }}</span>
                             @if ($goal->category)<span class="tag">{{ $goal->category }}</span>@endif
                         </div>
                         <h3>{{ $goal->title }}</h3>

@@ -12,14 +12,14 @@
         @endcan
     </div>
     <div class="goal-time-navigation">
-        <div><span class="eyebrow">{{ ['annual' => 'ANO', 'monthly' => 'MÊS', 'weekly' => 'SEMANA'][$period] }} DE REFERÊNCIA</span>
+        <div><span class="eyebrow">{{ mb_strtoupper(\App\Enums\GoalPeriod::from($period)->unit()) }} DE REFERÊNCIA</span>
             <h2>{{ $timeLabel }}</h2>
-            @if ($period === 'weekly')<p class="muted">{{ $periodDate->format('d/m/Y') }} a {{ $periodDate->addDays(6)->format('d/m/Y') }}</p>@endif
+            @if ($period === \App\Enums\GoalPeriod::Weekly->value)<p class="muted">{{ $periodDate->format('d/m/Y') }} a {{ $periodDate->addDays(6)->format('d/m/Y') }}</p>@endif
         </div>
         <div class="actions">
-            <button type="button" class="button secondary" wire:click="navigatePeriod(-1)" wire:loading.attr="disabled" aria-label="{{ ['annual' => 'Ano anterior', 'monthly' => 'Mês anterior', 'weekly' => 'Semana anterior'][$period] }}">‹ {{ ['annual' => 'Ano', 'monthly' => 'Mês', 'weekly' => 'Semana'][$period] }}</button>
-            <button type="button" class="button secondary" wire:click="openCurrentPeriod" wire:loading.attr="disabled">{{ ['annual' => 'Ano atual', 'monthly' => 'Mês atual', 'weekly' => 'Semana atual'][$period] }}</button>
-            <button type="button" class="button secondary" wire:click="navigatePeriod(1)" wire:loading.attr="disabled" aria-label="{{ ['annual' => 'Próximo ano', 'monthly' => 'Próximo mês', 'weekly' => 'Próxima semana'][$period] }}">{{ ['annual' => 'Ano', 'monthly' => 'Mês', 'weekly' => 'Semana'][$period] }} ›</button>
+            <button type="button" class="button secondary" wire:click="navigatePeriod(-1)" wire:loading.attr="disabled" aria-label="{{ \App\Enums\GoalPeriod::from($period)->previousLabel() }}">‹ {{ \App\Enums\GoalPeriod::from($period)->unit() }}</button>
+            <button type="button" class="button secondary" wire:click="openCurrentPeriod" wire:loading.attr="disabled">{{ \App\Enums\GoalPeriod::from($period)->currentLabel() }}</button>
+            <button type="button" class="button secondary" wire:click="navigatePeriod(1)" wire:loading.attr="disabled" aria-label="{{ \App\Enums\GoalPeriod::from($period)->nextLabel() }}">{{ \App\Enums\GoalPeriod::from($period)->unit() }} ›</button>
         </div>
     </div>
     @php
@@ -28,7 +28,7 @@
     <section class="panel goals-workspace" id="goals-results" aria-label="Metas do período" x-data="{ filtersOpen: false }">
         <div class="goals-toolbar">
             <div class="goal-display-toggle" role="group" aria-label="Visualização das metas">
-                @foreach (['table' => 'Tabela', 'kanban' => 'Kanban'] as $value => $label)
+                @foreach (\App\Enums\GoalDisplay::options() as $value => $label)
                     <button type="button" wire:click="selectDisplay('{{ $value }}')" aria-pressed="{{ $display === $value ? 'true' : 'false' }}">{{ $label }}</button>
                 @endforeach
             </div>

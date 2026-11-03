@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Enums\FinanceSection;
+use App\Enums\FinancialIndicator;
 use App\Enums\Permission;
 use App\Models\Workspace;
 use App\Services\FinancialCalendar;
@@ -133,18 +134,11 @@ class FinanceDashboard extends Component
         $this->message = 'Ciclo atualizado. O ciclo anterior termina na véspera do início e o próximo começa no dia seguinte ao fim informado. As datas dos lançamentos foram preservadas.';
     }
 
-    protected function indicatorColumns(): array
-    {
-        return [
-            'reserve' => 'reserve_cents',
-        ];
-    }
-
     public function startEditingIndicator(string $indicator): void
     {
         $workspace = $this->workspace();
         Gate::authorize(Permission::BudgetManage->value, $workspace);
-        $column = $this->indicatorColumns()[$indicator] ?? null;
+        $column = FinancialIndicator::tryFrom($indicator)?->editableColumn();
         abort_unless($column, 422);
         $this->validate(['month' => ['required', 'date_format:Y-m']]);
         $value = $workspace->budgets()->where('month', $this->month)->value($column);
@@ -164,7 +158,7 @@ class FinanceDashboard extends Component
     {
         $workspace = $this->workspace();
         Gate::authorize(Permission::BudgetManage->value, $workspace);
-        $column = $this->indicatorColumns()[$this->editingIndicator] ?? null;
+        $column = FinancialIndicator::tryFrom($this->editingIndicator ?? '')?->editableColumn();
         abort_unless($column, 422);
         $this->validate([
             'month' => ['required', 'date_format:Y-m'],
