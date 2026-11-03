@@ -250,6 +250,24 @@ class GoalsBoard extends Component
         $this->message = 'Status atualizado.';
     }
 
+    public function changePriority(int $id, string $priority): void
+    {
+        app(ManageGoals::class)->changePriority($this->workspace(), $id, $priority);
+        $this->message = 'Prioridade atualizada.';
+    }
+
+    public function changeCategory(int $id, ?string $category): void
+    {
+        app(ManageGoals::class)->changeCategory($this->workspace(), $id, $category);
+        $this->message = 'Categoria atualizada.';
+    }
+
+    public function changeProgress(int $id, mixed $progress): void
+    {
+        app(ManageGoals::class)->changeProgress($this->workspace(), $id, $progress);
+        $this->message = 'Progresso atualizado.';
+    }
+
     public function deleteGoal(int $id): void
     {
         app(ManageGoals::class)->delete($this->workspace(), $id);

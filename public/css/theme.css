@@ -173,6 +173,10 @@
 [data-theme="dark"] :is(input, select, textarea):focus {
     border-color: var(--primary);
 }
+select option {
+    background-color: var(--surface, #fff);
+    color: var(--ink);
+}
 [data-theme="dark"] input::placeholder,
 [data-theme="dark"] textarea::placeholder {
     color: var(--muted);

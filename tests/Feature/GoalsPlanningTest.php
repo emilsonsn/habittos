@@ -37,6 +37,36 @@ class GoalsPlanningTest extends TestCase
         ]);
     }
 
+    public function test_goal_category_catalog_is_available_without_existing_goals_and_can_be_saved(): void
+    {
+        $workspace = $this->workspace();
+        $component = Livewire::test(GoalsBoard::class, ['workspaceId' => $workspace->id])
+            ->assertViewHas('categoryOptions', fn ($options) => $options->all() === collect(GoalCategory::values())->sort()->values()->all())
+            ->call('openCreate');
+        foreach (GoalCategory::cases() as $category) {
+            $component->assertSee($category->label());
+            $goal = $this->goal($workspace, ['category' => $category->value]);
+            $this->assertSame($category->value, $goal->category);
+        }
+    }
+
+    public function test_goal_endpoints_reject_values_outside_the_fixed_catalogs(): void
+    {
+        $workspace = $this->workspace();
+        $goal = $this->goal($workspace);
+        foreach (['period', 'priority', 'status', 'category'] as $field) {
+            $this->post(route('goals.store', $workspace), array_replace($goal->toArray(), [$field => 'fora-do-catalogo']))
+                ->assertSessionHasErrors($field);
+            $this->put(route('goals.update', [$workspace, $goal]), array_replace($goal->toArray(), [$field => 'fora-do-catalogo']))
+                ->assertSessionHasErrors($field);
+        }
+        $this->assertDatabaseCount('goals', 1);
+        $this->assertSame('Saúde', $goal->fresh()->category);
+        Livewire::test(GoalsBoard::class, ['workspaceId' => $workspace->id])
+            ->call('changeStatus', $goal->id, 'fora-do-catalogo')->assertHasErrors('status')
+            ->call('selectDisplay', 'fora-do-catalogo')->assertHasErrors('display');
+    }
+
     public function test_four_pages_have_their_own_navigation_and_period_records(): void
     {
         $workspace = $this->workspace();
@@ -99,6 +129,98 @@ class GoalsPlanningTest extends TestCase
             ->call('selectDisplay', 'table')->assertViewHas('total', 2);
         $this->assertSame('100.00', $goal->fresh()->progress_percent);
         $component->set('dateTo', '')->set('dateFrom', '2027-01-01')->assertViewHas('total', 0);
+    }
+
+    public function test_other_status_changes_preserve_progress(): void
+    {
+        $workspace = $this->workspace();
+        $goal = $this->goal($workspace);
+        foreach ([['not_started', '40.25'], ['not_done', '40.25'], ['in_progress', '40.25'], ['completed', '100.00'], ['in_progress', '100.00']] as [$status, $progress]) {
+            app(ManageGoals::class)->changeStatus($workspace, $goal->id, $status);
+            $goal->refresh();
+            $this->assertSame($status, $goal->status);
+            $this->assertSame($progress, $goal->progress_percent);
+        }
+    }
+
+    public function test_table_inline_edits_save_without_opening_the_goal_and_refresh_order_and_filters(): void
+    {
+        $workspace = $this->workspace();
+        $goal = $this->goal($workspace);
+        $second = $this->goal($workspace, ['title' => 'Segunda meta', 'priority' => 'medium']);
+        $component = Livewire::test(GoalsBoard::class, ['workspaceId' => $workspace->id])
+            ->set('yearFilter', 2026)
+            ->assertSeeInOrder(['Nome da meta', 'Status', 'Prioridade', 'Categoria', 'Progresso'])
+            ->assertDontSee('<th scope="col">Prazo</th>', false)
+            ->call('changePriority', $goal->id, 'low')->assertHasNoErrors()
+            ->assertViewHas('goals', fn ($goals) => $goals->first()->id === $second->id)
+            ->call('changeCategory', $goal->id, 'Finanças')->assertHasNoErrors()
+            ->call('changeStatus', $goal->id, 'completed')->assertHasNoErrors()
+            ->assertSet('formOpen', false);
+        $goal->refresh();
+        $this->assertSame('low', $goal->priority);
+        $this->assertSame('Finanças', $goal->category);
+        $this->assertSame('completed', $goal->status);
+        $this->assertSame('100.00', $goal->progress_percent);
+        $this->assertSame('Correr 5 km', $goal->title);
+        $component->set('categoryFilter', 'Finanças')->assertViewHas('total', 1)
+            ->call('changeCategory', $goal->id, '')->assertHasNoErrors()->assertViewHas('total', 0)
+            ->set('categoryFilter', '__empty__')->assertViewHas('total', 1)->assertSee('Correr 5 km');
+        $this->assertNull($goal->fresh()->category);
+    }
+
+    public function test_inline_edits_validate_enum_values_and_reject_goals_from_other_workspaces(): void
+    {
+        $workspace = $this->workspace();
+        $goal = $this->goal($workspace);
+        $other = app(CreateWorkspace::class)->handle(auth()->user(), 'Outro');
+        $foreign = $this->goal($other);
+        foreach (['changeStatus' => 'status', 'changePriority' => 'priority', 'changeCategory' => 'category', 'changeProgress' => 'progress_percent'] as $action => $field) {
+            Livewire::test(GoalsBoard::class, ['workspaceId' => $workspace->id])
+                ->call($action, $goal->id, 'fora-do-catalogo')->assertHasErrors($field);
+            $this->assertSame($goal->$field, $goal->fresh()->$field);
+            try {
+                Livewire::test(GoalsBoard::class, ['workspaceId' => $workspace->id])
+                    ->call($action, $foreign->id, $goal->$field);
+                $this->fail('Uma edição inline não pode acessar metas de outro ambiente.');
+            } catch (ModelNotFoundException) {
+                $this->assertSame($foreign->$field, $foreign->fresh()->$field);
+            }
+        }
+    }
+
+    public function test_table_progress_slider_completes_at_100_and_reopens_when_reduced(): void
+    {
+        $workspace = $this->workspace();
+        $goal = $this->goal($workspace);
+        $component = Livewire::test(GoalsBoard::class, ['workspaceId' => $workspace->id])
+            ->set('yearFilter', 2026)->assertSee('type="range"', false)
+            ->call('changeProgress', $goal->id, '0')->assertHasNoErrors()->assertSet('formOpen', false);
+        $this->assertSame('0.00', $goal->fresh()->progress_percent);
+        $component->call('changeProgress', $goal->id, '45.25')->assertHasNoErrors();
+        $this->assertSame('45.25', $goal->fresh()->progress_percent);
+        $this->assertSame('in_progress', $goal->fresh()->status);
+        $component->set('statusFilter', 'in_progress')->assertViewHas('total', 1)
+            ->call('changeProgress', $goal->id, '100')->assertHasNoErrors()->assertViewHas('total', 0);
+        $this->assertSame('100.00', $goal->fresh()->progress_percent);
+        $this->assertSame('completed', $goal->fresh()->status);
+        $component->call('clearFilters')->call('changeProgress', $goal->id, '60')->assertHasNoErrors();
+        $this->assertSame('60.00', $goal->fresh()->progress_percent);
+        $this->assertSame('in_progress', $goal->fresh()->status);
+        $this->assertSame('Saúde', $goal->fresh()->category);
+        $this->assertSame('2026-12-31', $goal->fresh()->due_date->toDateString());
+    }
+
+    public function test_inline_progress_rejects_invalid_percentages_without_changing_the_goal(): void
+    {
+        $workspace = $this->workspace();
+        $goal = $this->goal($workspace);
+        foreach ([-1, 100.01, '33.333', 'abc', null] as $invalid) {
+            Livewire::test(GoalsBoard::class, ['workspaceId' => $workspace->id])
+                ->call('changeProgress', $goal->id, $invalid)->assertHasErrors('progress_percent');
+            $this->assertSame('40.25', $goal->fresh()->progress_percent);
+            $this->assertSame('in_progress', $goal->fresh()->status);
+        }
     }
 
     public function test_invalid_deadline_range_shows_an_error_and_recovers_when_cleared(): void
@@ -212,8 +334,10 @@ class GoalsPlanningTest extends TestCase
         $foreign = $this->goal($other, ['title' => 'Privada']);
         $reader = User::factory()->create();
         $workspace->members()->attach($reader, ['permissions' => ['goals.view']]);
-        $this->actingAs($reader)->get(route('goals.annual', [$workspace, 'year' => 2026]))->assertOk()->assertDontSee('+ Nova meta')->assertDontSee('wire:click="openCreate', false);
-        foreach (['openCreate' => [], 'openEdit' => [$goal->id], 'deleteGoal' => [$goal->id], 'changeStatus' => [$goal->id, 'completed']] as $action => $args) {
+        $this->actingAs($reader)->get(route('goals.annual', [$workspace, 'year' => 2026]))->assertOk()
+            ->assertDontSee('+ Nova meta')->assertDontSee('wire:click="openCreate', false)
+            ->assertDontSee('class="goal-inline-select', false)->assertDontSee('type="range"', false)->assertSee('Saúde');
+        foreach (['openCreate' => [], 'openEdit' => [$goal->id], 'deleteGoal' => [$goal->id], 'changeStatus' => [$goal->id, 'completed'], 'changePriority' => [$goal->id, 'low'], 'changeCategory' => [$goal->id, 'Finanças'], 'changeProgress' => [$goal->id, 50]] as $action => $args) {
             Livewire::test(GoalsBoard::class, ['workspaceId' => $workspace->id])->call($action, ...$args)->assertForbidden();
         }
         $workspace->members()->updateExistingPivot($reader->id, ['permissions' => ['goals.view', 'goals.manage']]);
@@ -278,47 +402,5 @@ class GoalsPlanningTest extends TestCase
             ->assertViewHas('byStatus', fn ($items) => $items->sum('count') === 0)
             ->assertViewHas('byCategory', fn ($items) => $items->isEmpty())
             ->assertSee('Nenhuma meta neste ano.')->assertDontSee('NaN')->assertDontSee('INF');
-    }
-
-    public function test_goal_category_catalog_is_available_without_existing_goals_and_can_be_saved(): void
-    {
-        $workspace = $this->workspace();
-        $component = Livewire::test(GoalsBoard::class, ['workspaceId' => $workspace->id])
-            ->assertViewHas('categoryOptions', fn ($options) => $options->all() === collect(GoalCategory::values())->sort()->values()->all())
-            ->call('openCreate');
-        foreach (GoalCategory::cases() as $category) {
-            $component->assertSee($category->label());
-            $goal = $this->goal($workspace, ['category' => $category->value]);
-            $this->assertSame($category->value, $goal->category);
-        }
-    }
-
-    public function test_goal_endpoints_reject_values_outside_the_fixed_catalogs(): void
-    {
-        $workspace = $this->workspace();
-        $goal = $this->goal($workspace);
-        foreach (['period', 'priority', 'status', 'category'] as $field) {
-            $this->post(route('goals.store', $workspace), array_replace($goal->toArray(), [$field => 'fora-do-catalogo']))
-                ->assertSessionHasErrors($field);
-            $this->put(route('goals.update', [$workspace, $goal]), array_replace($goal->toArray(), [$field => 'fora-do-catalogo']))
-                ->assertSessionHasErrors($field);
-        }
-        $this->assertDatabaseCount('goals', 1);
-        $this->assertSame('Saúde', $goal->fresh()->category);
-        Livewire::test(GoalsBoard::class, ['workspaceId' => $workspace->id])
-            ->call('changeStatus', $goal->id, 'fora-do-catalogo')->assertHasErrors('status')
-            ->call('selectDisplay', 'fora-do-catalogo')->assertHasErrors('display');
-    }
-
-    public function test_other_status_changes_preserve_progress(): void
-    {
-        $workspace = $this->workspace();
-        $goal = $this->goal($workspace);
-        foreach ([['not_started', '40.25'], ['not_done', '40.25'], ['in_progress', '40.25'], ['completed', '100.00'], ['in_progress', '100.00']] as [$status, $progress]) {
-            app(ManageGoals::class)->changeStatus($workspace, $goal->id, $status);
-            $goal->refresh();
-            $this->assertSame($status, $goal->status);
-            $this->assertSame($progress, $goal->progress_percent);
-        }
     }
 }

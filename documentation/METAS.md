@@ -19,7 +19,7 @@ A criação usa o período aberto na página. O formulário não exibe nem permi
 
 Cada página de metas alterna entre tabela e kanban, preservando os filtros. A ordenação padrão é por prioridade: Alta, Média e Baixa, tanto na tabela quanto dentro de cada coluna do kanban. Em caso de empate, o prazo mais próximo vem primeiro, seguido das metas sem prazo e, por fim, do ID para manter uma ordem estável.
 
-A **tabela** exibe, nesta ordem, Nome da meta, Status, Prioridade, Progresso e Prazo. Possui paginação de 15 registros e rolagem horizontal em telas menores. Clicar no nome da meta abre seus dados no popup.
+A **tabela** exibe, nesta ordem, Nome da meta, Status, Prioridade, Categoria e Progresso. Possui paginação de 15 registros e rolagem horizontal em telas menores. Clicar no nome da meta abre seus dados no popup. Quem possui `goals.manage` pode alterar Status, Prioridade e Categoria diretamente nos selects de cada linha, com salvamento imediato. As opções vêm dos enums; Sem categoria remove o vínculo. As alterações respeitam os filtros e a ordenação ativos, e concluir define Feito (%) como 100. O progresso pode ser ajustado diretamente em um slider de 0 a 100, com prévia do percentual durante o arraste e salvamento ao soltar. Em 100%, o status passa automaticamente para Concluído; reduzir o percentual de uma meta concluída reabre como Em andamento. Quem possui apenas consulta vê os valores sem controles de edição.
 
 O **kanban** possui as colunas Não iniciado, Em andamento, Concluído e Não realizado, nesta ordem. Cada cartão exibe apenas prioridade, categoria, título e percentual. Arrastar e soltar entre colunas altera o status; ao concluir, Feito (%) passa para 100. Nos demais status, o percentual é preservado. O comportamento usa eventos de ponteiro para mouse e toque; Alt com as setas esquerda/direita é a alternativa por teclado. Clique ou Enter abre o popup preenchido. Soltar fora das colunas cancela o movimento.
 
@@ -41,7 +41,7 @@ Filtros de busca por nome, status, prioridade, categoria e intervalo inclusivo d
 | Feito (%) | `progress_percent` | 0 a 100, até duas casas decimais; começa em zero |
 | Meta maior | `parent_id` | Vínculo opcional com uma meta de período maior do mesmo ambiente |
 
-Toda meta tem escala de 0 a 100%. Salvar ou mover uma meta para Concluído define Feito (%) como 100, inclusive na importação. Reabrir a meta preserva o percentual. Não há soma automática de progresso entre metas vinculadas.
+Toda meta tem escala de 0 a 100%. Salvar ou mover uma meta para Concluído define Feito (%) como 100, inclusive na importação. No slider da tabela, atingir 100% conclui a meta; reduzir o progresso de uma meta concluída reabre como Em andamento. Alterar apenas o status para reabrir preserva o percentual. Não há soma automática de progresso entre metas vinculadas.
 
 O tempo (`period`, `year`, `month`, `week`) pertence ao contexto de navegação, não aos campos editáveis do popup. O ano varia de 2000 a 2100; semanas são validadas conforme o ano ISO. O prazo é independente do tempo de planejamento: uma meta anual de 2026 pode ter prazo em 2027.
 

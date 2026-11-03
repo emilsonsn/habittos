@@ -114,4 +114,32 @@ class ManageGoals
         });
     }
 
+    public function changePriority(Workspace $workspace, int $id, string $priority): void
+    {
+        $this->authorize($workspace);
+        $data = validator(['priority' => $priority], ['priority' => self::rules()['priority']])->validate();
+        $workspace->goals()->findOrFail($id)->update($data);
+    }
+
+    public function changeCategory(Workspace $workspace, int $id, ?string $category): void
+    {
+        $this->authorize($workspace);
+        $data = validator(['category' => $category === '' ? null : $category], ['category' => self::rules()['category']])->validate();
+        $workspace->goals()->findOrFail($id)->update($data);
+    }
+
+    public function changeProgress(Workspace $workspace, int $id, mixed $progress): void
+    {
+        $this->authorize($workspace);
+        $data = validator(['progress_percent' => $progress], ['progress_percent' => self::rules()['progress_percent']])->validate();
+        DB::transaction(function () use ($workspace, $id, $data) {
+            $goal = $workspace->goals()->lockForUpdate()->findOrFail($id);
+            if ((float) $data['progress_percent'] === 100.0) {
+                $data['status'] = GoalStatus::Completed->value;
+            } elseif ($goal->status === GoalStatus::Completed->value) {
+                $data['status'] = GoalStatus::InProgress->value;
+            }
+            $goal->update($data);
+        });
+    }
 }
