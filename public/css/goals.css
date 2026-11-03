@@ -261,7 +261,7 @@
     background: var(--bg);
     border: 1px solid var(--line);
     border-radius: 12px;
-    min-width: 0;
+    min-width: 275px;
 }
 .goal-kanban-column > h2 {
     display: flex;
