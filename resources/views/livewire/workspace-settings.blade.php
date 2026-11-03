@@ -84,13 +84,13 @@
             </div>
             <div class="panel danger-panel">
                 <h2>Encerrar este espaço</h2>
-                <p>Todos os lançamentos, metas, notas, categorias, orçamentos e acessos deste ambiente serão excluídos. As
+                <p>Todos os lançamentos, metas, notas, atividades da rotina, categorias, orçamentos e acessos deste ambiente serão excluídos. As
                     contas dos participantes e os outros ambientes serão preservados.</p><button type="button"
                     class="button danger-button" @click="$refs.deleteDialog.showModal()">Excluir ambiente</button>
             </div>
             <x-confirmation-dialog id="delete-space" x-ref="deleteDialog" wire:ignore.self
                 :title="'Excluir '.$workspace->name.'?'"
-                description="Todos os lançamentos, metas, notas, pastas, categorias, orçamentos e acessos deste ambiente serão apagados. As contas dos participantes e os outros ambientes serão preservados. Esta ação não pode ser desfeita."
+                description="Todos os lançamentos, metas, notas, pastas, atividades da rotina, categorias, orçamentos e acessos deste ambiente serão apagados. As contas dos participantes e os outros ambientes serão preservados. Esta ação não pode ser desfeita."
                 close-action="$refs.deleteDialog.close()" @click="if ($event.target === $el) $el.close()">
                 <form wire:submit="deleteWorkspace" class="form-stack">
                     <label>Digite “{{ $workspace->name }}” para confirmar<input wire:model="confirmation" autocomplete="off" required></label>

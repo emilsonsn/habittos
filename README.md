@@ -31,6 +31,8 @@ Metas são planos pessoais independentes do financeiro. O menu reúne Dashboard,
 
 O menu **Notas** reúne Dashboard, Favoritos e Notas, com pastas e subpastas por ambiente. As notas têm apenas título, texto formatado e pasta opcional; criar dentro de uma pasta já preenche esse vínculo. Os favoritos são compartilhados por todos os membros do ambiente. Consulte [NOTAS.md](documentation/NOTAS.md) para as regras, navegação e permissões.
 
+O módulo **Rotina diária** oferece uma grade de segunda a domingo, atividades por dia, sincronização manual da semana anterior em semanas vazias e checks independentes por semana. As semanas anteriores permanecem disponíveis para consulta; a navegação segue o padrão semanal das metas. Consulte [ROTINA.md](documentation/ROTINA.md) para sincronização, histórico e permissões.
+
 ## Acessos
 
 Todos os registros de domínio pertencem a um `Workspace`. O usuário tem acesso por meio da associação `user_workspace`. Não existe ambiente global nem acesso implícito aos ambientes de outra pessoa.

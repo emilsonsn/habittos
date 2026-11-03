@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="{{ asset('css/goals.css') }}" data-navigate-track>
     <link rel="stylesheet" href="{{ asset('css/rich-text.css') }}" data-navigate-track>
     <link rel="stylesheet" href="{{ asset('css/notes.css') }}" data-navigate-track>
+    <link rel="stylesheet" href="{{ asset('css/routine.css') }}" data-navigate-track>
     <link rel="stylesheet" href="{{ asset('css/confirmation.css') }}" data-navigate-track>
     @livewireStyles
 </head>
@@ -42,7 +43,7 @@
                         src="{{ asset('imgs/habbitos-icone.svg') }}" width="44" height="44" alt="">habittos<span class="brand-dot">.</span></a>
                 <livewire:workspace-switcher :active-id="$activeWorkspace?->id" :module="request()->routeIs('home') ? 'home' : (request()->routeIs('finance.*') ? request()->route()->getName() : (request()->routeIs('settings.*')
                     ? 'settings'
-                    : (request()->routeIs('goals.*', 'notes.*')
+                    : (request()->routeIs('goals.*', 'notes.*', 'routine.*')
                         ? request()->route()->getName()
                         : (request()->routeIs('members.*')
                             ? 'members'
@@ -55,6 +56,10 @@
                         <x-icon name="dashboard" /><span>Home</span>
                     </a>
                     @if ($activeWorkspace)
+                        @can('routine.view', $activeWorkspace)
+                            <a wire:navigate class="{{ request()->routeIs('routine.*') ? 'active' : '' }}"
+                                href="{{ route('routine.index', $activeWorkspace) }}" @if (request()->routeIs('routine.*')) aria-current="page" @endif><x-icon name="routine" /><span>{{ \App\Enums\WorkspaceModule::Routine->label() }}</span></a>
+                        @endcan
                         @can('finance.view', $activeWorkspace)
                             <x-finance-navigation :workspace="$activeWorkspace"
                                 :month="$month ?? (isset($entry) ? $entry->date->format('Y-m') : request('month', app(\App\Services\FinancialCalendar::class)->monthForDate($activeWorkspace, now()->toDateString())))" />

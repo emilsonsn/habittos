@@ -50,6 +50,10 @@ class SelectWorkspace
             $module = WorkspaceModule::Notes->value;
         }
 
+        if ($module === 'routine.index') {
+            $module = WorkspaceModule::Routine->value;
+        }
+
         $preferred = WorkspaceModule::tryFrom($module);
         $modules = collect([$preferred, ...WorkspaceModule::cases()])->filter()->unique(fn ($item) => $item->value);
         foreach ($modules as $candidate) {
@@ -61,6 +65,10 @@ class SelectWorkspace
                 $month ??= app(FinancialCalendar::class)->monthForDate($workspace, now()->toDateString());
 
                 return route(($financeSection ?? FinanceSection::Dashboard)->routeName(), [$workspace, 'month' => $month]);
+            }
+
+            if ($candidate === WorkspaceModule::Routine) {
+                return route('routine.index', $workspace);
             }
 
             if ($candidate === WorkspaceModule::Notes) {

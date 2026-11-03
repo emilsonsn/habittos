@@ -68,4 +68,14 @@ class Workspace extends Model
     {
         return $this->hasMany(NoteCategory::class);
     }
+
+    public function routineTasks(): HasMany
+    {
+        return $this->hasMany(RoutineTask::class);
+    }
+
+    public function routineActivities(): HasMany
+    {
+        return $this->hasMany(RoutineActivity::class);
+    }
 }

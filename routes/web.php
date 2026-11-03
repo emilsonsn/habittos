@@ -52,6 +52,8 @@ Route::middleware(['auth', EnsureFirstWorkspace::class])->group(function () {
         Route::post('/metas', [GoalController::class, 'store'])->middleware('workspace:goals.manage')->name('goals.store');
         Route::put('/metas/{goal}', [GoalController::class, 'update'])->middleware('workspace:goals.manage')->name('goals.update');
         Route::delete('/metas/{goal}', [GoalController::class, 'destroy'])->middleware('workspace:goals.manage')->name('goals.destroy');
+        Route::get('/rotina', fn (Workspace $workspace) => view('routine.index', compact('workspace')))
+            ->middleware('workspace:routine.view')->name('routine.index');
         foreach (NoteSection::cases() as $section) {
             Route::get($section->path(), [NoteController::class, 'index'])->defaults('section', $section->value)
                 ->middleware('workspace:notes.view')->name($section->routeName());
