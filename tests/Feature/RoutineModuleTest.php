@@ -252,6 +252,69 @@ class RoutineModuleTest extends TestCase
         $this->board($workspace)->assertSet('week', 46);
     }
 
+    public function test_editing_title_preserves_day_check_and_other_weeks(): void
+    {
+        $workspace = $this->workspace();
+        $component = $this->board($workspace)->set('titles.2', 'Ler')->call('addTask', 2);
+        $original = $workspace->routineActivities()->firstOrFail();
+        $component->call('setCompleted', $original->id, true);
+        $this->travelTo(CarbonImmutable::parse('2026-11-09 10:00:00', 'America/Fortaleza'));
+        $component = $this->board($workspace)->call('synchronizePreviousWeek');
+        $current = $workspace->routineActivities()->whereDate('week_start', '2026-11-09')->firstOrFail();
+        $component->call('setCompleted', $current->id, true);
+        $completedAt = $current->fresh()->completed_at;
+        $component->call('editTask', $current->id)->assertSet('editingTitle', 'Ler')
+            ->assertSee('wire:submit="saveTask"', false)->set('editingTitle', '  Ler 20 páginas  ')
+            ->call('saveTask')->assertHasNoErrors()->assertSet('editingId', null)->assertSee('Ler 20 páginas');
+        $this->assertSame('Ler 20 páginas', $current->fresh()->title);
+        $this->assertSame(Weekday::Tuesday, $current->fresh()->weekday);
+        $this->assertTrue($completedAt->equalTo($current->fresh()->completed_at));
+        $this->assertSame('Ler 20 páginas', $workspace->routineTasks()->findOrFail($current->routine_task_id)->title);
+        $this->assertSame('Ler', $original->fresh()->title);
+        $this->board($workspace)->call('navigateWeek', -1)->assertSee('Ler')->assertDontSee('Ler 20 páginas');
+    }
+
+    public function test_editing_validates_title_and_can_be_cancelled_or_reset_on_navigation(): void
+    {
+        $workspace = $this->workspace();
+        $component = $this->board($workspace)->set('titles.1', 'Caminhar')->call('addTask', 1);
+        $activity = $workspace->routineActivities()->firstOrFail();
+        $component->call('editTask', $activity->id)->set('editingTitle', '   ')->call('saveTask')->assertHasErrors('editingTitle')
+            ->set('editingTitle', str_repeat('a', 201))->call('saveTask')->assertHasErrors('editingTitle')
+            ->call('cancelEditing')->assertSet('editingId', null)->assertHasNoErrors('editingTitle');
+        $this->assertSame('Caminhar', $activity->fresh()->title);
+        $component->call('editTask', $activity->id)->set('editingTitle', 'Rascunho')->call('navigateWeek', 1)
+            ->assertSet('editingId', null)->assertSet('editingTitle', '');
+        $this->assertSame('Caminhar', $activity->fresh()->title);
+    }
+
+    public function test_editing_rechecks_permissions_and_rejects_other_workspaces_and_weeks(): void
+    {
+        $workspace = $this->workspace();
+        $component = $this->board($workspace)->set('titles.1', 'Ler')->call('addTask', 1);
+        $activity = $workspace->routineActivities()->firstOrFail();
+        foreach ([-1, 1] as $direction) {
+            $this->board($workspace)->call('navigateWeek', $direction)->call('editTask', $activity->id)->assertForbidden();
+            $this->board($workspace)->call('editTask', $activity->id)->set('week', 45 + $direction)
+                ->set('editingTitle', 'Inválida')->call('saveTask')->assertForbidden();
+        }
+        $other = app(CreateWorkspace::class)->handle(auth()->user(), 'Outro');
+        try {
+            $this->board($other)->call('editTask', $activity->id);
+            $this->fail('Não deve editar atividade de outro ambiente.');
+        } catch (ModelNotFoundException) {
+            $this->assertSame('Ler', $activity->fresh()->title);
+        }
+        $reader = User::factory()->create();
+        $workspace->members()->attach($reader, ['permissions' => ['routine.view', 'routine.manage']]);
+        $this->actingAs($reader);
+        $component = $this->board($workspace)->call('editTask', $activity->id)->set('editingTitle', 'Inválida');
+        $workspace->members()->updateExistingPivot($reader->id, ['permissions' => ['routine.view']]);
+        $component->call('saveTask')->assertForbidden();
+        $this->board($workspace)->assertDontSee('title="Editar atividade"', false)->call('editTask', $activity->id)->assertForbidden();
+        $this->assertSame('Ler', $activity->fresh()->title);
+    }
+
     public function test_switching_workspaces_keeps_the_routine_module(): void
     {
         $workspace = $this->workspace();

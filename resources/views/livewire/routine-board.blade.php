@@ -52,13 +52,34 @@
                         <div class="routine-day-body">
                             @forelse ($items as $item)
                                 <div class="routine-task {{ $item->completed_at ? 'is-completed' : '' }}" wire:key="routine-task-{{ $item->id }}">
-                                    <label><input type="checkbox" @checked($item->completed_at) @disabled(!$editable)
-                                        aria-label="Concluir {{ $item->title }} em {{ $day->label() }}"
-                                        wire:change="setCompleted({{ $item->id }}, $event.target.checked)" wire:loading.attr="disabled" wire:target="setCompleted,removeTask">
-                                        <span>{{ $item->title }}</span></label>
-                                    @if ($editable)
-                                        <button type="button" class="routine-remove" wire:click="removeTask({{ $item->id }})" data-confirm="A atividade será removida desta semana. As atividades e os checks das semanas anteriores serão preservados." data-confirm-title="Remover atividade da rotina?" data-confirm-label="Remover atividade" data-confirm-subject="{{ $item->title }}"
-                                            aria-label="Remover {{ $item->title }} da rotina" title="Remover da rotina">×</button>
+                                    @if ($editable && $editingId === $item->id)
+                                        <form wire:submit="saveTask" class="routine-edit-form" x-data x-init="$nextTick(() => $refs.title.focus())" @keydown.escape.prevent.stop="$wire.cancelEditing()">
+                                            <label class="sr-only" for="routine-edit-{{ $item->id }}">Texto da atividade de {{ $day->label() }}</label>
+                                            <input id="routine-edit-{{ $item->id }}" x-ref="title" type="text" wire:model="editingTitle" maxlength="200" autocomplete="off" required aria-describedby="routine-edit-error-{{ $item->id }}" @error('editingTitle') aria-invalid="true" @enderror>
+                                            @error('editingTitle')<p id="routine-edit-error-{{ $item->id }}" class="field-error" role="alert">{{ $message }}</p>@enderror
+                                            <div class="routine-edit-actions">
+                                                <button type="submit" aria-label="Salvar" title="Salvar" wire:loading.attr="disabled" wire:target="saveTask">
+                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m5 12 4 4L19 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                                </button>
+                                                <button type="button" aria-label="Cancelar" title="Cancelar" wire:click="cancelEditing" wire:loading.attr="disabled" wire:target="saveTask">
+                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" stroke-linecap="round"/></svg>
+                                                </button>
+                                            </div>
+                                        </form>
+                                    @else
+                                        <label><input type="checkbox" @checked($item->completed_at) @disabled(!$editable)
+                                            aria-label="Concluir {{ $item->title }} em {{ $day->label() }}"
+                                            wire:change="setCompleted({{ $item->id }}, $event.target.checked)" wire:loading.attr="disabled" wire:target="setCompleted,removeTask">
+                                            <span>{{ $item->title }}</span></label>
+                                        @if ($editable)
+                                            <div class="routine-task-actions">
+                                                <button type="button" class="routine-edit" wire:click="editTask({{ $item->id }})" aria-label="Editar {{ $item->title }}" title="Editar atividade" wire:loading.attr="disabled">
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m16 3 5 5L8 21H3v-5L16 3Z" stroke-linejoin="round"/><path d="m14 5 5 5"/></svg>
+                                                </button>
+                                                <button type="button" class="routine-remove" wire:click="removeTask({{ $item->id }})" data-confirm="A atividade será removida desta semana. As atividades e os checks das semanas anteriores serão preservados." data-confirm-title="Remover atividade da rotina?" data-confirm-label="Remover atividade" data-confirm-subject="{{ $item->title }}"
+                                                    aria-label="Remover {{ $item->title }} da rotina" title="Remover da rotina" wire:loading.attr="disabled">×</button>
+                                            </div>
+                                        @endif
                                     @endif
                                 </div>
                             @empty

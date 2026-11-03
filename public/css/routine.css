@@ -138,12 +138,61 @@
 .routine-task.is-completed {
     border-color: var(--green);
 }
+.routine-task-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex-shrink: 0;
+}
+.routine-edit,
 .routine-remove {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
     border: 0;
     background: transparent;
     color: var(--muted);
     padding: 0 3px;
     font-size: 16px;
+}
+.routine-edit:hover {
+    color: var(--primary);
+}
+.routine-edit-form {
+    width: 100%;
+    min-width: 0;
+}
+.routine-edit-form input {
+    min-width: 0;
+    width: 100%;
+    padding: 8px 6px;
+    font-size: 12px;
+}
+.routine-edit-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+}
+.routine-edit-actions button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 0;
+    background: var(--soft);
+    color: var(--primary);
+    font-size: 11px;
+}
+.routine-edit-actions button[type="button"] {
+    color: var(--muted);
+    background: transparent;
 }
 .routine-remove:hover {
     color: #c75c73;

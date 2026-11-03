@@ -81,6 +81,20 @@ class ManageRoutine
             ->update(['completed_at' => $completed ? now() : null]);
     }
 
+    public function rename(Workspace $workspace, CarbonImmutable $week, int $id, string $title): void
+    {
+        $this->authorizeCurrentWeek($workspace, $week);
+        $data = validator(['editingTitle' => trim($title)], [
+            'editingTitle' => ['required', 'string', 'max:200'],
+        ])->validate();
+        DB::transaction(function () use ($workspace, $week, $id, $data) {
+            Workspace::whereKey($workspace->id)->lockForUpdate()->firstOrFail();
+            $activity = $workspace->routineActivities()->whereDate('week_start', $week)->findOrFail($id);
+            $activity->update(['title' => $data['editingTitle']]);
+            $workspace->routineTasks()->findOrFail($activity->routine_task_id)->update(['title' => $data['editingTitle']]);
+        });
+    }
+
     public function remove(Workspace $workspace, CarbonImmutable $week, int $id): void
     {
         $this->authorizeCurrentWeek($workspace, $week);

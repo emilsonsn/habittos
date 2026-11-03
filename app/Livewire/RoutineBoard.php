@@ -29,6 +29,11 @@ class RoutineBoard extends Component
 
     public string $message = '';
 
+    #[Locked]
+    public ?int $editingId = null;
+
+    public string $editingTitle = '';
+
     public function mount(int $workspaceId): void
     {
         $this->workspaceId = $workspaceId;
@@ -67,7 +72,7 @@ class RoutineBoard extends Component
         app(RoutineCalendar::class)->start($date->isoWeekYear(), $date->isoWeek());
         $this->year = $date->isoWeekYear();
         $this->week = $date->isoWeek();
-        $this->reset('titles', 'message');
+        $this->reset('titles', 'message', 'editingId', 'editingTitle');
         $this->resetValidation();
     }
 
@@ -102,7 +107,38 @@ class RoutineBoard extends Component
     public function removeTask(int $id): void
     {
         app(ManageRoutine::class)->remove($this->workspace(), $this->weekStart(), $id);
+        if ($this->editingId === $id) {
+            $this->cancelEditing();
+        }
         $this->message = 'Atividade removida da rotina. O histórico anterior foi preservado.';
+    }
+
+    public function editTask(int $id): void
+    {
+        $workspace = $this->workspace();
+        Gate::authorize(Permission::RoutineManage->value, $workspace);
+        abort_unless($this->weekStart()->isSameDay(app(RoutineCalendar::class)->currentWeek()), 403);
+        $activity = $workspace->routineActivities()->whereDate('week_start', $this->weekStart())->findOrFail($id);
+        $this->resetValidation('editingTitle');
+        $this->reset('message');
+        $this->editingId = $activity->id;
+        $this->editingTitle = $activity->title;
+    }
+
+    public function cancelEditing(): void
+    {
+        $this->reset('editingId', 'editingTitle');
+        $this->resetValidation('editingTitle');
+    }
+
+    public function saveTask(): void
+    {
+        if ($this->editingId === null) {
+            return;
+        }
+        app(ManageRoutine::class)->rename($this->workspace(), $this->weekStart(), $this->editingId, $this->editingTitle);
+        $this->cancelEditing();
+        $this->message = 'Atividade atualizada.';
     }
 
     public function render()
