@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import "../../public/confirmation.js";
+import "../../public/js/confirmation.js";
 
 function setup() {
     const listeners = new Map();

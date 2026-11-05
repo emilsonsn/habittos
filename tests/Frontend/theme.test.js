@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import { runInNewContext } from "node:vm";
 
 const script = readFileSync(
-    new URL("../../public/theme.js", import.meta.url),
+    new URL("../../public/js/theme.js", import.meta.url),
     "utf8",
 );
 

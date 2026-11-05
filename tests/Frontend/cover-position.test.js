@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import "../../public/cover-position.js";
+import "../../public/js/cover-position.js";
 
 const position = globalThis.HabittosCoverPosition;
 

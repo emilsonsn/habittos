@@ -122,7 +122,7 @@ A planilha contém registros sem data e anotações de cartão que misturam limi
 - `app/Models`: modelos Eloquent e relacionamentos.
 - `app/Livewire`: componentes de ambiente, configurações, dashboard financeiro, formulário de lançamentos, metas e pessoas.
 - `resources/views/livewire`: views dos componentes. `resources/views/layout.blade.php`: estrutura da aplicação.
-- `public/css/app.css`: fundamentos de layout; `public/css/interface.css`: identidade visual e componentes; `public/app.js`: comportamento global mínimo.
+- `public/css/app.css`: fundamentos de layout; `public/css/interface.css`: identidade visual e componentes; `public/js/app.js`: comportamento global mínimo.
 - `app/Services/SelectWorkspace.php`, `SaveEntry.php` e `EntryRules.php`: seleção, persistência e validação compartilhadas pelos componentes e endpoints HTTP.
 - `database/migrations`: estrutura e restrições do banco.
 - `tests/Feature/HabittosTest.php`: testes de segurança, fluxos e cálculos.
@@ -162,7 +162,7 @@ A navegação entre páginas usa `wire:navigate`. O framework atualiza o conteú
 
 A identidade visual usa índigo como cor principal, navegação em azul profundo e superfícies claras. Os estilos estão separados entre fundamentos (`app.css`) e identidade/componentes (`interface.css`). O carregamento de ações, as mensagens de resultado e os estados vazios fazem parte dos componentes.
 
-O botão no cabeçalho alterna entre modo claro e escuro, inclusive no celular. Ele aparece apenas na área autenticada, incluindo o onboarding. A preferência é salva no `localStorage` com a chave `habittos.theme`, aplicada antes da exibição da página e preservada nas navegações Livewire. Sem preferência salva, o tema inicial é escuro. Alterações são sincronizadas entre abas; se o navegador bloquear o armazenamento, a troca continua funcionando durante a navegação atual. A paleta escura e o botão ficam em `public/css/theme.css`, e o comportamento em `public/theme.js`.
+O botão no cabeçalho alterna entre modo claro e escuro, inclusive no celular. Ele aparece apenas na área autenticada, incluindo o onboarding. A preferência é salva no `localStorage` com a chave `habittos.theme`, aplicada antes da exibição da página e preservada nas navegações Livewire. Sem preferência salva, o tema inicial é escuro. Alterações são sincronizadas entre abas; se o navegador bloquear o armazenamento, a troca continua funcionando durante a navegação atual. A paleta escura e o botão ficam em `public/css/theme.css`, e o comportamento em `public/js/theme.js`.
 
 ### Home
 

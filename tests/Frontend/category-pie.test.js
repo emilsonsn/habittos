@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import "../../public/category-pie.js";
+import "../../public/js/category-pie.js";
 
 const pie = globalThis.HabittosCategoryPie;
 const slices = [

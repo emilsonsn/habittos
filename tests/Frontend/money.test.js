@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import "../../public/money.js";
+import "../../public/js/money.js";
 
 const money = globalThis.HabittosMoney;
 

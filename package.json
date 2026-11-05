@@ -3,8 +3,8 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "format": "prettier --write \"public/css/*.css\" \"public/*.js\" \"tests/Frontend/*.js\"",
-        "format:check": "prettier --check \"public/css/*.css\" \"public/*.js\" \"tests/Frontend/*.js\"",
+        "format": "prettier --write \"public/css/*.css\" \"public/js/*.js\" \"tests/Frontend/*.js\"",
+        "format:check": "prettier --check \"public/css/*.css\" \"public/js/*.js\" \"tests/Frontend/*.js\"",
         "test": "node --test tests/Frontend/*.test.js"
     },
     "devDependencies": {

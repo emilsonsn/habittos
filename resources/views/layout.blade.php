@@ -9,7 +9,7 @@
     <link rel="icon" type="image/svg+xml" href="{{ asset('imgs/habbitos-icone.svg') }}">
     <link rel="icon" type="image/png" href="{{ asset('imgs/habbitos-icone.png') }}">
     <link rel="apple-touch-icon" href="{{ asset('imgs/habbitos-icone.png') }}">
-    <script src="{{ asset('theme.js') }}" data-navigate-once></script>
+    <script src="{{ asset('js/theme.js') }}" data-navigate-once></script>
     <link rel="stylesheet" href="{{ asset('css/app.css') }}" data-navigate-track>
     <link rel="stylesheet" href="{{ asset('css/interface.css') }}" data-navigate-track>
     <link rel="stylesheet" href="{{ asset('css/theme.css') }}" data-navigate-track>
@@ -116,14 +116,14 @@
             </div>
         </main>
     @endauth
-    <script src="{{ asset('money.js') }}" data-navigate-once></script>
-    <script src="{{ asset('cover-position.js') }}" data-navigate-once></script>
-    <script src="{{ asset('category-pie.js') }}" data-navigate-once></script>
-    <script src="{{ asset('goals-kanban.js') }}" data-navigate-once></script>
-    <script src="{{ asset('rich-text.js') }}" data-navigate-once></script>
+    <script src="{{ asset('js/money.js') }}" data-navigate-once></script>
+    <script src="{{ asset('js/cover-position.js') }}" data-navigate-once></script>
+    <script src="{{ asset('js/category-pie.js') }}" data-navigate-once></script>
+    <script src="{{ asset('js/goals-kanban.js') }}" data-navigate-once></script>
+    <script src="{{ asset('js/rich-text.js') }}" data-navigate-once></script>
     <x-action-confirmation />
-    <script src="{{ asset('confirmation.js') }}" data-navigate-once></script>
-    <script src="{{ asset('app.js') }}" data-navigate-once></script>
+    <script src="{{ asset('js/confirmation.js') }}" data-navigate-once></script>
+    <script src="{{ asset('js/app.js') }}" data-navigate-once></script>
     @livewireScripts
 </body>
 

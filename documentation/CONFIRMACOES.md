@@ -4,7 +4,7 @@ O componente Blade `x-confirmation-dialog` concentra a aparência, o título, a 
 
 ## Ações simples
 
-`x-action-confirmation` é montado uma única vez no layout. `public/confirmation.js` intercepta botões e formulários com `data-confirm` antes dos handlers Livewire e da submissão HTTP. A ação original só é retomada depois da confirmação. Não há `window.confirm`, avaliação de expressões JavaScript ou inserção de HTML vindo dos nomes dos registros.
+`x-action-confirmation` é montado uma única vez no layout. `public/js/confirmation.js` intercepta botões e formulários com `data-confirm` antes dos handlers Livewire e da submissão HTTP. A ação original só é retomada depois da confirmação. Não há `window.confirm`, avaliação de expressões JavaScript ou inserção de HTML vindo dos nomes dos registros.
 
 ```blade
 <button type="button" wire:click="deleteNote({{ $note->id }})"

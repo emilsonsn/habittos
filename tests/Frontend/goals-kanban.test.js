@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import "../../public/goals-kanban.js";
+import "../../public/js/goals-kanban.js";
 const event = (x, y) => ({
     button: 0,
     clientX: x,
