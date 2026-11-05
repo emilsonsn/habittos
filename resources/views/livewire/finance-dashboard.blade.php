@@ -95,6 +95,14 @@
             @case(\App\Enums\FinanceSection::FixedExpenses)
                 @include('finance.fixed-entries', ['entryType' => \App\Enums\EntryType::Expense->value, 'heading' => 'Gastos fixos', 'total' => $fixed])
                 @break
+            @case(\App\Enums\FinanceSection::InstallmentExpenses)
+                @include('finance.entries-table', [
+                    'entries' => $entries->where('type', \App\Enums\EntryType::Expense->value)->where('is_installment', true),
+                    'heading' => 'Despesas parceladas do mês',
+                    'emptyTitle' => 'Nenhuma despesa parcelada neste mês.',
+                    'emptyDescription' => 'Marque “Parcelado” ao registrar uma despesa para acompanhá-la aqui.',
+                ])
+                @break
             @case(\App\Enums\FinanceSection::Investments)
                 @include('finance.entries-table', [
                     'entries' => $entries->where('type', \App\Enums\EntryType::Investment->value),

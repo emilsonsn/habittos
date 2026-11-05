@@ -270,8 +270,8 @@ class FinanceDashboard extends Component
         $copied = app(OpenFinancialMonth::class)->handle($workspace, $this->month, $this->cycleStartInput, $this->cycleEndInput);
         $this->cancelSynchronization();
         $this->message = $copied > 0
-            ? $copied.' lançamento(s) fixo(s) copiado(s) do mês anterior como pendentes. Ciclo salvo.'
-            : 'Ciclo salvo. O mês anterior não possui receitas ou gastos fixos para sincronizar.';
+            ? $copied.' lançamento(s) fixo(s) ou parcelado(s) copiado(s) do mês anterior como pendentes. Ciclo salvo.'
+            : 'Ciclo salvo. O mês anterior não possui receitas ou gastos fixos nem despesas parceladas para sincronizar.';
         $this->dispatch('close-month-sync');
     }
 

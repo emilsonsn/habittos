@@ -63,8 +63,9 @@
                             <td><strong>{{ $entry->description }}</strong>
                                 @if ($showCategory)
                                     @if ($entry->is_fixed)<small>Fixo</small>@endif
+                                    @if ($entry->is_installment)<small>Parcelado</small>@endif
                                 @else
-                                    <small>{{ $entry->category?->name ?? 'Sem categoria' }}{{ $entry->is_fixed ? ' · Fixo' : '' }}</small>
+                                    <small>{{ $entry->category?->name ?? 'Sem categoria' }}{{ $entry->is_fixed ? ' · Fixo' : '' }}{{ $entry->is_installment ? ' · Parcelado' : '' }}</small>
                                 @endif
                             </td>
                             @if ($showCategory)

@@ -4,7 +4,7 @@
             @close-month-sync.window="$refs.syncDialog.close()"
             @financial-month-changed.window="$refs.syncDialog.close()">
             @php
-                $syncDescription = 'As receitas e os gastos fixos de '.\Carbon\CarbonImmutable::createFromFormat('!Y-m', $month)->subMonth()->format('m/Y')
+                $syncDescription = 'As receitas e os gastos fixos e as despesas parceladas de '.\Carbon\CarbonImmutable::createFromFormat('!Y-m', $month)->subMonth()->format('m/Y')
                     .' serão copiados para '.\Carbon\CarbonImmutable::createFromFormat('!Y-m', $month)->format('m/Y')
                     .' como pendentes, com a data de início informada abaixo. Os dados do mês anterior serão preservados.';
             @endphp

@@ -11,7 +11,7 @@ use Illuminate\Validation\ValidationException;
 class OpenFinancialMonth
 {
     /**
-     * Copia os fixos anteriores somente para um ciclo sem lançamentos.
+     * Copia fixos e despesas parceladas anteriores somente para um ciclo sem lançamentos.
      * O bloqueio do ambiente serializa a sincronização e os salvamentos de lançamentos.
      */
     public function handle(Workspace $workspace, string $month, string $cycleStart, string $cycleEnd): int
@@ -27,15 +27,18 @@ class OpenFinancialMonth
             // Revalida também o período proposto para impedir contornar a restrição mudando datas.
             $this->assertEmpty($workspace, CarbonImmutable::parse($cycleStart), CarbonImmutable::parse($cycleEnd)->addDay());
             $previous = $calendar->period($workspace, $start->subMonth()->format('Y-m'));
-            $fixedEntries = $workspace->entries()
+            $recurringEntries = $workspace->entries()
                 ->whereIn('type', [EntryType::Income->value, EntryType::Expense->value])
-                ->where('is_fixed', true)
+                ->where(function ($query) {
+                    $query->where('is_fixed', true)
+                        ->orWhere(fn ($query) => $query->where('type', EntryType::Expense->value)->where('is_installment', true));
+                })
                 ->where('date', '>=', $previous['start']->toDateString())
                 ->where('date', '<', $previous['end']->toDateString())
                 ->get();
 
             $calendar->savePeriod($workspace, $month, $cycleStart, $cycleEnd);
-            if ($fixedEntries->isEmpty()) {
+            if ($recurringEntries->isEmpty()) {
                 return 0;
             }
 
@@ -46,7 +49,7 @@ class OpenFinancialMonth
                 'updated_at' => now(),
             ]);
 
-            foreach ($fixedEntries as $entry) {
+            foreach ($recurringEntries as $entry) {
                 $workspace->entries()->create([
                     'category_id' => $entry->category_id,
                     'description' => $entry->description,
@@ -54,13 +57,14 @@ class OpenFinancialMonth
                     'amount_cents' => $entry->amount_cents,
                     'date' => $cycleStart,
                     'paid' => false,
-                    'is_fixed' => true,
+                    'is_fixed' => $entry->is_fixed,
+                    'is_installment' => $entry->is_installment,
                     'counts_toward_weekly_spending' => $entry->counts_toward_weekly_spending,
                     'notes' => $entry->notes,
                 ]);
             }
 
-            return $fixedEntries->count();
+            return $recurringEntries->count();
         }, attempts: 5);
     }
 

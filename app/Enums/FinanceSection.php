@@ -7,6 +7,7 @@ enum FinanceSection: string
     case Dashboard = 'dashboard';
     case FixedIncome = 'fixed-income';
     case FixedExpenses = 'fixed-expenses';
+    case InstallmentExpenses = 'installment-expenses';
     case Investments = 'investments';
     case Entries = 'entries';
 
@@ -16,6 +17,7 @@ enum FinanceSection: string
             self::Dashboard => 'Dashboard',
             self::FixedIncome => 'Receitas fixas',
             self::FixedExpenses => 'Gastos fixos',
+            self::InstallmentExpenses => 'Despesas parceladas',
             self::Investments => 'Investimentos',
             self::Entries => 'Lançamentos do mês',
         };
@@ -32,6 +34,7 @@ enum FinanceSection: string
             self::Dashboard => '/financeiro',
             self::FixedIncome => '/financeiro/receitas-fixas',
             self::FixedExpenses => '/financeiro/gastos-fixos',
+            self::InstallmentExpenses => '/financeiro/despesas-parceladas',
             self::Investments => '/financeiro/investimentos',
             self::Entries => '/financeiro/lancamentos',
         };

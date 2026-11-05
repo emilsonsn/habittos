@@ -55,6 +55,7 @@ class EntryForm extends Component
             'category_id' => $entry->category_id,
             'paid' => $entry->paid,
             'is_fixed' => $entry->is_fixed,
+            'is_installment' => $entry->is_installment,
             'counts_toward_weekly_spending' => $entry->counts_toward_weekly_spending,
             'notes' => $entry->notes,
         ] : $this->defaultForm();
@@ -76,6 +77,7 @@ class EntryForm extends Component
             'category_id' => null,
             'paid' => true,
             'is_fixed' => in_array($section, [FinanceSection::FixedIncome, FinanceSection::FixedExpenses], true),
+            'is_installment' => $section === FinanceSection::InstallmentExpenses,
             'counts_toward_weekly_spending' => true,
             'notes' => null,
         ];

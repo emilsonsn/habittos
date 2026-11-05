@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\EntryType;
 use App\Enums\Permission;
 use App\Models\Entry;
 use App\Models\Workspace;
@@ -14,6 +15,9 @@ class SaveEntry
     {
         abort_unless($workspace->members()->whereKey(auth()->id())->exists(), 404);
         Gate::authorize($entryId ? Permission::FinanceUpdate->value : Permission::FinanceCreate->value, $workspace);
+        if (isset($data['type']) && $data['type'] !== EntryType::Expense->value) {
+            $data['is_installment'] = false;
+        }
         if (isset($data['notes']) && is_string($data['notes'])) {
             $data['notes'] = trim($data['notes']) !== '' ? trim($data['notes']) : null;
         }

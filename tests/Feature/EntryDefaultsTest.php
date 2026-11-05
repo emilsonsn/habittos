@@ -48,7 +48,7 @@ class EntryDefaultsTest extends TestCase
             ->assertSee('Lançamento registrado. Você já pode cadastrar o próximo.')
             ->assertSet('form', [
                 'description' => '', 'type' => 'expense', 'amount' => '', 'date' => '2026-10-22',
-                'category_id' => null, 'paid' => true, 'is_fixed' => false, 'counts_toward_weekly_spending' => true, 'notes' => null,
+                'category_id' => null, 'paid' => true, 'is_fixed' => false, 'is_installment' => false, 'counts_toward_weekly_spending' => true, 'notes' => null,
             ])->assertSet('formVersion', 1);
         $this->assertDatabaseHas('entries', [
             'workspace_id' => $workspace->id, 'description' => 'Salário', 'amount_cents' => 123456,

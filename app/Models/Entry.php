@@ -7,11 +7,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Entry extends Model
 {
-    protected $fillable = ['category_id', 'description', 'type', 'amount_cents', 'date', 'paid', 'is_fixed', 'counts_toward_weekly_spending', 'notes'];
+    protected $fillable = ['category_id', 'description', 'type', 'amount_cents', 'date', 'paid', 'is_fixed', 'is_installment', 'counts_toward_weekly_spending', 'notes'];
 
     protected function casts(): array
     {
-        return ['date' => 'date', 'paid' => 'boolean', 'is_fixed' => 'boolean', 'counts_toward_weekly_spending' => 'boolean', 'amount_cents' => 'integer'];
+        return ['date' => 'date', 'paid' => 'boolean', 'is_fixed' => 'boolean', 'is_installment' => 'boolean', 'counts_toward_weekly_spending' => 'boolean', 'amount_cents' => 'integer'];
     }
 
     public function category(): BelongsTo

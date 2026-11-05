@@ -54,7 +54,7 @@
                 @enderror
             </div>
         @endif
-        <details class="entry-advanced" @if ($errors->hasAny(['form.date', 'form.paid', 'form.is_fixed', 'form.notes'])) open @endif>
+        <details class="entry-advanced" @if ($errors->hasAny(['form.date', 'form.paid', 'form.is_fixed', 'form.is_installment', 'form.notes'])) open @endif>
             <summary><span>Avançado</span><small>Data, pagamento, recorrência e observações</small><span
                     class="advanced-chevron" aria-hidden="true">⌄</span></summary>
             <div class="entry-advanced-fields form-stack">
@@ -68,11 +68,17 @@
                         investido</label>
                     <label class="checkbox"><input type="checkbox" wire:model="form.is_fixed">Lançamento fixo
                         mensal</label>
-                    <small>Receitas e despesas fixas são copiadas como pendentes ao sincronizar o mês seguinte.</small>
+                    @if (($form['type'] ?? null) === \App\Enums\EntryType::Expense->value)
+                        <label class="checkbox"><input type="checkbox" wire:model="form.is_installment">Parcelado</label>
+                    @endif
+                    <small>Receitas e despesas fixas e despesas parceladas são copiadas como pendentes ao sincronizar o mês seguinte.</small>
                     @error('form.paid')
                         <span class="field-error">{{ $message }}</span>
                     @enderror
                     @error('form.is_fixed')
+                        <span class="field-error">{{ $message }}</span>
+                    @enderror
+                    @error('form.is_installment')
                         <span class="field-error">{{ $message }}</span>
                     @enderror
                 </div>

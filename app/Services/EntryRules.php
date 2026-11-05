@@ -21,6 +21,7 @@ class EntryRules
             'category_id' => ['nullable', Rule::exists('categories', 'id')->where('workspace_id', $workspaceId)],
             'paid' => ['sometimes', 'boolean'],
             'is_fixed' => ['sometimes', 'boolean'],
+            'is_installment' => ['sometimes', 'boolean'],
             'counts_toward_weekly_spending' => ['sometimes', 'boolean'],
             'notes' => ['nullable', 'string', 'max:2000'],
         ];
