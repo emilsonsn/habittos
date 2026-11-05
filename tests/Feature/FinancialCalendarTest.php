@@ -63,7 +63,7 @@ class FinancialCalendarTest extends TestCase
         $workspace->budgets()->where('month', '2026-10')->update(['reserve_cents' => 10000]);
         $summary = app(FinancialSummary::class)->forMonth($workspace, '2026-10');
         $this->assertSame(6000, $summary['expenses']);
-        $this->assertSame(84000, $summary['available']);
+        $this->assertSame(79000, $summary['available']);
         $this->assertSame(22500, $summary['weeklyLimit']);
         $this->assertSame([2000, 1000, 1000, 2000], $summary['weeks']->pluck('spent')->all());
         $this->assertSame('05/10–11/10', $summary['weeks']->first()['dateLabel']);

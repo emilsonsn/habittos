@@ -24,7 +24,7 @@ class FinancialSummary
             $before = $runningBalance;
             $runningBalance += match ($entry->type) {
                 EntryType::Income->value => $entry->amount_cents,
-                EntryType::Expense->value => -$entry->amount_cents,
+                EntryType::Expense->value, EntryType::Investment->value => -$entry->amount_cents,
                 default => 0,
             };
             $entryBalances[$entry->id] = ['before' => $before, 'after' => $runningBalance];
@@ -34,7 +34,9 @@ class FinancialSummary
         $fixed = $entries->where('type', EntryType::Expense->value)->where('is_fixed', true)->sum('amount_cents');
         $invested = $entries->where('type', EntryType::Investment->value)->sum('amount_cents');
         $settled = $entries->where('paid', true);
-        $balance = $settled->where('type', EntryType::Income->value)->sum('amount_cents') - $settled->where('type', EntryType::Expense->value)->sum('amount_cents');
+        $balance = $settled->where('type', EntryType::Income->value)->sum('amount_cents')
+            - $settled->where('type', EntryType::Expense->value)->sum('amount_cents')
+            - $settled->where('type', EntryType::Investment->value)->sum('amount_cents');
         $budget = $workspace->budgets()->where('month', $month)->first();
         $reserve = $budget?->reserve_cents ?? 0;
         $committedExpenses = $entries->where('type', EntryType::Expense->value)
@@ -57,7 +59,7 @@ class FinancialSummary
             'available' => $balance - $reserve,
             'investmentBalance' => app(InvestmentBalance::class)->forWorkspace($workspace),
             'fixedIncome' => $entries->where('type', EntryType::Income->value)->where('is_fixed', true)->sum('amount_cents'),
-            'projected' => $income - $expenses - $reserve,
+            'projected' => $income - $expenses - $invested - $reserve,
             'fixed' => $fixed,
             'pending' => $entries->where('paid', false)->where('type', EntryType::Expense->value)->sum('amount_cents'),
         ];

@@ -36,9 +36,9 @@ class EntryRunningBalanceTest extends TestCase
         $expected = [
             $income->id => ['before' => 0, 'after' => 10000],
             $expense->id => ['before' => 10000, 'after' => 7000],
-            $investment->id => ['before' => 7000, 'after' => 7000],
-            $refund->id => ['before' => 7000, 'after' => 7500],
-            $last->id => ['before' => 7500, 'after' => -1500],
+            $investment->id => ['before' => 7000, 'after' => 2000],
+            $refund->id => ['before' => 2000, 'after' => 2500],
+            $last->id => ['before' => 2500, 'after' => -6500],
         ];
         $summary = app(FinancialSummary::class)->forMonth($workspace, '2026-10');
         $this->assertSame($expected, $summary['entryBalances']);
@@ -46,13 +46,13 @@ class EntryRunningBalanceTest extends TestCase
 
         Livewire::test(FinanceDashboard::class, ['workspaceId' => $workspace->id, 'month' => '2026-10', 'section' => 'entries'])
             ->assertSee('<th scope="col" class="number">Saldo</th>', false)
-            ->assertSee('Antes: R$ 75,00')->assertSee('R$ -15,00')
+            ->assertSee('Antes: R$ 25,00')->assertSee('R$ -65,00')
             ->set('categoryFilter', [(string) $category->id])
             ->assertDontSee('Salário')->assertSee('Cinema')->assertSee('Compra final')
             ->assertViewHas('entryBalances', $expected)
             ->call('togglePaid', $expense->id)->assertViewHas('entryBalances', $expected)
             ->call('deleteEntry', $expense->id)
-            ->assertViewHas('entryBalances', fn ($balances) => $balances[$last->id] === ['before' => 10500, 'after' => 1500])
+            ->assertViewHas('entryBalances', fn ($balances) => $balances[$last->id] === ['before' => 5500, 'after' => -3500])
             ->call('openMonth', '2026-11')
             ->assertViewHas('entryBalances', fn ($balances) => count($balances) === 1 && array_values($balances)[0] === ['before' => 0, 'after' => 99999]);
     }

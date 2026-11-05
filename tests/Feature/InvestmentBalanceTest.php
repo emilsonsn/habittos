@@ -15,7 +15,7 @@ class InvestmentBalanceTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_total_uses_all_dates_and_subtracts_withdrawals_without_affecting_financial_results(): void
+    public function test_investment_total_uses_all_dates_but_only_current_cycle_affects_cash_balances(): void
     {
         $user = User::factory()->create();
         $workspace = app(CreateWorkspace::class)->handle($user, 'Casa');
@@ -27,9 +27,10 @@ class InvestmentBalanceTest extends TestCase
         foreach (['2024-01', '2026-10', '2027-01', '2028-01'] as $month) {
             $summary = app(FinancialSummary::class)->forMonth($workspace, $month);
             $this->assertSame(137655, $summary['investmentBalance']);
-            foreach (['income', 'expenses', 'balance', 'available', 'projected', 'pending', 'monthlyLimit', 'weeklyLimit'] as $key) {
+            foreach (['income', 'expenses', 'balance', 'available', 'pending', 'monthlyLimit', 'weeklyLimit'] as $key) {
                 $this->assertSame(0, $summary[$key], $key);
             }
+            $this->assertSame(-$summary['invested'], $summary['projected']);
         }
         $this->assertSame(-12345, app(FinancialSummary::class)->forMonth($workspace, '2026-10')['invested']);
     }
@@ -48,7 +49,8 @@ class InvestmentBalanceTest extends TestCase
         $this->assertSame(-1285, app(FinancialSummary::class)->forMonth($workspace, '2026-10')['investmentBalance']);
         foreach (['finance.investments', 'finance.entries'] as $route) {
             $response = $this->get(route($route, [$workspace, 'month' => '2026-10']))->assertOk();
-            $this->assertMatchesRegularExpression('/−\s*R\$ 12,34/u', $response->getContent());
+            $sign = $route === 'finance.entries' ? '\\+' : '−';
+            $this->assertMatchesRegularExpression('/'.$sign.'\s*R\$ 12,34/u', $response->getContent());
             $this->assertDoesNotMatchRegularExpression('/\+\s*R\$ -/u', $response->getContent());
         }
         $entry = $workspace->entries()->where('amount_cents', -1234)->firstOrFail();
@@ -56,7 +58,7 @@ class InvestmentBalanceTest extends TestCase
             ->assertSet('form.amount', '-12.34')->set('form.amount', '20')->call('save')->assertHasNoErrors();
         Livewire::test(FinanceDashboard::class, ['workspaceId' => $workspace->id, 'month' => '2026-10'])
             ->assertViewHas('investmentBalance', 1949)->call('deleteEntry', $entry->id)
-            ->assertHasNoErrors()->assertViewHas('investmentBalance', -51)->assertViewHas('available', 0);
+            ->assertHasNoErrors()->assertViewHas('investmentBalance', -51)->assertViewHas('available', 51);
         $this->assertDatabaseCount('budgets', 0);
     }
 

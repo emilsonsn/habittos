@@ -98,8 +98,8 @@ class WeeklySpendingPlanTest extends TestCase
         $this->assertSame(15000, $summary['weeks']->sum('spent'));
         $this->assertSame(65000, $summary['expenses']);
         $this->assertSame(60000, $summary['pending']);
-        $this->assertSame(145000, $summary['available']);
-        $this->assertSame(85000, $summary['projected']);
+        $this->assertSame(95000, $summary['available']);
+        $this->assertSame(35000, $summary['projected']);
 
         $this->expense($workspace, '2026-10-08', 200000, ['counts_toward_weekly_spending' => false]);
         $summary = app(FinancialSummary::class)->forMonth($workspace, '2026-10');

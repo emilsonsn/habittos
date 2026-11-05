@@ -23,7 +23,7 @@
         @endif
     </div>
     @if ($showCategory)
-        <p class="muted entry-balance-note">Saldo acumulado desde o início do ciclo: receitas menos despesas, incluindo pendentes. Investimentos não alteram o saldo. O filtro de categorias preserva o saldo completo. Mais recentes primeiro.</p>
+        <p class="muted entry-balance-note">Saldo acumulado desde o início do ciclo, incluindo pendentes: receitas e retiradas de investimentos aumentam o saldo; despesas e aportes reduzem. O filtro de categorias preserva o saldo completo. Mais recentes primeiro.</p>
     @endif
     @if ($entries->isEmpty())
         <div class="empty-state"><span>↗</span>
@@ -83,8 +83,9 @@
                                         class="tag {{ $entry->paid ? 'settled' : 'pending' }}">{{ $entry->paid ? 'Efetivado' : 'Pendente' }}</span>
                                 @endcan
                             </td>
-                            <td class="number {{ $entry->amount_cents < 0 ? 'negative' : ($entry->type !== \App\Enums\EntryType::Expense->value ? 'green' : '') }}">
-                                {{ $entry->type === \App\Enums\EntryType::Expense->value || $entry->amount_cents < 0 ? '−' : '+' }}
+                            @php($displayAmount = $showCategory && $entry->type === \App\Enums\EntryType::Investment->value ? -$entry->amount_cents : $entry->amount_cents)
+                            <td class="number {{ $displayAmount < 0 ? 'negative' : ($entry->type !== \App\Enums\EntryType::Expense->value ? 'green' : '') }}">
+                                {{ $entry->type === \App\Enums\EntryType::Expense->value || $displayAmount < 0 ? '−' : '+' }}
                                 {{ $money(abs($entry->amount_cents)) }}<small>{{ \App\Enums\EntryType::from($entry->type)->label() }}</small>
                             </td>
                             @if ($showCategory)

@@ -28,7 +28,7 @@
         <div class="metrics">
             <div class="metric balance">
                 <div class="metric-label">Saldo disponível <span>↗</span></div>
-                <strong>{{ $money($available) }}</strong><small>Após pagamentos e reserva separada</small>
+                <strong>{{ $money($available) }}</strong><small>Após despesas, investimentos e reserva</small>
             </div>
             <div class="metric">
                 <div class="metric-label">Receitas <span class="green">↙</span></div>
