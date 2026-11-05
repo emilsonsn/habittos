@@ -53,14 +53,16 @@
                 </div>
                 <div class="weekly-chart">
                     @foreach ($weeks as $week)
-                        <div class="week">
-                            <div class="week-bar-track">
-                                <div class="week-bar {{ $week['limit'] && $week['spent'] > $week['limit'] ? 'over' : '' }}"
+                        <button type="button" class="week week-button" wire:click="showWeekEntries({{ $week['number'] }})"
+                            aria-label="Ver lançamentos da semana {{ $week['number'] }}, {{ $week['dateLabel'] }}, total {{ $money($week['spent']) }}"
+                            aria-haspopup="dialog" wire:loading.attr="disabled" wire:target="showWeekEntries">
+                            <span class="week-bar-track" aria-hidden="true">
+                                <span class="week-bar {{ $week['limit'] && $week['spent'] > $week['limit'] ? 'over' : '' }}"
                                     style="height: {{ max(3, min(100, ($week['spent'] / max(1, $weeklyLimit, $weeks->max('spent'))) * 100)) }}%">
-                                </div>
-                            </div><strong>{{ $money($week['spent']) }}</strong><span>Semana
+                                </span>
+                            </span><strong>{{ $money($week['spent']) }}</strong><span>Semana
                                 {{ $week['number'] }}</span><small>{{ $week['dateLabel'] }}</small>
-                        </div>
+                        </button>
                     @endforeach
                 </div>
                 <div class="panel-footer weekly-limits">
@@ -115,6 +117,9 @@
                 @include('finance.entries-table')
                 @break
         @endswitch
+    @endif
+    @if ($selectedWeekDetails)
+        @include('finance.week-entries-dialog', ['week' => $selectedWeekDetails])
     @endif
     @if ($entryFormOpen)
         <dialog class="app-dialog entry-dialog" wire:ignore.self aria-labelledby="entry-dialog-title"

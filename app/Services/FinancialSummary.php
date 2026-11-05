@@ -45,9 +45,10 @@ class FinancialSummary
         $weeks = collect(range(1, 4))->map(function ($week) use ($entries, $weeklyLimit, $start, $end, $weekLength) {
             $weekStart = $start->addDays(($week - 1) * $weekLength);
             $weekEnd = $week === 4 ? $end : $weekStart->addDays($weekLength)->min($end);
-            $spent = $entries->where('type', EntryType::Expense->value)->where('is_fixed', false)->where('counts_toward_weekly_spending', true)->filter(fn ($entry) => $entry->date->gte($weekStart) && $entry->date->lt($weekEnd))->sum('amount_cents');
+            $weekEntries = $entries->where('type', EntryType::Expense->value)->where('is_fixed', false)->where('counts_toward_weekly_spending', true)->filter(fn ($entry) => $entry->date->gte($weekStart) && $entry->date->lt($weekEnd))->values();
+            $spent = $weekEntries->sum('amount_cents');
 
-            return ['number' => $week, 'spent' => $spent, 'limit' => $weeklyLimit, 'startDay' => $weekStart->day, 'endDay' => $weekEnd->subDay()->day, 'dateLabel' => $weekStart->lt($weekEnd) ? $weekStart->format('d/m').'–'.$weekEnd->subDay()->format('d/m') : 'Sem dias neste ciclo'];
+            return ['number' => $week, 'spent' => $spent, 'entries' => $weekEntries, 'limit' => $weeklyLimit, 'startDay' => $weekStart->day, 'endDay' => $weekEnd->subDay()->day, 'dateLabel' => $weekStart->lt($weekEnd) ? $weekStart->format('d/m').'–'.$weekEnd->subDay()->format('d/m') : 'Sem dias neste ciclo'];
         });
         $weeklyPlan = $this->weeklyPlan($start, $end, $weekLength, $weeklyLimit, $weeks);
         $byCategory = $entries->where('type', EntryType::Expense->value)->groupBy(fn ($entry) => $entry->category?->name ?? 'Sem categoria')->map(fn ($items) => $items->sum('amount_cents'))->sortDesc();

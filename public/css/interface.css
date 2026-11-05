@@ -322,6 +322,38 @@ h2 {
 .week strong {
     color: #545371;
 }
+.week-button {
+    padding: 8px 4px;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+}
+.week-button:hover {
+    background: var(--soft);
+}
+.week-button:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 3px;
+}
+.week-button > .week-bar-track {
+    display: flex;
+    margin-top: 0;
+}
+.week-entries-dialog {
+    width: min(800px, calc(100vw - 32px));
+}
+.week-entries-dialog .table-scroll {
+    max-height: 50dvh;
+    overflow: auto;
+}
+.week-entries-total {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+}
 .weekly-limits {
     column-gap: 24px;
     row-gap: 12px;

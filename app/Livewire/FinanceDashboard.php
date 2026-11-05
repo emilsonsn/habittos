@@ -64,6 +64,21 @@ class FinanceDashboard extends Component
     #[Locked]
     public int $entryFormVersion = 0;
 
+    #[Locked]
+    public ?int $selectedWeek = null;
+
+    public function showWeekEntries(int $week): void
+    {
+        $this->workspace();
+        abort_unless($this->section === FinanceSection::Dashboard->value && $week >= 1 && $week <= 4, 404);
+        $this->selectedWeek = $week;
+    }
+
+    public function closeWeekEntries(): void
+    {
+        $this->reset('selectedWeek');
+    }
+
     public function createEntry(): void
     {
         Gate::authorize(Permission::FinanceCreate->value, $this->workspace());
@@ -197,6 +212,7 @@ class FinanceDashboard extends Component
 
     protected function loadBudget(): void
     {
+        $this->closeWeekEntries();
         $this->cancelIndicator();
         $this->cancelCycle();
         $this->reset('synchronizingMonth');
@@ -344,6 +360,7 @@ class FinanceDashboard extends Component
         return view('livewire.finance-dashboard', $summary + [
             'workspace' => $workspace,
             'financeSection' => FinanceSection::from($this->section),
+            'selectedWeekDetails' => $this->selectedWeek === null ? null : $summary['weeks']->firstWhere('number', $this->selectedWeek),
             'categories' => $workspace->categories()->orderBy('name')->get(),
         ]);
     }
