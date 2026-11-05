@@ -38,15 +38,17 @@ class InvestmentAccountingTest extends TestCase
             Livewire::test(FinanceDashboard::class, ['workspaceId' => $workspace->id, 'month' => '2026-10', 'section' => $section])
                 ->assertViewHas('invested', 33000)->assertViewHas('balance', 65000)
                 ->assertViewHas('available', 62000)->assertViewHas('projected', 54000)
+                ->assertViewHas('monthlyLimit', 64000)->assertViewHas('weeklyLimit', 16000)
                 ->assertViewHas('entryBalances', fn ($balances) => $balances[$withdrawal->id]['after'] === 57000);
         }
         Livewire::test(FinanceDashboard::class, ['workspaceId' => $workspace->id, 'month' => '2026-10'])
             ->call('togglePaid', $pendingDeposit->id)->assertViewHas('available', 52000)
             ->call('togglePaid', $pendingWithdrawal->id)->assertViewHas('available', 54000)
-            ->call('deleteEntry', $deposit->id)->assertViewHas('available', 84000)->assertViewHas('projected', 84000);
+            ->call('deleteEntry', $deposit->id)->assertViewHas('available', 84000)->assertViewHas('projected', 84000)
+            ->assertViewHas('monthlyLimit', 94000)->assertViewHas('weeklyLimit', 23500);
     }
 
-    public function test_pending_and_settled_investments_reduce_balances_without_changing_expense_totals_or_spending_limits(): void
+    public function test_pending_and_settled_investments_reduce_balances_and_spending_limits_without_changing_expense_totals(): void
     {
         $user = User::factory()->create();
         $workspace = app(CreateWorkspace::class)->handle($user, 'Casa');
@@ -67,7 +69,10 @@ class InvestmentAccountingTest extends TestCase
         $this->assertSame($before['balance'] - 10000, $after['balance']);
         $this->assertSame($before['available'] - 10000, $after['available']);
         $this->assertSame($before['projected'] - 20000, $after['projected']);
-        foreach (['income', 'expenses', 'fixed', 'fixedIncome', 'pending', 'monthlyLimit', 'weeklyLimit', 'weeks', 'weeklyPlan', 'byCategory'] as $key) {
+        $this->assertSame($before['monthlyLimit'] - 20000, $after['monthlyLimit']);
+        $this->assertSame(intdiv($after['monthlyLimit'], 4), $after['weeklyLimit']);
+        $this->assertSame($before['weeks']->pluck('spent')->all(), $after['weeks']->pluck('spent')->all());
+        foreach (['income', 'expenses', 'fixed', 'fixedIncome', 'pending', 'byCategory'] as $key) {
             $this->assertEquals($before[$key], $after[$key], $key.' deve ignorar os lançamentos de investimento.');
         }
     }

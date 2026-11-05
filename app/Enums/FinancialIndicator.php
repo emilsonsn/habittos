@@ -27,7 +27,7 @@ enum FinancialIndicator: string
     public function description(): string
     {
         return match ($this) {
-            self::MonthlyLimit => 'Receitas menos despesas fixas, parceladas, despesas fora do gasto semanal e reserva planejada. Cada despesa é descontada uma única vez.',
+            self::MonthlyLimit => 'Receitas menos despesas fixas, parceladas, despesas fora do gasto semanal, investimentos do período e reserva planejada. Cada despesa é descontada uma única vez.',
             self::Reserve => 'Valor separado para investir e metas do mês.',
         };
     }

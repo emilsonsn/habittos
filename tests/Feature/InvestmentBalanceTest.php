@@ -27,10 +27,12 @@ class InvestmentBalanceTest extends TestCase
         foreach (['2024-01', '2026-10', '2027-01', '2028-01'] as $month) {
             $summary = app(FinancialSummary::class)->forMonth($workspace, $month);
             $this->assertSame(137655, $summary['investmentBalance']);
-            foreach (['income', 'expenses', 'balance', 'available', 'pending', 'monthlyLimit', 'weeklyLimit'] as $key) {
+            foreach (['income', 'expenses', 'balance', 'available', 'pending'] as $key) {
                 $this->assertSame(0, $summary[$key], $key);
             }
             $this->assertSame(-$summary['invested'], $summary['projected']);
+            $this->assertSame(max(0, -$summary['invested']), $summary['monthlyLimit']);
+            $this->assertSame(intdiv($summary['monthlyLimit'], 4), $summary['weeklyLimit']);
         }
         $this->assertSame(-12345, app(FinancialSummary::class)->forMonth($workspace, '2026-10')['invested']);
     }

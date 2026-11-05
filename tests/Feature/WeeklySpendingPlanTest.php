@@ -92,8 +92,8 @@ class WeeklySpendingPlanTest extends TestCase
         $this->expense($other, '2026-10-08', 50000, ['is_installment' => true]);
 
         $summary = app(FinancialSummary::class)->forMonth($workspace, '2026-10');
-        $this->assertSame(90000, $summary['monthlyLimit']);
-        $this->assertSame(22500, $summary['weeklyLimit']);
+        $this->assertSame(40000, $summary['monthlyLimit']);
+        $this->assertSame(10000, $summary['weeklyLimit']);
         // Installments keep respecting the independent weekly-spending checkbox.
         $this->assertSame(15000, $summary['weeks']->sum('spent'));
         $this->assertSame(65000, $summary['expenses']);
@@ -123,12 +123,12 @@ class WeeklySpendingPlanTest extends TestCase
         $this->expense($other, '2026-10-08', 50000);
 
         $summary = app(FinancialSummary::class)->forMonth($workspace, '2026-10');
-        $this->assertSame(130000, $summary['monthlyLimit']);
-        $this->assertSame(32500, $summary['weeklyLimit']);
+        $this->assertSame(120000, $summary['monthlyLimit']);
+        $this->assertSame(30000, $summary['weeklyLimit']);
         $this->assertSame(2, $summary['weeklyPlan']['remainingWeeks']);
-        $this->assertSame(32500, $summary['weeklyPlan']['adjustedLimit']);
+        $this->assertSame(30000, $summary['weeklyPlan']['adjustedLimit']);
         Livewire::test(FinanceDashboard::class, ['workspaceId' => $workspace->id, 'month' => '2026-10'])
-            ->assertSee('Limite ajustado')->assertSee('R$ 325,00')
+            ->assertSee('Limite ajustado')->assertSee('R$ 300,00')
             ->assertDontSee('Editar limite mensal')->assertDontSee('Editar limite semanal');
     }
 
