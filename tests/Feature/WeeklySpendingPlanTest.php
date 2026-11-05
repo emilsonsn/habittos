@@ -33,7 +33,7 @@ class WeeklySpendingPlanTest extends TestCase
         $workspace->entries()->create($attributes + ['description' => 'Mercado', 'type' => 'expense', 'amount_cents' => $amount, 'date' => $date, 'paid' => true, 'is_fixed' => false]);
     }
 
-    public function test_excluded_expenses_do_not_affect_weekly_spending_or_adjustments_but_keep_monthly_totals(): void
+    public function test_excluded_expenses_reduce_the_monthly_budget_without_counting_as_weekly_spending(): void
     {
         $this->travelTo(CarbonImmutable::parse('2026-10-08 12:00:00'));
         $workspace = $this->workspace();
@@ -44,13 +44,67 @@ class WeeklySpendingPlanTest extends TestCase
 
         $summary = app(FinancialSummary::class)->forMonth($workspace, '2026-10');
         $this->assertSame([10000, 5000, 0, 0], $summary['weeks']->pluck('spent')->all());
-        $this->assertSame(40000, $summary['weeklyPlan']['adjustedLimit']);
-        $this->assertSame(35000, $summary['weeklyPlan']['currentWeekRemaining']);
+        $this->assertSame(90000, $summary['monthlyLimit']);
+        $this->assertSame(22500, $summary['weeklyPlan']['adjustedLimit']);
+        $this->assertSame(17500, $summary['weeklyPlan']['currentWeekRemaining']);
         $this->assertSame(85000, $summary['expenses']);
         $this->assertSame(100000, $summary['balance']);
         $this->assertSame(75000, $summary['projected']);
         $this->assertSame(25000, $summary['pending']);
         $this->assertSame(85000, $summary['byCategory']->sum());
+    }
+
+    public function test_screenshot_budget_deducts_non_weekly_expenses_before_dividing_into_weeks(): void
+    {
+        $this->travelTo(CarbonImmutable::parse('2026-11-05 12:00:00'));
+        $workspace = $this->workspace();
+        $workspace->budgets()->create(['month' => '2026-11', 'starts_on' => '2026-11-03', 'reserve_cents' => 55324]);
+        $workspace->budgets()->create(['month' => '2026-12', 'starts_on' => '2026-12-03']);
+        $workspace->entries()->create(['description' => 'Receita novembro', 'type' => 'income', 'amount_cents' => 853700, 'date' => '2026-11-03', 'paid' => true]);
+        $this->expense($workspace, '2026-11-03', 483682, ['is_fixed' => true, 'counts_toward_weekly_spending' => false]);
+        $this->expense($workspace, '2026-11-03', 60500, ['counts_toward_weekly_spending' => false]);
+        $this->expense($workspace, '2026-11-03', 35048);
+
+        $summary = app(FinancialSummary::class)->forMonth($workspace, '2026-11');
+        $this->assertSame(219146, $summary['available']);
+        $this->assertSame(254194, $summary['monthlyLimit']);
+        $this->assertSame(63548, $summary['weeklyLimit']);
+        $this->assertSame(35048, $summary['weeks']->first()['spent']);
+        $this->assertSame(28500, $summary['weeklyPlan']['currentWeekRemaining']);
+        Livewire::test(FinanceDashboard::class, ['workspaceId' => $workspace->id, 'month' => '2026-11'])
+            ->assertSee('R$ 2.541,94')->assertSee('R$ 635,48')->assertSee('R$ 285,00');
+    }
+
+    public function test_fixed_installment_and_excluded_expenses_are_deducted_once_even_when_pending(): void
+    {
+        $workspace = $this->workspace();
+        $workspace->budgets()->where('month', '2026-10')->update(['reserve_cents' => 10000]);
+        foreach ([
+            [true, false, true], [true, false, false], [false, true, true],
+            [false, true, false], [true, true, false], [false, false, false],
+        ] as [$fixed, $installment, $weekly]) {
+            $this->expense($workspace, '2026-10-08', 10000, ['is_fixed' => $fixed, 'is_installment' => $installment, 'counts_toward_weekly_spending' => $weekly, 'paid' => false]);
+        }
+        $this->expense($workspace, '2026-10-08', 5000);
+        $this->expense($workspace, '2026-10-08', 50000, ['type' => 'investment', 'is_installment' => true, 'counts_toward_weekly_spending' => false]);
+        $this->expense($workspace, '2026-09-08', 50000, ['counts_toward_weekly_spending' => false]);
+        $other = app(CreateWorkspace::class)->handle(auth()->user(), 'Outro');
+        $this->expense($other, '2026-10-08', 50000, ['is_installment' => true]);
+
+        $summary = app(FinancialSummary::class)->forMonth($workspace, '2026-10');
+        $this->assertSame(90000, $summary['monthlyLimit']);
+        $this->assertSame(22500, $summary['weeklyLimit']);
+        // Installments keep respecting the independent weekly-spending checkbox.
+        $this->assertSame(15000, $summary['weeks']->sum('spent'));
+        $this->assertSame(65000, $summary['expenses']);
+        $this->assertSame(60000, $summary['pending']);
+        $this->assertSame(145000, $summary['available']);
+        $this->assertSame(85000, $summary['projected']);
+
+        $this->expense($workspace, '2026-10-08', 200000, ['counts_toward_weekly_spending' => false]);
+        $summary = app(FinancialSummary::class)->forMonth($workspace, '2026-10');
+        $this->assertSame(0, $summary['monthlyLimit']);
+        $this->assertSame(0, $summary['weeklyLimit']);
     }
 
     public function test_spending_below_the_weekly_limit_does_not_increase_the_adjusted_limit(): void

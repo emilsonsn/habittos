@@ -64,7 +64,7 @@
                     @endforeach
                 </div>
                 <div class="panel-footer weekly-limits">
-                    <span title="Todas as receitas menos despesas fixas e reserva planejada, dividido por 4.">
+                    <span title="Receitas menos despesas fixas, parceladas, despesas fora do gasto semanal e reserva planejada, dividido por 4. Cada despesa é descontada uma única vez.">
                         Limite por semana <strong>{{ $money($weeklyLimit) }}</strong>
                     </span>
                     <span title="Limite semanal menos o excesso das semanas encerradas, dividido pelas semanas restantes, incluindo a atual.">
@@ -80,7 +80,7 @@
                             <strong @class(['negative' => $weeklyPlan['currentWeekRemaining'] < 0])>{{ $money($weeklyPlan['currentWeekRemaining']) }}</strong>
                         </span>
                     @endif
-                    <small class="weekly-limits-note">Base: receitas − fixos − reserva. O ajustado desconta apenas o excesso das semanas encerradas.</small>
+                    <small class="weekly-limits-note">Base: receitas − despesas fixas, parceladas e fora do gasto semanal − reserva, sem duplicar despesas. O ajustado desconta apenas o excesso das semanas encerradas.</small>
                 </div>
             </section>
             @include('finance.planning-indicators')

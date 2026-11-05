@@ -37,7 +37,10 @@ class FinancialSummary
         $balance = $settled->where('type', EntryType::Income->value)->sum('amount_cents') - $settled->where('type', EntryType::Expense->value)->sum('amount_cents');
         $budget = $workspace->budgets()->where('month', $month)->first();
         $reserve = $budget?->reserve_cents ?? 0;
-        $monthlyLimit = max(0, $income - $fixed - $reserve);
+        $committedExpenses = $entries->where('type', EntryType::Expense->value)
+            ->filter(fn ($entry) => $entry->is_fixed || $entry->is_installment || ! $entry->counts_toward_weekly_spending)
+            ->sum('amount_cents');
+        $monthlyLimit = max(0, $income - $committedExpenses - $reserve);
         $weeklyLimit = intdiv($monthlyLimit, 4);
         $weeks = collect(range(1, 4))->map(function ($week) use ($entries, $weeklyLimit, $start, $end, $weekLength) {
             $weekStart = $start->addDays(($week - 1) * $weekLength);
