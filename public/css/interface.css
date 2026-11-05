@@ -323,7 +323,8 @@ h2 {
     color: #545371;
 }
 .week-button {
-    padding: 8px 4px;
+    appearance: none;
+    padding: 0;
     border: 0;
     border-radius: 10px;
     background: transparent;

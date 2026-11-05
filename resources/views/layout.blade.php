@@ -11,7 +11,7 @@
     <link rel="apple-touch-icon" href="{{ asset('imgs/habbitos-icone.png') }}">
     <script src="{{ asset('js/theme.js') }}" data-navigate-once></script>
     <link rel="stylesheet" href="{{ asset('css/app.css') }}" data-navigate-track>
-    <link rel="stylesheet" href="{{ asset('css/interface.css') }}" data-navigate-track>
+    <link rel="stylesheet" href="{{ asset('css/interface.css') }}?v={{ filemtime(public_path('css/interface.css')) }}" data-navigate-track>
     <link rel="stylesheet" href="{{ asset('css/theme.css') }}" data-navigate-track>
     <link rel="stylesheet" href="{{ asset('css/goals.css') }}" data-navigate-track>
     <link rel="stylesheet" href="{{ asset('css/rich-text.css') }}" data-navigate-track>
