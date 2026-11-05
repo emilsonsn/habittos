@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Enums\EntryType;
+use App\Enums\FinanceSection;
 use App\Models\Entry;
 use App\Models\Workspace;
 use App\Services\EntryRules;
@@ -20,6 +21,9 @@ class EntryForm extends Component
     #[Locked]
     public ?int $entryId = null;
 
+    #[Locked]
+    public string $section = 'entries';
+
     public array $form = [];
 
     public ?string $success = null;
@@ -36,10 +40,11 @@ class EntryForm extends Component
         return $workspace;
     }
 
-    public function mount(int $workspaceId, ?int $entryId = null): void
+    public function mount(int $workspaceId, ?int $entryId = null, string $section = 'entries'): void
     {
         $this->workspaceId = $workspaceId;
         $this->entryId = $entryId;
+        $this->section = $section;
         $workspace = $this->workspace();
         $entry = $entryId ? $workspace->entries()->findOrFail($entryId) : null;
         $this->form = $entry ? [
@@ -56,14 +61,20 @@ class EntryForm extends Component
 
     private function defaultForm(): array
     {
+        $section = FinanceSection::tryFrom($this->section);
+
         return [
             'description' => '',
-            'type' => EntryType::Expense->value,
+            'type' => match ($section) {
+                FinanceSection::FixedIncome => EntryType::Income->value,
+                FinanceSection::Investments => EntryType::Investment->value,
+                default => EntryType::Expense->value,
+            },
             'amount' => '',
             'date' => now()->toDateString(),
             'category_id' => null,
             'paid' => true,
-            'is_fixed' => false,
+            'is_fixed' => in_array($section, [FinanceSection::FixedIncome, FinanceSection::FixedExpenses], true),
             'notes' => null,
         ];
     }

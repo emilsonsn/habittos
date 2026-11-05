@@ -112,7 +112,7 @@
         <dialog class="app-dialog entry-dialog" wire:ignore.self aria-labelledby="entry-dialog-title"
             wire:key="entry-dialog-{{ $entryFormVersion }}" x-data
             x-init="$nextTick(() => $el.showModal())" @cancel.prevent="$wire.closeEntryForm()">
-            <livewire:entry-form :workspace-id="$workspace->id" :entry-id="$editingEntryId"
+            <livewire:entry-form :workspace-id="$workspace->id" :entry-id="$editingEntryId" :section="$section"
                 :key="'entry-form-'.$workspace->id.'-'.$entryFormVersion" />
         </dialog>
     @endif

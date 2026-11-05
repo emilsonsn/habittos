@@ -24,6 +24,33 @@ class EntryDialogTest extends TestCase
         return app(CreateWorkspace::class)->handle($user, 'Casa');
     }
 
+    public function test_new_entry_defaults_follow_the_section_and_reset_after_saving_another(): void
+    {
+        $workspace = $this->workspace();
+        foreach ([['investments', 'investment', false], ['fixed-income', 'income', true], ['fixed-expenses', 'expense', true], ['entries', 'expense', false], ['dashboard', 'expense', false]] as [$section, $type, $fixed]) {
+            Livewire::test(EntryForm::class, ['workspaceId' => $workspace->id, 'section' => $section])
+                ->assertSet('form.type', $type)->assertSet('form.is_fixed', $fixed)
+                ->set('form.description', 'Novo '.$section)->set('form.amount', '10')
+                ->call('saveAndCreateAnother')->assertHasNoErrors()
+                ->assertSet('form.type', $type)->assertSet('form.is_fixed', $fixed)
+                ->assertSet('form.description', '')->assertSet('form.amount', '');
+            $this->assertDatabaseHas('entries', ['workspace_id' => $workspace->id, 'description' => 'Novo '.$section, 'type' => $type, 'is_fixed' => $fixed]);
+        }
+    }
+
+    public function test_section_defaults_do_not_override_existing_entries_or_prevent_changes(): void
+    {
+        $workspace = $this->workspace();
+        $entry = $workspace->entries()->create(['description' => 'Receita avulsa', 'type' => 'income', 'amount_cents' => 1000, 'date' => '2026-10-10', 'is_fixed' => false]);
+        Livewire::test(EntryForm::class, ['workspaceId' => $workspace->id, 'entryId' => $entry->id, 'section' => 'fixed-expenses'])
+            ->assertSet('form.type', 'income')->assertSet('form.is_fixed', false);
+        Livewire::test(EntryForm::class, ['workspaceId' => $workspace->id, 'section' => 'investments'])
+            ->set('form.type', 'expense')->set('form.is_fixed', true)
+            ->set('form.description', 'Escolha manual')->set('form.amount', '10')
+            ->call('save')->assertHasNoErrors();
+        $this->assertDatabaseHas('entries', ['workspace_id' => $workspace->id, 'description' => 'Escolha manual', 'type' => 'expense', 'is_fixed' => true]);
+    }
+
     public function test_create_and_edit_refresh_the_current_list_without_redirects(): void
     {
         $workspace = $this->workspace();
