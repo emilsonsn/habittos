@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\GoalCategory;
 use App\Enums\GoalSection;
+use App\Enums\GoalStatus;
 use App\Livewire\GoalsBoard;
 use App\Livewire\GoalsDashboard;
 use App\Models\User;
@@ -97,7 +98,7 @@ class GoalsPlanningTest extends TestCase
         $component->call('openCreate')->set('form.title', 'Aprender inglês')->set('form.category', 'Profissional')
             ->set('form.progress_percent', 70)->set('form.status', 'completed')->set('form.priority', 'low')
             ->set('form.due_date', '2027-03-31')->set('form.year', 2026)
-            ->call('saveGoal')->assertHasNoErrors()->assertSet('formOpen', false)->assertSee('Aprender inglês');
+            ->call('saveGoal')->assertHasNoErrors()->assertSet('formOpen', false)->set('statusFilter', ['completed'])->assertSee('Aprender inglês');
         $goal = $workspace->goals()->firstOrFail();
         $this->assertSame('100.00', $goal->progress_percent);
         $this->assertSame('completed', $goal->status);
@@ -119,16 +120,44 @@ class GoalsPlanningTest extends TestCase
         $other = app(CreateWorkspace::class)->handle(auth()->user(), 'Outro');
         $this->goal($other, ['title' => 'Meta privada']);
         $component = Livewire::test(GoalsBoard::class, ['workspaceId' => $workspace->id])
-            ->set('yearFilter', 2026)->assertViewHas('total', 2)->assertDontSee('Meta privada')
-            ->set('search', 'Correr')->set('statusFilter', 'in_progress')->set('priorityFilter', 'high')
+            ->set('yearFilter', 2026)->assertViewHas('total', 1)->assertDontSee('Meta privada')
+            ->set('search', 'Correr')->set('statusFilter', ['in_progress'])->set('priorityFilter', 'high')
             ->set('categoryFilter', 'Saúde')
             ->set('dateTo', '2026-12-31')->assertViewHas('total', 1)
             ->call('selectDisplay', 'kanban')->assertViewHas('total', 1)->assertSee('Kanban de metas por status')
             ->call('changeStatus', $goal->id, 'completed')->assertViewHas('total', 0)
-            ->call('clearFilters')->assertViewHas('total', 2)->assertSee('Correr 5 km')
+            ->call('clearFilters')->assertViewHas('total', 0)
+            ->set('statusFilter', ['completed'])->assertViewHas('total', 2)->assertSee('Correr 5 km')
             ->call('selectDisplay', 'table')->assertViewHas('total', 2);
         $this->assertSame('100.00', $goal->fresh()->progress_percent);
         $component->set('dateTo', '')->set('dateFrom', '2027-01-01')->assertViewHas('total', 0);
+    }
+
+    public function test_status_checkboxes_filter_multiple_statuses_and_reset_to_defaults(): void
+    {
+        $workspace = $this->workspace();
+        foreach (GoalStatus::cases() as $status) {
+            $this->goal($workspace, ['status' => $status->value, 'title' => 'Meta '.$status->value]);
+        }
+
+        $component = Livewire::test(GoalsBoard::class, ['workspaceId' => $workspace->id])
+            ->set('yearFilter', 2026)
+            ->assertSet('statusFilter', ['not_started', 'in_progress'])
+            ->assertViewHas('total', 2)
+            ->assertSee('class="goal-status-filters"', false)
+            ->assertSee('type="checkbox" wire:model.live="statusFilter"', false)
+            ->assertDontSee('<label>Status<select', false);
+
+        foreach (['table', 'kanban'] as $display) {
+            $component->call('selectDisplay', $display)
+                ->set('statusFilter', ['completed', 'not_done'])->assertViewHas('total', 2)
+                ->assertSee('Meta completed')->assertSee('Meta not_done')->assertDontSee('Meta in_progress')
+                ->set('statusFilter', ['not_done'])->assertViewHas('total', 1)
+                ->set('statusFilter', [])->assertViewHas('total', 0)
+                ->set('statusFilter', GoalStatus::values())->assertViewHas('total', 4)
+                ->call('clearFilters')->assertSet('statusFilter', ['not_started', 'in_progress'])
+                ->assertViewHas('total', 2);
+        }
     }
 
     public function test_other_status_changes_preserve_progress(): void
@@ -163,7 +192,7 @@ class GoalsPlanningTest extends TestCase
         $this->assertSame('completed', $goal->status);
         $this->assertSame('100.00', $goal->progress_percent);
         $this->assertSame('Correr 5 km', $goal->title);
-        $component->set('categoryFilter', 'Finanças')->assertViewHas('total', 1)
+        $component->set('statusFilter', ['completed'])->set('categoryFilter', 'Finanças')->assertViewHas('total', 1)
             ->call('changeCategory', $goal->id, '')->assertHasNoErrors()->assertViewHas('total', 0)
             ->set('categoryFilter', '__empty__')->assertViewHas('total', 1)->assertSee('Correr 5 km');
         $this->assertNull($goal->fresh()->category);
@@ -200,7 +229,7 @@ class GoalsPlanningTest extends TestCase
         $component->call('changeProgress', $goal->id, '45.25')->assertHasNoErrors();
         $this->assertSame('45.25', $goal->fresh()->progress_percent);
         $this->assertSame('in_progress', $goal->fresh()->status);
-        $component->set('statusFilter', 'in_progress')->assertViewHas('total', 1)
+        $component->set('statusFilter', ['in_progress'])->assertViewHas('total', 1)
             ->call('changeProgress', $goal->id, '100')->assertHasNoErrors()->assertViewHas('total', 0);
         $this->assertSame('100.00', $goal->fresh()->progress_percent);
         $this->assertSame('completed', $goal->fresh()->status);
@@ -259,7 +288,7 @@ class GoalsPlanningTest extends TestCase
             ->set('yearFilter', 2026)->call('openCreate')->assertSet('form.status', 'not_started')
             ->set('form.title', 'Aprender algo novo')->call('saveGoal')->assertHasNoErrors()
             ->call('selectDisplay', 'kanban')
-            ->set('statusFilter', 'not_started')->assertViewHas('total', 1);
+            ->set('statusFilter', ['not_started'])->assertViewHas('total', 1);
         $this->get(route('goals.annual', [$workspace, 'year' => 2026, 'view' => 'kanban']))
             ->assertOk()->assertSeeInOrder(['data-goal-status="not_started"', 'data-goal-status="in_progress"', 'data-goal-status="completed"', 'data-goal-status="not_done"'], false);
         $goal = $workspace->goals()->where('title', 'Aprender algo novo')->firstOrFail();

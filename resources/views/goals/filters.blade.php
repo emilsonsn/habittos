@@ -1,8 +1,5 @@
 <div class="goal-filters">
     <label class="goal-search">Buscar meta<input type="search" wire:model.live.debounce.300ms="search" placeholder="Nome da meta"></label>
-    <label>Status<select wire:model.live="statusFilter"><option value="">Todos</option>
-        @foreach (\App\Enums\GoalStatus::options() as $value => $label)<option value="{{ $value }}">{{ $label }}</option>@endforeach
-    </select></label>
     <label>Prioridade<select wire:model.live="priorityFilter"><option value="">Todas</option>
         @foreach (\App\Enums\GoalPriority::options() as $value => $label)<option value="{{ $value }}">{{ $label }}</option>@endforeach
     </select></label>

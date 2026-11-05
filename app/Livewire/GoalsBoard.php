@@ -41,7 +41,7 @@ class GoalsBoard extends Component
     public string $search = '';
 
     #[Url]
-    public string $statusFilter = '';
+    public array $statusFilter = [GoalStatus::NotStarted->value, GoalStatus::InProgress->value];
 
     #[Url]
     public string $priorityFilter = '';
@@ -302,7 +302,8 @@ class GoalsBoard extends Component
             $search = '%'.trim($this->search).'%';
             $query->where(fn ($q) => $q->where('title', 'like', $search));
         }
-        foreach (['statusFilter' => 'status', 'priorityFilter' => 'priority', 'categoryFilter' => 'category'] as $property => $column) {
+        $query->whereIn('status', $this->statusFilter);
+        foreach (['priorityFilter' => 'priority', 'categoryFilter' => 'category'] as $property => $column) {
             if ($this->$property !== '') {
                 $this->$property === '__empty__' ? $query->whereNull($column) : $query->where($column, $this->$property);
             }

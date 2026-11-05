@@ -23,7 +23,7 @@
         </div>
     </div>
     @php
-        $activeFilterCount = collect([$search, $statusFilter, $priorityFilter, $categoryFilter, $dateFrom, $dateTo])->filter(fn ($value) => trim($value) !== '')->count();
+        $activeFilterCount = collect([$search, $priorityFilter, $categoryFilter, $dateFrom, $dateTo])->filter(fn ($value) => trim($value) !== '')->count();
     @endphp
     <section class="panel goals-workspace" id="goals-results" aria-label="Metas do período" x-data="{ filtersOpen: false }">
         <div class="goals-toolbar">
@@ -41,6 +41,17 @@
                 </button>
             </div>
         </div>
+        <fieldset class="goal-status-filters">
+            <legend>Status</legend>
+            <div class="goal-status-options">
+                @foreach (\App\Enums\GoalStatus::options() as $value => $label)
+                    <label wire:key="goal-status-filter-{{ $value }}">
+                        <input type="checkbox" wire:model.live="statusFilter" value="{{ $value }}">
+                        <span>{{ $label }}</span>
+                    </label>
+                @endforeach
+            </div>
+        </fieldset>
         <div id="goal-filters-panel" x-cloak x-show="filtersOpen">
             @include('goals.filters')
         </div>
