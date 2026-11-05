@@ -26,6 +26,12 @@
                     <span
                         class="tag {{ $fixedEntry->paid ? 'settled' : 'pending' }}">{{ $fixedEntry->paid ? ($entryType === \App\Enums\EntryType::Income->value ? 'Recebido' : 'Pago') : 'Pendente' }}</span>
                 @endcan
+                @can('finance.delete', $workspace)
+                    <button type="button" class="text-button danger"
+                        wire:click="deleteEntry({{ $fixedEntry->id }})"
+                        data-confirm="Este lançamento será excluído definitivamente e os saldos e resumos serão recalculados." data-confirm-title="Excluir lançamento?" data-confirm-label="Excluir lançamento" data-confirm-subject="{{ $fixedEntry->description }}"
+                        wire:loading.attr="disabled">Excluir</button>
+                @endcan
             </div>
         @empty
             <div class="fixed-empty"><span aria-hidden="true">{{ $entryType === \App\Enums\EntryType::Income->value ? '↙' : '↗' }}</span>

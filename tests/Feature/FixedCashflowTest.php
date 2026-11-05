@@ -2,16 +2,66 @@
 
 namespace Tests\Feature;
 
+use App\Livewire\FinanceDashboard;
 use App\Models\User;
 use App\Services\CreateWorkspace;
 use App\Services\FinancialSummary;
 use App\Services\OpenFinancialMonth;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class FixedCashflowTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_fixed_sections_offer_confirmed_deletion_and_preserve_other_months(): void
+    {
+        $owner = User::factory()->create();
+        $workspace = app(CreateWorkspace::class)->handle($owner, 'Casa');
+        $this->actingAs($owner);
+
+        foreach (['income' => 'fixed-income', 'expense' => 'fixed-expenses'] as $type => $section) {
+            $entry = $workspace->entries()->create(['description' => 'Fixo '.$type, 'type' => $type, 'amount_cents' => 10000, 'date' => '2026-10-10', 'is_fixed' => true]);
+            $nextMonth = $workspace->entries()->create(['description' => 'Fixo '.$type, 'type' => $type, 'amount_cents' => 10000, 'date' => '2026-11-10', 'is_fixed' => true]);
+
+            Livewire::test(FinanceDashboard::class, ['workspaceId' => $workspace->id, 'month' => '2026-10', 'section' => $section])
+                ->assertSee('wire:click="deleteEntry('.$entry->id.')"', false)
+                ->assertSee('data-confirm-title="Excluir lançamento?"', false)
+                ->assertSee('data-confirm-subject="'.$entry->description.'"', false)
+                ->call('deleteEntry', $entry->id)->assertHasNoErrors()
+                ->assertSee('Lançamento excluído.')
+                ->assertViewHas($type === 'income' ? 'fixedIncome' : 'fixed', 0);
+
+            $this->assertModelMissing($entry);
+            $this->assertModelExists($nextMonth);
+        }
+    }
+
+    public function test_fixed_deletion_requires_its_own_permission(): void
+    {
+        $owner = User::factory()->create();
+        $workspace = app(CreateWorkspace::class)->handle($owner, 'Casa');
+        $member = User::factory()->create();
+        $workspace->members()->attach($member, ['permissions' => ['finance.view', 'finance.update']]);
+        $this->actingAs($member);
+
+        foreach (['income' => 'fixed-income', 'expense' => 'fixed-expenses'] as $type => $section) {
+            $entry = $workspace->entries()->create(['description' => 'Fixo '.$type, 'type' => $type, 'amount_cents' => 10000, 'date' => '2026-10-10', 'is_fixed' => true]);
+            Livewire::test(FinanceDashboard::class, ['workspaceId' => $workspace->id, 'month' => '2026-10', 'section' => $section])
+                ->assertSee('wire:click="editEntry('.$entry->id.')"', false)
+                ->assertDontSee('wire:click="deleteEntry(', false)
+                ->call('deleteEntry', $entry->id)->assertForbidden();
+            $this->assertModelExists($entry);
+        }
+
+        $workspace->members()->updateExistingPivot($member->id, ['permissions' => ['finance.view', 'finance.delete']]);
+        foreach (['income' => 'fixed-income', 'expense' => 'fixed-expenses'] as $type => $section) {
+            Livewire::test(FinanceDashboard::class, ['workspaceId' => $workspace->id, 'month' => '2026-10', 'section' => $section])
+                ->assertSee('wire:click="deleteEntry(', false)
+                ->assertDontSee('wire:click="editEntry(', false);
+        }
+    }
 
     public function test_salary_and_expenses_are_copied_independently_and_begin_pending(): void
     {
