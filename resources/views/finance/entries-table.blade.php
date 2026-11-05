@@ -84,8 +84,9 @@
                                 @endcan
                             </td>
                             @php($displayAmount = $showCategory && $entry->type === \App\Enums\EntryType::Investment->value ? -$entry->amount_cents : $entry->amount_cents)
-                            <td class="number {{ $displayAmount < 0 ? 'negative' : ($entry->type !== \App\Enums\EntryType::Expense->value ? 'green' : '') }}">
-                                {{ $entry->type === \App\Enums\EntryType::Expense->value || $displayAmount < 0 ? '−' : '+' }}
+                            @php($isOutflow = $entry->type === \App\Enums\EntryType::Expense->value || $displayAmount < 0)
+                            <td class="number {{ $isOutflow ? 'negative' : 'green' }}">
+                                {{ $isOutflow ? '−' : '+' }}
                                 {{ $money(abs($entry->amount_cents)) }}<small>{{ \App\Enums\EntryType::from($entry->type)->label() }}</small>
                             </td>
                             @if ($showCategory)
