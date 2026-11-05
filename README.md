@@ -69,7 +69,7 @@ A data de referência determina o mês do lançamento. Não há uma segunda data
 | Saldo projetado | Todas as receitas − todas as despesas − reserva planejada |
 | Saídas pendentes | Despesas ainda não efetivadas |
 | Compromissos fixos | Despesas marcadas como fixas |
-| Despesas semanais | Despesas variáveis, efetivadas ou pendentes, agrupadas pela data |
+| Despesas semanais | Despesas variáveis com “Contar no gasto semanal” marcado, efetivadas ou pendentes, agrupadas pela data |
 
 O indicador principal é o saldo disponível, que desconta a reserva do resultado efetivado do mês. Receitas pendentes não aumentam esse valor, e saídas pendentes só entram na projeção. A reserva é tratada como dinheiro separado e indisponível para gastos. O cálculo ainda é baseado nos registros do mês, sem conciliação bancária ou acumulação entre meses. Não há contas bancárias nem saldo inicial nesta versão. A reserva é descontada do saldo disponível e da projeção, mas não cria um lançamento de investimento automaticamente. Os investimentos são um grupo independente, com aportes positivos e retiradas negativas, e não entram como receita ou despesa nem reduzem o saldo disponível ou projetado. A reserva planejada continua sendo descontada.
 

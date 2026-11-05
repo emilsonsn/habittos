@@ -14,7 +14,7 @@
     <form wire:submit="save" class="form-stack" wire:key="entry-form-{{ $formVersion }}">
         <div class="entry-types">
             @foreach (\App\Enums\EntryType::options() as $value => $label)
-                <label><input type="radio" wire:model="form.type"
+                <label><input type="radio" wire:model.live="form.type"
                         value="{{ $value }}"><span>{{ $label }}</span></label>
             @endforeach
         </div>
@@ -45,6 +45,15 @@
                 @enderror
             </label>
         </div>
+        @if (($form['type'] ?? null) === \App\Enums\EntryType::Expense->value)
+            <div class="check-group">
+                <label class="checkbox"><input type="checkbox" wire:model="form.counts_toward_weekly_spending">Contar no gasto semanal</label>
+                <small>Desmarque para desconsiderar esta despesa no gasto da semana. Despesas fixas já ficam fora desse cálculo.</small>
+                @error('form.counts_toward_weekly_spending')
+                    <span class="field-error">{{ $message }}</span>
+                @enderror
+            </div>
+        @endif
         <details class="entry-advanced" @if ($errors->hasAny(['form.date', 'form.paid', 'form.is_fixed', 'form.notes'])) open @endif>
             <summary><span>Avançado</span><small>Data, pagamento, recorrência e observações</small><span
                     class="advanced-chevron" aria-hidden="true">⌄</span></summary>

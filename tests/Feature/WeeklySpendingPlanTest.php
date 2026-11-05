@@ -33,6 +33,26 @@ class WeeklySpendingPlanTest extends TestCase
         $workspace->entries()->create($attributes + ['description' => 'Mercado', 'type' => 'expense', 'amount_cents' => $amount, 'date' => $date, 'paid' => true, 'is_fixed' => false]);
     }
 
+    public function test_excluded_expenses_do_not_affect_weekly_spending_or_adjustments_but_keep_monthly_totals(): void
+    {
+        $this->travelTo(CarbonImmutable::parse('2026-10-08 12:00:00'));
+        $workspace = $this->workspace();
+        $this->expense($workspace, '2026-10-01', 10000);
+        $this->expense($workspace, '2026-10-02', 50000, ['counts_toward_weekly_spending' => false]);
+        $this->expense($workspace, '2026-10-08', 5000, ['paid' => false]);
+        $this->expense($workspace, '2026-10-09', 20000, ['paid' => false, 'counts_toward_weekly_spending' => false]);
+
+        $summary = app(FinancialSummary::class)->forMonth($workspace, '2026-10');
+        $this->assertSame([10000, 5000, 0, 0], $summary['weeks']->pluck('spent')->all());
+        $this->assertSame(40000, $summary['weeklyPlan']['adjustedLimit']);
+        $this->assertSame(35000, $summary['weeklyPlan']['currentWeekRemaining']);
+        $this->assertSame(85000, $summary['expenses']);
+        $this->assertSame(100000, $summary['balance']);
+        $this->assertSame(75000, $summary['projected']);
+        $this->assertSame(25000, $summary['pending']);
+        $this->assertSame(85000, $summary['byCategory']->sum());
+    }
+
     public function test_spending_below_the_weekly_limit_does_not_increase_the_adjusted_limit(): void
     {
         $this->travelTo(CarbonImmutable::parse('2026-10-15 12:00:00'));

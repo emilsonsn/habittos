@@ -55,6 +55,7 @@ class OpenFinancialMonth
                     'date' => $cycleStart,
                     'paid' => false,
                     'is_fixed' => true,
+                    'counts_toward_weekly_spending' => $entry->counts_toward_weekly_spending,
                     'notes' => $entry->notes,
                 ]);
             }

@@ -24,6 +24,27 @@ class EntryDialogTest extends TestCase
         return app(CreateWorkspace::class)->handle($user, 'Casa');
     }
 
+    public function test_weekly_spending_option_is_visible_only_for_expenses_and_persists_on_edit(): void
+    {
+        $workspace = $this->workspace();
+        $form = Livewire::test(EntryForm::class, ['workspaceId' => $workspace->id])
+            ->assertSet('form.counts_toward_weekly_spending', true)
+            ->assertSee('Contar no gasto semanal')
+            ->set('form.type', 'income')->assertDontSee('Contar no gasto semanal')
+            ->set('form.type', 'investment')->assertDontSee('Contar no gasto semanal')
+            ->set('form.type', 'expense')->assertSee('Contar no gasto semanal')
+            ->set('form.counts_toward_weekly_spending', false)
+            ->set('form.description', 'Despesa fora da semana')->set('form.amount', '10')
+            ->call('saveAndCreateAnother')->assertHasNoErrors()
+            ->assertSet('form.counts_toward_weekly_spending', true);
+        $entry = $workspace->entries()->firstOrFail();
+        $this->assertFalse($entry->counts_toward_weekly_spending);
+        Livewire::test(EntryForm::class, ['workspaceId' => $workspace->id, 'entryId' => $entry->id])
+            ->assertSet('form.counts_toward_weekly_spending', false)
+            ->set('form.counts_toward_weekly_spending', true)->call('save')->assertHasNoErrors();
+        $this->assertTrue($entry->fresh()->counts_toward_weekly_spending);
+    }
+
     public function test_new_entry_defaults_follow_the_section_and_reset_after_saving_another(): void
     {
         $workspace = $this->workspace();

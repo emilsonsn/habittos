@@ -42,7 +42,7 @@ class FinancialSummary
         $weeks = collect(range(1, 4))->map(function ($week) use ($entries, $weeklyLimit, $start, $end, $weekLength) {
             $weekStart = $start->addDays(($week - 1) * $weekLength);
             $weekEnd = $week === 4 ? $end : $weekStart->addDays($weekLength)->min($end);
-            $spent = $entries->where('type', EntryType::Expense->value)->where('is_fixed', false)->filter(fn ($entry) => $entry->date->gte($weekStart) && $entry->date->lt($weekEnd))->sum('amount_cents');
+            $spent = $entries->where('type', EntryType::Expense->value)->where('is_fixed', false)->where('counts_toward_weekly_spending', true)->filter(fn ($entry) => $entry->date->gte($weekStart) && $entry->date->lt($weekEnd))->sum('amount_cents');
 
             return ['number' => $week, 'spent' => $spent, 'limit' => $weeklyLimit, 'startDay' => $weekStart->day, 'endDay' => $weekEnd->subDay()->day, 'dateLabel' => $weekStart->lt($weekEnd) ? $weekStart->format('d/m').'–'.$weekEnd->subDay()->format('d/m') : 'Sem dias neste ciclo'];
         });

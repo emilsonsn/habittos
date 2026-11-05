@@ -22,6 +22,7 @@ class EntryRequest extends FormRequest
                 'date' => now()->toDateString(),
                 'paid' => true,
                 'is_fixed' => false,
+                'counts_toward_weekly_spending' => true,
                 'notes' => null,
             ]);
         }
