@@ -37,8 +37,7 @@
 }
 .routine-sheet-scroll {
     position: relative;
-    overflow: auto;
-    max-height: 68vh;
+    overflow-x: auto;
     border: 1px solid var(--line);
     border-radius: 12px;
     scrollbar-width: thin;

@@ -4,7 +4,7 @@ A rotina pertence ao ambiente. Membros com acesso ao mesmo ambiente compartilham
 
 ## Uso
 
-A página `/ambientes/{workspace}/rotina` apresenta uma grade de segunda a domingo. Na semana atual, adicione atividades no campo do respectivo dia e marque ou desmarque os checkboxes. As alterações são salvas imediatamente. Cada dia mostra seu total concluído, e a grade mostra o resumo da semana. Os cabeçalhos permanecem visíveis durante a rolagem interna; telas menores permitem rolagem horizontal.
+A página `/ambientes/{workspace}/rotina` apresenta uma grade de segunda a domingo. Na semana atual, adicione atividades no campo do respectivo dia e marque ou desmarque os checkboxes. As alterações são salvas imediatamente. Cada dia mostra seu total concluído, e a grade mostra o resumo da semana. A grade cresce conforme os itens, sem altura máxima ou rolagem vertical interna: a rolagem vertical é feita pela página. Telas menores permitem rolagem horizontal na grade.
 
 A semana começa na segunda às 00:00 e termina no domingo, no fuso `America/Fortaleza`. A navegação anterior/atual/próxima usa semanas ISO, incluindo a virada do ano e os anos com semana 53. `year` e `week` ficam na URL.
 
