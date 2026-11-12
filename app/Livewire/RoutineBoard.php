@@ -98,6 +98,12 @@ class RoutineBoard extends Component
         $this->message = "Semana sincronizada: {$count} atividade(s) copiadas, todas desmarcadas.";
     }
 
+    public function reorderTask(int $id, int $position): void
+    {
+        app(ManageRoutine::class)->reorder($this->workspace(), $this->weekStart(), $id, $position);
+        $this->message = 'Ordem das atividades salva.';
+    }
+
     public function setCompleted(int $id, bool $completed): void
     {
         app(ManageRoutine::class)->setCompleted($this->workspace(), $this->weekStart(), $id, $completed);

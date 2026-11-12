@@ -144,6 +144,7 @@
     gap: 2px;
     flex-shrink: 0;
 }
+.routine-drag,
 .routine-edit,
 .routine-remove {
     display: flex;
@@ -245,4 +246,19 @@
     .routine-workspace {
         padding: 12px;
     }
+}
+
+.routine-drag {
+    cursor: grab;
+    touch-action: none;
+}
+.routine-drag:active {
+    cursor: grabbing;
+}
+.routine-drag:hover,
+.routine-drag:focus-visible {
+    color: var(--primary);
+}
+.routine-task.sortable-chosen {
+    border-color: var(--primary);
 }

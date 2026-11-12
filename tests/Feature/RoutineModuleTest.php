@@ -315,6 +315,64 @@ class RoutineModuleTest extends TestCase
         $this->assertSame('Ler', $activity->fresh()->title);
     }
 
+    public function test_reordering_persists_per_day_and_is_copied_to_the_next_week(): void
+    {
+        $workspace = $this->workspace();
+        $board = $this->board($workspace);
+        foreach (['Primeira', 'Segunda', 'Terceira'] as $title) {
+            $board->set('titles.1', $title)->call('addTask', 1);
+        }
+        $board->set('titles.2', 'Outro dia')->call('addTask', 2);
+        $items = $workspace->routineActivities()->where('weekday', 1)->orderBy('id')->get();
+        $board->call('setCompleted', $items[2]->id, true)
+            ->call('reorderTask', $items[2]->id, 0)->assertHasNoErrors()
+            ->assertSeeInOrder(['Primeira', 'Segunda']);
+        $this->assertSame([$items[2]->id, $items[0]->id, $items[1]->id], $workspace->routineActivities()
+            ->where('weekday', 1)->orderBy('position')->pluck('id')->all());
+        $board->call('reorderTask', $items[0]->id, 2)->assertHasNoErrors();
+        $this->board($workspace)->assertSeeInOrder(['Terceira', 'Segunda', 'Primeira', 'Outro dia']);
+        $this->assertNotNull($items[2]->fresh()->completed_at);
+        $this->assertSame(Weekday::Monday, $items[2]->fresh()->weekday);
+        $board->set('titles.1', 'Adicionada depois')->call('addTask', 1);
+        $this->board($workspace)->assertSeeInOrder(['Terceira', 'Segunda', 'Primeira', 'Adicionada depois']);
+        $source = $workspace->routineActivities()->where('weekday', 1)->orderBy('position')->get();
+        $this->travelTo(CarbonImmutable::parse('2026-11-09 10:00:00', 'America/Fortaleza'));
+        $this->board($workspace)->call('synchronizePreviousWeek')->assertHasNoErrors()
+            ->assertSeeInOrder(['Terceira', 'Segunda', 'Primeira', 'Adicionada depois']);
+        $copies = $workspace->routineActivities()->whereDate('week_start', '2026-11-09')->where('weekday', 1)->orderBy('position')->get();
+        $this->assertSame($source->pluck('title')->all(), $copies->pluck('title')->all());
+        $this->assertTrue($copies->every(fn ($activity) => $activity->completed_at === null));
+        $this->assertSame($source->pluck('position')->all(), $source->map(fn ($activity) => $activity->fresh()->position)->all());
+        $this->assertNotNull($items[2]->fresh()->completed_at);
+    }
+
+    public function test_reordering_validates_position_and_rechecks_week_workspace_and_permissions(): void
+    {
+        $workspace = $this->workspace();
+        $board = $this->board($workspace)->set('titles.1', 'Atividade')->call('addTask', 1);
+        $activity = $workspace->routineActivities()->firstOrFail();
+        foreach ([-1, 1] as $position) {
+            $board->call('reorderTask', $activity->id, $position)->assertHasErrors('position');
+        }
+        foreach ([-1, 1] as $direction) {
+            $this->board($workspace)->call('navigateWeek', $direction)->call('reorderTask', $activity->id, 0)->assertForbidden();
+        }
+        $other = app(CreateWorkspace::class)->handle(auth()->user(), 'Outro');
+        try {
+            $this->board($other)->call('reorderTask', $activity->id, 0);
+            $this->fail('Não deve reordenar atividade de outro ambiente.');
+        } catch (ModelNotFoundException) {
+            $this->assertSame(1, $activity->fresh()->position);
+        }
+        $reader = User::factory()->create();
+        $workspace->members()->attach($reader, ['permissions' => ['routine.view', 'routine.manage']]);
+        $this->actingAs($reader);
+        $board = $this->board($workspace);
+        $workspace->members()->updateExistingPivot($reader->id, ['permissions' => ['routine.view']]);
+        $board->call('reorderTask', $activity->id, 0)->assertForbidden();
+        $this->board($workspace)->assertDontSee('wire:sort="reorderTask"', false);
+    }
+
     public function test_switching_workspaces_keeps_the_routine_module(): void
     {
         $workspace = $this->workspace();

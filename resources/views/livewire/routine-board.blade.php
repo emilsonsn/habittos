@@ -49,9 +49,9 @@
                             <span class="routine-day-count">{{ $done }}/{{ $items->count() }}</span>
                             @if ($date->isToday())<span class="routine-today">Hoje</span>@endif
                         </header>
-                        <div class="routine-day-body">
+                        <div class="routine-day-body" @if ($editable && $editingId === null) wire:sort="reorderTask" @endif>
                             @forelse ($items as $item)
-                                <div class="routine-task {{ $item->completed_at ? 'is-completed' : '' }}" wire:key="routine-task-{{ $item->id }}">
+                                <div class="routine-task {{ $item->completed_at ? 'is-completed' : '' }}" wire:key="routine-task-{{ $item->id }}" @if ($editable && $editingId === null) wire:sort:item="{{ $item->id }}" @endif>
                                     @if ($editable && $editingId === $item->id)
                                         <form wire:submit="saveTask" class="routine-edit-form" x-data x-init="$nextTick(() => $refs.title.focus())" @keydown.escape.prevent.stop="$wire.cancelEditing()">
                                             <label class="sr-only" for="routine-edit-{{ $item->id }}">Texto da atividade de {{ $day->label() }}</label>
@@ -73,6 +73,15 @@
                                             <span>{{ $item->title }}</span></label>
                                         @if ($editable)
                                             <div class="routine-task-actions">
+                                                @if ($editingId === null)
+                                                    <button type="button" class="routine-drag" wire:sort:handle
+                                                        aria-label="Reordenar {{ $item->title }}" title="Arraste para reordenar ou use as setas para cima e para baixo"
+                                                        @if (!$loop->first) @keydown.up.prevent="$wire.reorderTask({{ $item->id }}, {{ $loop->index - 1 }})" @endif
+                                                        @if (!$loop->last) @keydown.down.prevent="$wire.reorderTask({{ $item->id }}, {{ $loop->index + 1 }})" @endif
+                                                        wire:loading.attr="disabled">
+                                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9" cy="5" r="1.5"/><circle cx="15" cy="5" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="19" r="1.5"/><circle cx="15" cy="19" r="1.5"/></svg>
+                                                    </button>
+                                                @endif
                                                 <button type="button" class="routine-edit" wire:click="editTask({{ $item->id }})" aria-label="Editar {{ $item->title }}" title="Editar atividade" wire:loading.attr="disabled">
                                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m16 3 5 5L8 21H3v-5L16 3Z" stroke-linejoin="round"/><path d="m14 5 5 5"/></svg>
                                                 </button>
@@ -98,6 +107,6 @@
                 @endforeach
             </div>
         </div>
-        <p class="routine-footnote">De segunda a domingo, no seu ritmo. Os checks são salvos automaticamente em cada semana.</p>
+        <p class="routine-footnote">De segunda a domingo, no seu ritmo. Arraste pela alça para ordenar as atividades de cada dia. A ordem e os checks são salvos automaticamente em cada semana.</p>
     </section>
 </div>

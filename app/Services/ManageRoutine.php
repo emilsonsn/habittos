@@ -24,7 +24,7 @@ class ManageRoutine
     {
         $this->authorize($workspace, Permission::RoutineView);
 
-        return $workspace->routineActivities()->whereDate('week_start', $week)->orderBy('id')->get();
+        return $workspace->routineActivities()->whereDate('week_start', $week)->orderBy('position')->orderBy('id')->get();
     }
 
     public function synchronizePreviousWeek(Workspace $workspace, CarbonImmutable $week): int
@@ -37,7 +37,7 @@ class ManageRoutine
             if ($workspace->routineActivities()->whereDate('week_start', $week)->exists()) {
                 throw ValidationException::withMessages(['synchronization' => 'A sincronização só está disponível para uma semana vazia.']);
             }
-            $previous = $workspace->routineActivities()->whereDate('week_start', $week->subWeek())->orderBy('id')->get();
+            $previous = $workspace->routineActivities()->whereDate('week_start', $week->subWeek())->orderBy('position')->orderBy('id')->get();
             if ($previous->isEmpty()) {
                 throw ValidationException::withMessages(['synchronization' => 'A semana anterior não possui atividades para sincronizar.']);
             }
@@ -48,6 +48,7 @@ class ManageRoutine
                     'routine_task_id' => $task->id,
                     'week_start' => $week->toDateString(),
                     'completed_at' => null,
+                    'position' => $activity->position,
                 ]);
             }
 
@@ -69,8 +70,28 @@ class ManageRoutine
         ])->validate();
         DB::transaction(function () use ($workspace, $week, $data) {
             Workspace::whereKey($workspace->id)->lockForUpdate()->firstOrFail();
+            $position = (int) $workspace->routineActivities()->whereDate('week_start', $week)->where('weekday', $data['weekday'])->max('position') + 1;
             $task = $workspace->routineTasks()->create($data + ['starts_on' => $week->toDateString()]);
-            $workspace->routineActivities()->create($data + ['routine_task_id' => $task->id, 'week_start' => $week->toDateString()]);
+            $workspace->routineActivities()->create($data + ['routine_task_id' => $task->id, 'week_start' => $week->toDateString(), 'position' => $position]);
+        });
+    }
+
+    public function reorder(Workspace $workspace, CarbonImmutable $week, int $id, int $position): void
+    {
+        $this->authorizeCurrentWeek($workspace, $week);
+        DB::transaction(function () use ($workspace, $week, $id, $position) {
+            Workspace::whereKey($workspace->id)->lockForUpdate()->firstOrFail();
+            $activity = $workspace->routineActivities()->whereDate('week_start', $week)->findOrFail($id);
+            $items = $workspace->routineActivities()->whereDate('week_start', $week)
+                ->where('weekday', $activity->weekday->value)->orderBy('position')->orderBy('id')->get();
+            validator(['position' => $position], [
+                'position' => ['required', 'integer', 'between:0,'.($items->count() - 1)],
+            ])->validate();
+            $ordered = $items->where('id', '!=', $id)->values()->all();
+            array_splice($ordered, $position, 0, [$activity]);
+            foreach ($ordered as $index => $item) {
+                $item->update(['position' => $index]);
+            }
         });
     }
 
