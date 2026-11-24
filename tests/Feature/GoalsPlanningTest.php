@@ -120,13 +120,13 @@ class GoalsPlanningTest extends TestCase
         $other = app(CreateWorkspace::class)->handle(auth()->user(), 'Outro');
         $this->goal($other, ['title' => 'Meta privada']);
         $component = Livewire::test(GoalsBoard::class, ['workspaceId' => $workspace->id])
-            ->set('yearFilter', 2026)->assertViewHas('total', 1)->assertDontSee('Meta privada')
+            ->set('yearFilter', 2026)->assertViewHas('total', 2)->assertDontSee('Meta privada')
             ->set('search', 'Correr')->set('statusFilter', ['in_progress'])->set('priorityFilter', 'high')
             ->set('categoryFilter', 'Saúde')
             ->set('dateTo', '2026-12-31')->assertViewHas('total', 1)
             ->call('selectDisplay', 'kanban')->assertViewHas('total', 1)->assertSee('Kanban de metas por status')
             ->call('changeStatus', $goal->id, 'completed')->assertViewHas('total', 0)
-            ->call('clearFilters')->assertViewHas('total', 0)
+            ->call('clearFilters')->assertViewHas('total', 2)
             ->set('statusFilter', ['completed'])->assertViewHas('total', 2)->assertSee('Correr 5 km')
             ->call('selectDisplay', 'table')->assertViewHas('total', 2);
         $this->assertSame('100.00', $goal->fresh()->progress_percent);
@@ -142,11 +142,15 @@ class GoalsPlanningTest extends TestCase
 
         $component = Livewire::test(GoalsBoard::class, ['workspaceId' => $workspace->id])
             ->set('yearFilter', 2026)
-            ->assertSet('statusFilter', ['not_started', 'in_progress'])
-            ->assertViewHas('total', 2)
+            ->assertSet('statusFilter', GoalStatus::values())
+            ->assertViewHas('total', 4)
             ->assertSee('class="goal-status-filters"', false)
             ->assertSee('type="checkbox" wire:model.live="statusFilter"', false)
             ->assertDontSee('<label>Status<select', false);
+
+        foreach (GoalStatus::cases() as $status) {
+            $component->assertSee('color: '.$status->color(), false);
+        }
 
         foreach (['table', 'kanban'] as $display) {
             $component->call('selectDisplay', $display)
@@ -155,8 +159,8 @@ class GoalsPlanningTest extends TestCase
                 ->set('statusFilter', ['not_done'])->assertViewHas('total', 1)
                 ->set('statusFilter', [])->assertViewHas('total', 0)
                 ->set('statusFilter', GoalStatus::values())->assertViewHas('total', 4)
-                ->call('clearFilters')->assertSet('statusFilter', ['not_started', 'in_progress'])
-                ->assertViewHas('total', 2);
+                ->call('clearFilters')->assertSet('statusFilter', GoalStatus::values())
+                ->assertViewHas('total', 4);
         }
     }
 

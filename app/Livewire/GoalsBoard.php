@@ -41,7 +41,12 @@ class GoalsBoard extends Component
     public string $search = '';
 
     #[Url]
-    public array $statusFilter = [GoalStatus::NotStarted->value, GoalStatus::InProgress->value];
+    public array $statusFilter = [
+        GoalStatus::NotStarted->value,
+        GoalStatus::InProgress->value,
+        GoalStatus::Completed->value,
+        GoalStatus::NotDone->value,
+    ];
 
     #[Url]
     public string $priorityFilter = '';

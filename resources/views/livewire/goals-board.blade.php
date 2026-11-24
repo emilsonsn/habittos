@@ -47,7 +47,7 @@
                 @foreach (\App\Enums\GoalStatus::options() as $value => $label)
                     <label wire:key="goal-status-filter-{{ $value }}">
                         <input type="checkbox" wire:model.live="statusFilter" value="{{ $value }}">
-                        <span>{{ $label }}</span>
+                        <span style="color: {{ \App\Enums\GoalStatus::from($value)->color() }}">{{ $label }}</span>
                     </label>
                 @endforeach
             </div>
