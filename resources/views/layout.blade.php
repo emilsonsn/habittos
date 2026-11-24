@@ -55,7 +55,6 @@
                             ? 'members'
                             : 'finance'))))" :month="$month ??
                     (isset($entry) ? $entry->date->format('Y-m') : request('month', now()->format('Y-m')))" />
-                <span class="nav-label">SEU DIA A DIA</span>
                 <nav aria-label="Navegação principal">
                     <a wire:navigate class="{{ request()->routeIs('home') ? 'active' : '' }}"
                         href="{{ route('home') }}" aria-label="Home" title="Home" @if (request()->routeIs('home')) aria-current="page" @endif>
