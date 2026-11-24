@@ -15,23 +15,23 @@
         @if ($canSynchronize)
             <button type="button" class="button secondary" wire:click="synchronizePreviousWeek"
                 wire:loading.attr="disabled" wire:target="synchronizePreviousWeek"
-                data-confirm="As atividades da semana anterior serão copiadas para esta semana, nos mesmos dias, com todos os checks desmarcados. O histórico será preservado."
-                data-confirm-title="Sincronizar semana anterior?" data-confirm-label="Sincronizar semana"
+                data-confirm="As atividades da última semana anterior com dados serão copiadas para esta semana, nos mesmos dias, com todos os checks desmarcados. O histórico será preservado."
+                data-confirm-title="Sincronizar última semana com atividades?" data-confirm-label="Sincronizar semana"
                 data-confirm-tone="{{ \App\Enums\ConfirmationTone::Warning->value }}"
-                data-confirm-subject="{{ $weekStart->subWeek()->format('d/m/Y') }} a {{ $weekStart->subDay()->format('d/m/Y') }}">
-                Sincronizar semana anterior
+                data-confirm-subject="{{ $sourceWeek ? $sourceWeek->format('d/m/Y').' a '.$sourceWeek->addDays(6)->format('d/m/Y') : 'Nenhuma semana anterior com atividades' }}">
+                Sincronizar última semana com atividades
             </button>
         @endif
         @error('synchronization')<p class="field-error" role="alert">{{ $message }}</p>@enderror
-        <small>Em uma semana vazia, sincronize para copiar as atividades da semana anterior com todos os checks desmarcados.</small>
+        <small>Em uma semana vazia, sincronize para copiar as atividades da última semana anterior com dados com todos os checks desmarcados.</small>
     </div>
     <section class="panel routine-workspace" aria-label="Rotina semanal">
         <div class="routine-toolbar">
-            <div><h2>Sua semana, em pequenos passos</h2><p class="muted">Organize seus dias ou copie as atividades da semana anterior.</p></div>
+            <div><h2>Sua semana, em pequenos passos</h2><p class="muted">Organize seus dias ou copie as atividades da última semana anterior com dados.</p></div>
             <span class="routine-total">{{ $activities->whereNotNull('completed_at')->count() }} de {{ $activities->count() }} concluídas</span>
         </div>
         @if ($future)
-            <p class="routine-context">Esta semana ainda não começou. Você já pode sincronizar as atividades da semana anterior; os checks serão liberados quando ela começar.</p>
+            <p class="routine-context">Esta semana ainda não começou. Você já pode sincronizar as atividades da última semana anterior com dados; os checks serão liberados quando ela começar.</p>
         @elseif (!$weekStart->isSameDay(app(\App\Services\RoutineCalendar::class)->currentWeek()))
             <p class="routine-context">Histórico da semana · apenas consulta. As marcações desta semana estão preservadas.</p>
         @endif

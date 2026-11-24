@@ -27,6 +27,14 @@ class ManageRoutine
         return $workspace->routineActivities()->whereDate('week_start', $week)->orderBy('position')->orderBy('id')->get();
     }
 
+    public function synchronizationSourceWeek(Workspace $workspace, CarbonImmutable $week): ?CarbonImmutable
+    {
+        $this->authorize($workspace, Permission::RoutineManage);
+        $date = $workspace->routineActivities()->whereDate('week_start', '<', $week)->max('week_start');
+
+        return $date ? CarbonImmutable::parse($date)->startOfDay() : null;
+    }
+
     public function synchronizePreviousWeek(Workspace $workspace, CarbonImmutable $week): int
     {
         $this->authorize($workspace, Permission::RoutineManage);
@@ -37,10 +45,11 @@ class ManageRoutine
             if ($workspace->routineActivities()->whereDate('week_start', $week)->exists()) {
                 throw ValidationException::withMessages(['synchronization' => 'A sincronização só está disponível para uma semana vazia.']);
             }
-            $previous = $workspace->routineActivities()->whereDate('week_start', $week->subWeek())->orderBy('position')->orderBy('id')->get();
-            if ($previous->isEmpty()) {
-                throw ValidationException::withMessages(['synchronization' => 'A semana anterior não possui atividades para sincronizar.']);
+            $sourceWeek = $this->synchronizationSourceWeek($workspace, $week);
+            if ($sourceWeek === null) {
+                throw ValidationException::withMessages(['synchronization' => 'Nenhuma semana anterior possui atividades para sincronizar.']);
             }
+            $previous = $workspace->routineActivities()->whereDate('week_start', $sourceWeek)->orderBy('position')->orderBy('id')->get();
             foreach ($previous as $activity) {
                 $data = ['weekday' => $activity->weekday, 'title' => $activity->title];
                 $task = $workspace->routineTasks()->create($data + ['starts_on' => $week->toDateString()]);

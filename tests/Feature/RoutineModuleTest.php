@@ -88,9 +88,9 @@ class RoutineModuleTest extends TestCase
         $original = $workspace->routineActivities()->firstOrFail();
         $component->call('setCompleted', $original->id, true);
         $this->travelTo(CarbonImmutable::parse('2026-11-09 00:00:00', 'America/Fortaleza'));
-        $this->board($workspace)->assertSet('week', 46)->assertDontSee('Ler')->assertSee('Sincronizar semana anterior')
+        $this->board($workspace)->assertSet('week', 46)->assertDontSee('Ler')->assertSee('Sincronizar última semana com atividades')
             ->call('synchronizePreviousWeek')->assertHasNoErrors()->assertSee('Ler')->assertSee('0 de 1 concluídas')
-            ->assertDontSee('data-confirm-title="Sincronizar semana anterior?"', false);
+            ->assertDontSee('data-confirm-title="Sincronizar última semana com atividades?"', false);
         $this->board($workspace)->call('synchronizePreviousWeek')->assertHasErrors('synchronization');
         $next = $workspace->routineActivities()->whereDate('week_start', '2026-11-09')->firstOrFail();
         $this->assertNull($next->completed_at);
@@ -120,9 +120,9 @@ class RoutineModuleTest extends TestCase
         $component = $this->board($workspace)->set('titles.1', 'Caminhar')->call('addTask', 1);
         $source = $workspace->routineActivities()->firstOrFail();
         $component->call('setCompleted', $source->id, true);
-        $future = $this->board($workspace)->call('navigateWeek', 1)->assertSee('Sincronizar semana anterior')
+        $future = $this->board($workspace)->call('navigateWeek', 1)->assertSee('Sincronizar última semana com atividades')
             ->call('synchronizePreviousWeek')->assertHasNoErrors()->assertSee('Caminhar')->assertSee('0 de 1 concluídas')
-            ->assertDontSee('data-confirm-title="Sincronizar semana anterior?"', false);
+            ->assertDontSee('data-confirm-title="Sincronizar última semana com atividades?"', false);
         $future->call('synchronizePreviousWeek')->assertHasErrors('synchronization');
         $copy = $workspace->routineActivities()->whereDate('week_start', '2026-11-09')->firstOrFail();
         $this->assertNull($copy->completed_at);
@@ -139,7 +139,7 @@ class RoutineModuleTest extends TestCase
         $workspace = $this->workspace();
         $this->board($workspace)->set('titles.1', 'Anterior')->call('addTask', 1);
         $this->travelTo(CarbonImmutable::parse('2026-11-09 10:00:00', 'America/Fortaleza'));
-        $stale = $this->board($workspace)->assertSee('Sincronizar semana anterior');
+        $stale = $this->board($workspace)->assertSee('Sincronizar última semana com atividades');
         $component = $this->board($workspace)->set('titles.2', 'Atual')->call('addTask', 2);
         $current = $workspace->routineActivities()->whereDate('week_start', '2026-11-09')->firstOrFail();
         $component->call('setCompleted', $current->id, true);
@@ -148,7 +148,7 @@ class RoutineModuleTest extends TestCase
         $this->assertDatabaseCount('routine_activities', 2);
     }
 
-    public function test_synchronization_uses_only_the_immediately_previous_week_of_this_workspace(): void
+    public function test_synchronization_skips_empty_weeks_and_uses_only_this_workspace(): void
     {
         $workspace = $this->workspace();
         $this->board($workspace)->set('titles.1', 'Antiga')->call('addTask', 1);
@@ -156,10 +156,43 @@ class RoutineModuleTest extends TestCase
         $other = app(CreateWorkspace::class)->handle(auth()->user(), 'Outro');
         $this->board($other)->set('titles.1', 'Outro ambiente')->call('addTask', 1);
         $this->travelTo(CarbonImmutable::parse('2026-11-16 10:00:00', 'America/Fortaleza'));
+        $this->board($workspace)->assertSee('02/11/2026 a 08/11/2026')
+            ->call('synchronizePreviousWeek')->assertHasNoErrors()->assertSee('Antiga')->assertDontSee('Outro ambiente');
+        $this->assertDatabaseCount('routine_activities', 3);
+        $this->assertDatabaseCount('routine_tasks', 3);
+        $this->assertSame('Antiga', $workspace->routineActivities()->whereDate('week_start', '2026-11-16')->sole()->title);
+    }
+
+    public function test_synchronization_chooses_the_latest_populated_week_before_the_target(): void
+    {
+        $workspace = $this->workspace();
+        $board = $this->board($workspace)->set('titles.1', 'Antiga')->call('addTask', 1);
+        $this->travelTo(CarbonImmutable::parse('2026-11-09 10:00:00', 'America/Fortaleza'));
+        $this->board($workspace)->set('titles.3', 'Mais recente')->call('addTask', 3);
+        $activity = $workspace->routineActivities()->where('title', 'Mais recente')->firstOrFail();
+        $this->board($workspace)->call('setCompleted', $activity->id, true);
+        $this->travelTo(CarbonImmutable::parse('2026-11-30 10:00:00', 'America/Fortaleza'));
+        $this->board($workspace)->set('titles.5', 'Futura')->call('addTask', 5);
+        $this->travelTo(CarbonImmutable::parse('2026-11-23 10:00:00', 'America/Fortaleza'));
+        $this->board($workspace)->assertSee('09/11/2026 a 15/11/2026')
+            ->call('synchronizePreviousWeek')->assertHasNoErrors()->assertSee('Mais recente')
+            ->assertDontSee('Antiga')->assertDontSee('Futura');
+        $copy = $workspace->routineActivities()->whereDate('week_start', '2026-11-23')->sole();
+        $this->assertSame(Weekday::Wednesday, $copy->weekday);
+        $this->assertSame($activity->position, $copy->position);
+        $this->assertNull($copy->completed_at);
+        $this->assertNotNull($activity->fresh()->completed_at);
+    }
+
+    public function test_synchronization_without_an_earlier_populated_week_reports_an_error(): void
+    {
+        $workspace = $this->workspace();
+        $this->travelTo(CarbonImmutable::parse('2026-11-09 10:00:00', 'America/Fortaleza'));
+        $this->board($workspace)->set('titles.1', 'Futura')->call('addTask', 1);
+        $this->travelTo(CarbonImmutable::parse('2026-11-02 10:00:00', 'America/Fortaleza'));
         $this->board($workspace)->call('synchronizePreviousWeek')->assertHasErrors('synchronization')
-            ->assertSee('A semana anterior não possui atividades');
-        $this->assertDatabaseCount('routine_activities', 2);
-        $this->assertDatabaseCount('routine_tasks', 2);
+            ->assertSee('Nenhuma semana anterior possui atividades para sincronizar.');
+        $this->assertSame(0, $workspace->routineActivities()->whereDate('week_start', '2026-11-02')->count());
     }
 
     public function test_synchronization_preserves_days_order_and_handles_iso_year_boundary(): void
@@ -191,7 +224,7 @@ class RoutineModuleTest extends TestCase
                     ->call($action, ...$args)->assertForbidden();
             }
         }
-        $this->board($workspace)->call('navigateWeek', -1)->assertDontSee('data-confirm-title="Sincronizar semana anterior?"', false)
+        $this->board($workspace)->call('navigateWeek', -1)->assertDontSee('data-confirm-title="Sincronizar última semana com atividades?"', false)
             ->call('synchronizePreviousWeek')->assertForbidden();
         $this->assertDatabaseCount('routine_activities', 1);
         $this->assertNull($activity->fresh()->completed_at);

@@ -169,9 +169,10 @@ class RoutineBoard extends Component
         $activities = app(ManageRoutine::class)->activities($workspace, $weekStart);
         $editable = $weekStart->isSameDay($current) && $workspace->allows(auth()->user(), Permission::RoutineManage);
         $canSynchronize = $weekStart->gte($current) && $activities->isEmpty() && $workspace->allows(auth()->user(), Permission::RoutineManage);
+        $sourceWeek = $canSynchronize ? app(ManageRoutine::class)->synchronizationSourceWeek($workspace, $weekStart) : null;
         $future = $weekStart->gt($current);
         $days = Weekday::cases();
 
-        return view('livewire.routine-board', compact('workspace', 'weekStart', 'activities', 'editable', 'canSynchronize', 'future', 'days'));
+        return view('livewire.routine-board', compact('workspace', 'weekStart', 'activities', 'editable', 'canSynchronize', 'sourceWeek', 'future', 'days'));
     }
 }
