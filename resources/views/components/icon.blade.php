@@ -2,6 +2,10 @@
 <svg {{ $attributes->merge(['width' => 19, 'height' => 19, 'viewBox' => '0 0 24 24', 'fill' => 'none', 'stroke' => 'currentColor', 'stroke-width' => 1.6, 'stroke-linecap' => 'round', 'stroke-linejoin' => 'round']) }}
     aria-hidden="true">
     @switch($name)
+        @case('studies')
+            <path d="m2 8 10-5 10 5-10 5-10-5Z"/><path d="M6 10v7c3 3 9 3 12 0v-7M22 8v7"/>
+        @break
+
         @case('dashboard')
             <rect x="3" y="3" width="7" height="7" rx="1.5" />
             <rect x="14" y="3" width="7" height="7" rx="1.5" />

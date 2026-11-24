@@ -11,6 +11,7 @@ enum WorkspaceModule: string
     case Home = 'home';
     case Finance = 'finance';
     case Goals = 'goals';
+    case Studies = 'studies';
     case Notes = 'notes';
     case Routine = 'routine';
     case Members = 'members';
@@ -22,6 +23,7 @@ enum WorkspaceModule: string
             self::Home => 'Home',
             self::Finance => 'Financeiro',
             self::Goals => 'Metas',
+            self::Studies => 'Estudos',
             self::Notes => 'Notas',
             self::Routine => 'Rotina diária',
             self::Members => 'Pessoas e acessos',
@@ -33,6 +35,7 @@ enum WorkspaceModule: string
     {
         return match ($this) {
             self::Finance => Permission::FinanceView, self::Goals => Permission::GoalsView,
+            self::Studies => Permission::StudiesView,
             self::Routine => Permission::RoutineView,
             self::Notes => Permission::NotesView, self::Members => Permission::MembersManage,
             default => null,
@@ -42,7 +45,7 @@ enum WorkspaceModule: string
     public static function selectionValues(): array
     {
         return [...self::values(), 'routine.index', ...array_map(fn ($section) => $section->routeName(), [
-            ...FinanceSection::cases(), ...GoalSection::cases(), ...NoteSection::cases(),
+            ...FinanceSection::cases(), ...GoalSection::cases(), ...StudySection::cases(), ...NoteSection::cases(),
         ])];
     }
 }

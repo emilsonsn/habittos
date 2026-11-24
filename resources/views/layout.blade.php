@@ -18,6 +18,7 @@
     <link rel="stylesheet" href="{{ asset('css/notes.css') }}" data-navigate-track>
     <link rel="stylesheet" href="{{ asset('css/routine.css') }}?v={{ filemtime(public_path('css/routine.css')) }}" data-navigate-track>
     <link rel="stylesheet" href="{{ asset('css/confirmation.css') }}" data-navigate-track>
+    <link rel="stylesheet" href="{{ asset('css/studies.css') }}?v={{ filemtime(public_path('css/studies.css')) }}" data-navigate-track>
     @livewireStyles
 </head>
 
@@ -49,7 +50,7 @@
                         src="{{ asset('imgs/habbitos-icone.svg') }}" width="44" height="44" alt=""><span class="brand-name">habittos<span class="brand-dot">.</span></span></a>
                 <livewire:workspace-switcher :active-id="$activeWorkspace?->id" :module="request()->routeIs('home') ? 'home' : (request()->routeIs('finance.*') ? request()->route()->getName() : (request()->routeIs('settings.*')
                     ? 'settings'
-                    : (request()->routeIs('goals.*', 'notes.*', 'routine.*')
+                    : (request()->routeIs('goals.*', 'studies.*', 'notes.*', 'routine.*')
                         ? request()->route()->getName()
                         : (request()->routeIs('members.*')
                             ? 'members'
@@ -71,6 +72,9 @@
                         @endcan
                         @can('goals.view', $activeWorkspace)
                             <x-goals-navigation :workspace="$activeWorkspace" />
+                        @endcan
+                        @can('studies.view', $activeWorkspace)
+                            <x-studies-navigation :workspace="$activeWorkspace" />
                         @endcan
                         @can('notes.view', $activeWorkspace)
                             <x-notes-navigation :workspace="$activeWorkspace" />
@@ -124,6 +128,7 @@
     <script src="{{ asset('js/money.js') }}" data-navigate-once></script>
     <script src="{{ asset('js/cover-position.js') }}" data-navigate-once></script>
     <script src="{{ asset('js/category-pie.js') }}" data-navigate-once></script>
+    <script src="{{ asset('js/study-canvas.js') }}?v={{ filemtime(public_path('js/study-canvas.js')) }}" data-navigate-once></script>
     <script src="{{ asset('js/goals-kanban.js') }}" data-navigate-once></script>
     <script src="{{ asset('js/rich-text.js') }}" data-navigate-once></script>
     <x-action-confirmation />

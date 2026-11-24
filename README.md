@@ -33,6 +33,9 @@ O menu **Notas** reúne Dashboard, Favoritos e Notas, com pastas e subpastas por
 
 O módulo **Rotina diária** oferece uma grade de segunda a domingo, atividades por dia, sincronização manual da última semana anterior com atividades em semanas vazias e checks independentes por semana. As semanas anteriores permanecem disponíveis para consulta; a navegação segue o padrão semanal das metas. Consulte [ROTINA.md](documentation/ROTINA.md) para sincronização, histórico e permissões.
 
+O módulo **Estudos**, abaixo de Metas no sidebar, reúne roadmaps em quadro visual livre com etapas conectadas, posicionamento persistente, zoom, anotações e tópicos ordenáveis, sessões de estudo, biblioteca de links e anexos privados e um dashboard para retomar o aprendizado. Todos os dados e indicadores pertencem ao ambiente, com as permissões `studies.view` e `studies.manage`. Consulte [ESTUDOS.md](documentation/ESTUDOS.md) para o funcionamento e os limites desta versão.
+
+
 ## Acessos
 
 Todos os registros de domínio pertencem a um `Workspace`. O usuário tem acesso por meio da associação `user_workspace`. Não existe ambiente global nem acesso implícito aos ambientes de outra pessoa.

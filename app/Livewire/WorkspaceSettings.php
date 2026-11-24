@@ -76,7 +76,9 @@ class WorkspaceSettings extends Component
 
             return;
         }
+        $studyFiles = $workspace->studyMaterials()->whereNotNull('path')->pluck('path')->all();
         DB::transaction(fn () => $workspace->delete());
+        Storage::disk('local')->delete($studyFiles);
         if ($workspace->cover_path) {
             Storage::disk('local')->delete($workspace->cover_path);
         }

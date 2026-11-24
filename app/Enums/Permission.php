@@ -15,6 +15,8 @@ enum Permission: string
     case NotesManage = 'notes.manage';
     case RoutineView = 'routine.view';
     case RoutineManage = 'routine.manage';
+    case StudiesView = 'studies.view';
+    case StudiesManage = 'studies.manage';
     case MembersManage = 'members.manage';
 
     public function label(): string
@@ -31,6 +33,8 @@ enum Permission: string
             self::NotesManage => 'Gerenciar notas e pastas',
             self::RoutineView => 'Visualizar rotina',
             self::RoutineManage => 'Gerenciar rotina',
+            self::StudiesView => 'Visualizar estudos',
+            self::StudiesManage => 'Gerenciar estudos',
             self::MembersManage => 'Gerenciar membros e permissões',
         };
     }

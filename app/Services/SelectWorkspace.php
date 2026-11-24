@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\FinanceSection;
 use App\Enums\GoalSection;
 use App\Enums\NoteSection;
+use App\Enums\StudySection;
 use App\Enums\WorkspaceModule;
 use App\Models\User;
 use App\Models\Workspace;
@@ -50,6 +51,11 @@ class SelectWorkspace
             $module = WorkspaceModule::Notes->value;
         }
 
+        $studySection = collect(StudySection::cases())->first(fn ($section) => $section->routeName() === $module);
+        if ($studySection) {
+            $module = WorkspaceModule::Studies->value;
+        }
+
         if ($module === 'routine.index') {
             $module = WorkspaceModule::Routine->value;
         }
@@ -69,6 +75,10 @@ class SelectWorkspace
 
             if ($candidate === WorkspaceModule::Routine) {
                 return route('routine.index', $workspace);
+            }
+
+            if ($candidate === WorkspaceModule::Studies) {
+                return route(($studySection ?? StudySection::Dashboard)->routeName(), $workspace);
             }
 
             if ($candidate === WorkspaceModule::Notes) {

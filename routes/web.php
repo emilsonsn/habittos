@@ -3,10 +3,12 @@
 use App\Enums\FinanceSection;
 use App\Enums\GoalSection;
 use App\Enums\NoteSection;
+use App\Enums\StudySection;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\FinanceController;
 use App\Http\Controllers\GoalController;
 use App\Http\Controllers\NoteController;
+use App\Http\Controllers\StudyController;
 use App\Http\Controllers\WorkspaceController;
 use App\Http\Middleware\EnsureFirstWorkspace;
 use App\Models\Workspace;
@@ -52,6 +54,12 @@ Route::middleware(['auth', EnsureFirstWorkspace::class])->group(function () {
         Route::post('/metas', [GoalController::class, 'store'])->middleware('workspace:goals.manage')->name('goals.store');
         Route::put('/metas/{goal}', [GoalController::class, 'update'])->middleware('workspace:goals.manage')->name('goals.update');
         Route::delete('/metas/{goal}', [GoalController::class, 'destroy'])->middleware('workspace:goals.manage')->name('goals.destroy');
+        foreach (StudySection::cases() as $section) {
+            Route::get($section->path(), [StudyController::class, 'index'])->defaults('section', $section->value)
+                ->middleware('workspace:studies.view')->name($section->routeName());
+        }
+        Route::get('/estudos/arquivos/{material}', [StudyController::class, 'file'])
+            ->middleware('workspace:studies.view')->whereNumber('material')->name('studies.file');
         Route::get('/rotina', fn (Workspace $workspace) => view('routine.index', compact('workspace')))
             ->middleware('workspace:routine.view')->name('routine.index');
         foreach (NoteSection::cases() as $section) {

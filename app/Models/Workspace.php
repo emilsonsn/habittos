@@ -78,4 +78,34 @@ class Workspace extends Model
     {
         return $this->hasMany(RoutineActivity::class);
     }
+
+    public function studyRoadmaps(): HasMany
+    {
+        return $this->hasMany(StudyRoadmap::class);
+    }
+
+    public function studySteps(): HasMany
+    {
+        return $this->hasMany(StudyStep::class);
+    }
+
+    public function studyTopics(): HasMany
+    {
+        return $this->hasMany(StudyTopic::class);
+    }
+
+    public function studySessions(): HasMany
+    {
+        return $this->hasMany(StudySession::class);
+    }
+
+    public function studyMaterials(): HasMany
+    {
+        return $this->hasMany(StudyMaterial::class);
+    }
+
+    public function studyConnections(): HasMany
+    {
+        return $this->hasMany(StudyConnection::class);
+    }
 }
