@@ -52,7 +52,7 @@ class FinancialSummary
 
             return ['number' => $week, 'spent' => $spent, 'entries' => $weekEntries, 'limit' => $weeklyLimit, 'startDay' => $weekStart->day, 'endDay' => $weekEnd->subDay()->day, 'dateLabel' => $weekStart->lt($weekEnd) ? $weekStart->format('d/m').'–'.$weekEnd->subDay()->format('d/m') : 'Sem dias neste ciclo'];
         });
-        $weeklyPlan = $this->weeklyPlan($start, $end, $weekLength, $weeklyLimit, $weeks);
+        $weeklyPlan = $this->weeklyPlan($start, $end, $weekLength, $monthlyLimit, $weeks);
         $byCategory = $entries->where('type', EntryType::Expense->value)->groupBy(fn ($entry) => $entry->category?->name ?? 'Sem categoria')->map(fn ($items) => $items->sum('amount_cents'))->sortDesc();
 
         return compact('entries', 'entryBalances', 'income', 'expenses', 'invested', 'balance', 'reserve', 'weeklyLimit', 'weeks', 'weeklyPlan', 'monthlyLimit', 'byCategory', 'period') + [
@@ -65,7 +65,7 @@ class FinancialSummary
         ];
     }
 
-    private function weeklyPlan(CarbonImmutable $start, CarbonImmutable $end, int $weekLength, int $weeklyLimit, Collection $weeks): array
+    private function weeklyPlan(CarbonImmutable $start, CarbonImmutable $end, int $weekLength, int $monthlyLimit, Collection $weeks): array
     {
         $today = CarbonImmutable::today(config('app.timezone'));
         $completedWeeks = match (true) {
@@ -74,8 +74,8 @@ class FinancialSummary
             default => min(3, intdiv((int) $start->diffInDays($today), $weekLength)),
         };
         $remainingWeeks = 4 - $completedWeeks;
-        $pastExcess = $weeks->take($completedWeeks)->sum(fn ($week) => max(0, $week['spent'] - $weeklyLimit));
-        $remainingBudget = max(0, $weeklyLimit * $remainingWeeks - $pastExcess);
+        $pastSpending = $weeks->take($completedWeeks)->sum('spent');
+        $remainingBudget = max(0, $monthlyLimit - $pastSpending);
         $adjustedLimit = $remainingWeeks > 0 ? intdiv($remainingBudget, $remainingWeeks) : null;
         $currentWeekRemaining = $today->gte($start) && $today->lt($end)
             ? $adjustedLimit - $weeks->get($completedWeeks)['spent']
@@ -83,8 +83,8 @@ class FinancialSummary
 
         return [
             'remainingWeeks' => $remainingWeeks,
-            // Only completed weeks above the base limit reduce the remaining allowance.
-            // Current/future spending and savings in earlier weeks do not affect it.
+            // Redistribute savings and excess from completed weeks across the remaining weeks.
+            // Current spending is deducted separately from the current week allowance.
             'adjustedLimit' => $adjustedLimit,
             'currentWeekRemaining' => $currentWeekRemaining,
         ];
