@@ -49,7 +49,7 @@
                             <span class="routine-day-count">{{ $done }}/{{ $items->count() }}</span>
                             @if ($date->isToday())<span class="routine-today">Hoje</span>@endif
                         </header>
-                        <div class="routine-day-body" @if ($editable && $editingId === null) wire:sort="reorderTask" @endif>
+                        <div class="routine-day-body" @if ($editable && $editingId === null) wire:sort="reorderTask" wire:sort:group-id="{{ $day->value }}" wire:sort:group="routine-{{ $workspace->id }}-{{ $weekStart->toDateString() }}" @endif>
                             @forelse ($items as $item)
                                 <div class="routine-task {{ $item->completed_at ? 'is-completed' : '' }}" wire:key="routine-task-{{ $item->id }}" @if ($editable && $editingId === null) wire:sort:item="{{ $item->id }}" @endif>
                                     @if ($editable && $editingId === $item->id)
@@ -75,7 +75,7 @@
                                             <div class="routine-task-actions">
                                                 @if ($editingId === null)
                                                     <button type="button" class="routine-drag" wire:sort:handle
-                                                        aria-label="Reordenar {{ $item->title }}" title="Arraste para reordenar ou use as setas para cima e para baixo"
+                                                        aria-label="Reordenar {{ $item->title }}" title="Arraste para reordenar ou mover para outro dia. Use as setas para cima e para baixo para ordenar."
                                                         @if (!$loop->first) @keydown.up.prevent="$wire.reorderTask({{ $item->id }}, {{ $loop->index - 1 }})" @endif
                                                         @if (!$loop->last) @keydown.down.prevent="$wire.reorderTask({{ $item->id }}, {{ $loop->index + 1 }})" @endif
                                                         wire:loading.attr="disabled">
@@ -107,6 +107,6 @@
                 @endforeach
             </div>
         </div>
-        <p class="routine-footnote">De segunda a domingo, no seu ritmo. Arraste pela alça para ordenar as atividades de cada dia. A ordem e os checks são salvos automaticamente em cada semana.</p>
+        <p class="routine-footnote">De segunda a domingo, no seu ritmo. Arraste pela alça para ordenar ou mover atividades entre os dias. O dia, a ordem e os checks são salvos automaticamente em cada semana.</p>
     </section>
 </div>

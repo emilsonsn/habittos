@@ -373,6 +373,78 @@ class RoutineModuleTest extends TestCase
         $this->board($workspace)->assertDontSee('wire:sort="reorderTask"', false);
     }
 
+    public function test_moving_between_days_persists_drop_position_and_preserves_completion(): void
+    {
+        $workspace = $this->workspace();
+        $board = $this->board($workspace);
+        foreach ([1 => ['Origem A', 'Mover', 'Origem B'], 2 => ['Destino A', 'Destino B']] as $day => $titles) {
+            foreach ($titles as $title) {
+                $board->set('titles.'.$day, $title)->call('addTask', $day);
+            }
+        }
+        $activity = $workspace->routineActivities()->where('title', 'Mover')->firstOrFail();
+        $board->call('setCompleted', $activity->id, true);
+        $completedAt = $activity->fresh()->completed_at;
+        $board->assertSee('wire:sort:group-id="2"', false)
+            ->call('reorderTask', $activity->id, 1, 2)->assertHasNoErrors();
+        $this->assertSame(['Destino A', 'Mover', 'Destino B'], $workspace->routineActivities()
+            ->where('weekday', 2)->orderBy('position')->pluck('title')->all());
+        $this->assertSame([0, 1, 2], $workspace->routineActivities()->where('weekday', 2)->orderBy('position')->pluck('position')->all());
+        $this->assertSame(['Origem A', 'Origem B'], $workspace->routineActivities()->where('weekday', 1)->orderBy('position')->pluck('title')->all());
+        $this->assertSame([0, 1], $workspace->routineActivities()->where('weekday', 1)->orderBy('position')->pluck('position')->all());
+        $this->assertSame(Weekday::Tuesday, $activity->fresh()->weekday);
+        $this->assertSame(Weekday::Tuesday, $workspace->routineTasks()->findOrFail($activity->routine_task_id)->weekday);
+        $this->assertTrue($completedAt->equalTo($activity->fresh()->completed_at));
+        $board->call('reorderTask', $activity->id, 0, 2)->assertHasNoErrors();
+        $board->call('reorderTask', $activity->id, 2, 2)->assertHasNoErrors();
+        $this->assertSame(['Destino A', 'Destino B', 'Mover'], $workspace->routineActivities()->where('weekday', 2)->orderBy('position')->pluck('title')->all());
+        $board->call('reorderTask', $activity->id, 0, 7)->assertHasNoErrors();
+        $this->board($workspace)->assertSee('Mover');
+        $this->assertSame(Weekday::Sunday, $activity->fresh()->weekday);
+        $this->assertSame(0, $activity->fresh()->position);
+        $this->assertSame([0, 1], $workspace->routineActivities()->where('weekday', 2)->orderBy('position')->pluck('position')->all());
+
+        $this->travelTo(CarbonImmutable::parse('2026-11-09 10:00:00', 'America/Fortaleza'));
+        $this->board($workspace)->call('synchronizePreviousWeek')->assertHasNoErrors();
+        $copy = $workspace->routineActivities()->whereDate('week_start', '2026-11-09')->where('title', 'Mover')->firstOrFail();
+        $this->assertSame(Weekday::Sunday, $copy->weekday);
+        $this->assertSame(0, $copy->position);
+        $this->assertNull($copy->completed_at);
+        $this->assertTrue($completedAt->equalTo($activity->fresh()->completed_at));
+    }
+
+    public function test_moving_validates_day_position_and_respects_week_workspace_and_permissions(): void
+    {
+        $workspace = $this->workspace();
+        $board = $this->board($workspace)->set('titles.1', 'Atividade')->call('addTask', 1);
+        $activity = $workspace->routineActivities()->firstOrFail();
+        foreach ([0, 8] as $day) {
+            $board->call('reorderTask', $activity->id, 0, $day)->assertHasErrors('weekday');
+        }
+        foreach ([-1, 1] as $position) {
+            $this->board($workspace)->call('reorderTask', $activity->id, $position, 2)->assertHasErrors('position');
+        }
+        foreach ([-1, 1] as $direction) {
+            $this->board($workspace)->call('navigateWeek', $direction)->call('reorderTask', $activity->id, 0, 2)->assertForbidden();
+        }
+        $other = app(CreateWorkspace::class)->handle(auth()->user(), 'Outro');
+        try {
+            $this->board($other)->call('reorderTask', $activity->id, 0, 2);
+            $this->fail('Não deve mover atividade de outro ambiente.');
+        } catch (ModelNotFoundException) {
+            $this->assertSame(Weekday::Monday, $activity->fresh()->weekday);
+        }
+        $reader = User::factory()->create();
+        $workspace->members()->attach($reader, ['permissions' => ['routine.view', 'routine.manage']]);
+        $this->actingAs($reader);
+        $board = $this->board($workspace);
+        $workspace->members()->updateExistingPivot($reader->id, ['permissions' => ['routine.view']]);
+        $board->call('reorderTask', $activity->id, 0, 2)->assertForbidden();
+        $this->board($workspace)->assertDontSee('wire:sort:group=', false);
+        $this->assertSame(Weekday::Monday, $activity->fresh()->weekday);
+        $this->assertSame(1, $activity->fresh()->position);
+    }
+
     public function test_switching_workspaces_keeps_the_routine_module(): void
     {
         $workspace = $this->workspace();

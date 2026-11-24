@@ -76,18 +76,32 @@ class ManageRoutine
         });
     }
 
-    public function reorder(Workspace $workspace, CarbonImmutable $week, int $id, int $position): void
+    public function reorder(Workspace $workspace, CarbonImmutable $week, int $id, int $position, ?int $weekday = null): void
     {
         $this->authorizeCurrentWeek($workspace, $week);
-        DB::transaction(function () use ($workspace, $week, $id, $position) {
+        DB::transaction(function () use ($workspace, $week, $id, $position, $weekday) {
             Workspace::whereKey($workspace->id)->lockForUpdate()->firstOrFail();
             $activity = $workspace->routineActivities()->whereDate('week_start', $week)->findOrFail($id);
-            $items = $workspace->routineActivities()->whereDate('week_start', $week)
-                ->where('weekday', $activity->weekday->value)->orderBy('position')->orderBy('id')->get();
-            validator(['position' => $position], [
-                'position' => ['required', 'integer', 'between:0,'.($items->count() - 1)],
+            $sourceDay = $activity->weekday->value;
+            $targetDay = $weekday ?? $sourceDay;
+            validator(['weekday' => $targetDay], [
+                'weekday' => ['required', Rule::enum(Weekday::class)],
             ])->validate();
-            $ordered = $items->where('id', '!=', $id)->values()->all();
+            $items = $workspace->routineActivities()->whereDate('week_start', $week)
+                ->where('weekday', $targetDay)->whereKeyNot($id)->orderBy('position')->orderBy('id')->get();
+            validator(['position' => $position], [
+                'position' => ['required', 'integer', 'between:0,'.$items->count()],
+            ])->validate();
+            if ($sourceDay !== $targetDay) {
+                $sourceItems = $workspace->routineActivities()->whereDate('week_start', $week)
+                    ->where('weekday', $sourceDay)->whereKeyNot($id)->orderBy('position')->orderBy('id')->get();
+                foreach ($sourceItems as $index => $item) {
+                    $item->update(['position' => $index]);
+                }
+                $activity->update(['weekday' => $targetDay]);
+                $workspace->routineTasks()->findOrFail($activity->routine_task_id)->update(['weekday' => $targetDay]);
+            }
+            $ordered = $items->all();
             array_splice($ordered, $position, 0, [$activity]);
             foreach ($ordered as $index => $item) {
                 $item->update(['position' => $index]);
