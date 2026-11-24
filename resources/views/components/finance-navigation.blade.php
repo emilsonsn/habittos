@@ -1,7 +1,7 @@
 @props(['workspace', 'month'])
 <details class="finance-nav" name="sidebar-navigation" @if (request()->routeIs('finance.*', 'entries.*')) open @endif
     x-data="{ month: @js($month) }" @financial-month-changed.window="month = $event.detail.month">
-    <summary class="finance-nav-trigger {{ request()->routeIs('finance.*', 'entries.*') ? 'active' : '' }}">
+    <summary aria-label="Financeiro" title="Financeiro" class="finance-nav-trigger {{ request()->routeIs('finance.*', 'entries.*') ? 'active' : '' }}">
         <x-icon name="finance" /><span>Financeiro</span><span class="finance-nav-chevron" aria-hidden="true">⌄</span>
     </summary>
     <div class="finance-submenu" aria-label="Seções do financeiro">

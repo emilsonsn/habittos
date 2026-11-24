@@ -1,6 +1,6 @@
 @props(['workspace'])
 <details class="finance-nav" name="sidebar-navigation" @if (request()->routeIs('notes.*')) open @endif>
-    <summary class="finance-nav-trigger {{ request()->routeIs('notes.*') ? 'active' : '' }}">
+    <summary aria-label="Notas" title="Notas" class="finance-nav-trigger {{ request()->routeIs('notes.*') ? 'active' : '' }}">
         <x-icon name="notes" /><span>Notas</span><span class="finance-nav-chevron" aria-hidden="true">⌄</span>
     </summary>
     <div class="finance-submenu" aria-label="Seções de notas">

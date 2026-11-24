@@ -39,8 +39,8 @@
         @else
         <div class="app-shell">
             <aside class="sidebar">
-                <a wire:navigate class="brand" href="{{ route('home') }}"><img class="brand-icon"
-                        src="{{ asset('imgs/habbitos-icone.svg') }}" width="44" height="44" alt="">habittos<span class="brand-dot">.</span></a>
+                <a wire:navigate class="brand" href="{{ route('home') }}" aria-label="Habittos · Home"><img class="brand-icon"
+                        src="{{ asset('imgs/habbitos-icone.svg') }}" width="44" height="44" alt=""><span class="brand-name">habittos<span class="brand-dot">.</span></span></a>
                 <livewire:workspace-switcher :active-id="$activeWorkspace?->id" :module="request()->routeIs('home') ? 'home' : (request()->routeIs('finance.*') ? request()->route()->getName() : (request()->routeIs('settings.*')
                     ? 'settings'
                     : (request()->routeIs('goals.*', 'notes.*', 'routine.*')
@@ -52,13 +52,13 @@
                 <span class="nav-label">SEU DIA A DIA</span>
                 <nav aria-label="Navegação principal">
                     <a wire:navigate class="{{ request()->routeIs('home') ? 'active' : '' }}"
-                        href="{{ route('home') }}" @if (request()->routeIs('home')) aria-current="page" @endif>
+                        href="{{ route('home') }}" aria-label="Home" title="Home" @if (request()->routeIs('home')) aria-current="page" @endif>
                         <x-icon name="dashboard" /><span>Home</span>
                     </a>
                     @if ($activeWorkspace)
                         @can('routine.view', $activeWorkspace)
                             <a wire:navigate class="{{ request()->routeIs('routine.*') ? 'active' : '' }}"
-                                href="{{ route('routine.index', $activeWorkspace) }}" @if (request()->routeIs('routine.*')) aria-current="page" @endif><x-icon name="routine" /><span>{{ \App\Enums\WorkspaceModule::Routine->label() }}</span></a>
+                                href="{{ route('routine.index', $activeWorkspace) }}" aria-label="Rotina diária" title="Rotina diária" @if (request()->routeIs('routine.*')) aria-current="page" @endif><x-icon name="routine" /><span>{{ \App\Enums\WorkspaceModule::Routine->label() }}</span></a>
                         @endcan
                         @can('finance.view', $activeWorkspace)
                             <x-finance-navigation :workspace="$activeWorkspace"
@@ -72,16 +72,16 @@
                         @endcan
                         @can('members.manage', $activeWorkspace)
                             <a wire:navigate class="{{ request()->routeIs('members.*') ? 'active' : '' }}"
-                                href="{{ route('members.index', $activeWorkspace) }}"><x-icon name="members" /><span>Pessoas e
+                                href="{{ route('members.index', $activeWorkspace) }}" aria-label="Pessoas e acessos" title="Pessoas e acessos"><x-icon name="members" /><span>Pessoas e
                                     acessos</span></a>
                         @endcan
                         <a wire:navigate class="{{ request()->routeIs('settings.*') ? 'active' : '' }}"
-                            href="{{ route('settings.index', $activeWorkspace) }}"><x-icon
+                            href="{{ route('settings.index', $activeWorkspace) }}" aria-label="Configurações" title="Configurações"><x-icon
                                 name="settings" /><span>Configurações</span></a>
                     @endif
                 </nav>
 
-                <div class="profile"><span class="avatar">{{ mb_substr(auth()->user()->name, 0, 1) }}</span>
+                <div class="profile"><span class="avatar" title="{{ auth()->user()->name }}">{{ mb_substr(auth()->user()->name, 0, 1) }}</span>
                     <div>{{ auth()->user()->name }}<form method="POST" action="{{ route('logout') }}">@csrf<button
                                 class="text-button">Sair da conta</button></form>
                     </div>

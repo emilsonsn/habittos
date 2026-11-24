@@ -1,6 +1,6 @@
 @props(['workspace'])
 <details class="finance-nav" name="sidebar-navigation" @if (request()->routeIs('goals.*')) open @endif>
-    <summary class="finance-nav-trigger {{ request()->routeIs('goals.*') ? 'active' : '' }}">
+    <summary aria-label="Metas" title="Metas" class="finance-nav-trigger {{ request()->routeIs('goals.*') ? 'active' : '' }}">
         <x-icon name="goals" /><span>Metas</span><span class="finance-nav-chevron" aria-hidden="true">⌄</span>
     </summary>
     <div class="finance-submenu" aria-label="Seções de metas">
