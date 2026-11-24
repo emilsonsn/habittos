@@ -6,22 +6,22 @@
     <form wire:submit="saveGoal" class="form-stack">
         <fieldset class="goal-form-fields" @cannot('goals.manage', $workspace) disabled @endcannot>
             <label>Nome da meta<input wire:model="form.title" maxlength="200" required autofocus x-init="$el.focus()"></label>
-            <x-rich-text-editor model="form.description" label="Descrição" editor-id="goal-description" :optional="true"
-                :value="$form['description'] ?? ''" :readonly="!$workspace->allows(auth()->user(), \App\Enums\Permission::GoalsManage)" />
-            <div class="form-grid">
+            <div class="form-grid goal-form-options">
                 <label>Status<select wire:model="form.status">
                     @foreach (\App\Enums\GoalStatus::options() as $value => $label)<option value="{{ $value }}">{{ $label }}</option>@endforeach
-                </select></label>
-                <label>Prioridade<select wire:model="form.priority">
-                    @foreach (\App\Enums\GoalPriority::options() as $value => $label)<option value="{{ $value }}">{{ $label }}</option>@endforeach
                 </select></label>
                 <label>Categoria<select wire:model="form.category"><option value="">Sem categoria</option>
                     @foreach ($categoryOptions as $category)<option value="{{ $category }}">{{ $category }}</option>@endforeach
                 </select></label>
+                <label>Prioridade<select wire:model="form.priority">
+                    @foreach (\App\Enums\GoalPriority::options() as $value => $label)<option value="{{ $value }}">{{ $label }}</option>@endforeach
+                </select></label>
             </div>
-            <details class="entry-advanced" @invalid.capture="$el.open = true" @if ($errors->has('form.due_date') || $errors->has('form.progress_percent') || $errors->has('form.parent_id')) open @endif>
-                <summary><span>Avançado</span><small>Prazo, progresso e vínculos</small><span class="advanced-chevron" aria-hidden="true">⌄</span></summary>
+            <details class="entry-advanced" @invalid.capture="$el.open = true" @if ($errors->has('form.description') || $errors->has('form.due_date') || $errors->has('form.progress_percent') || $errors->has('form.parent_id')) open @endif>
+                <summary><span>Avançado</span><small>Descrição, prazo, progresso e vínculos</small><span class="advanced-chevron" aria-hidden="true">⌄</span></summary>
                 <div class="entry-advanced-fields form-stack">
+                    <x-rich-text-editor model="form.description" label="Descrição" editor-id="goal-description" :optional="true"
+                        :value="$form['description'] ?? ''" :readonly="!$workspace->allows(auth()->user(), \App\Enums\Permission::GoalsManage)" />
                     <div class="form-grid">
                         <label>Prazo<input type="date" wire:model="form.due_date"></label>
                         <label>Feito (%)<input type="number" wire:model="form.progress_percent" min="0" max="100" step="0.01" required><small>Este percentual é o progresso da meta.</small></label>

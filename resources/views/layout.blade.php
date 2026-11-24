@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="{{ asset('css/app.css') }}" data-navigate-track>
     <link rel="stylesheet" href="{{ asset('css/interface.css') }}?v={{ filemtime(public_path('css/interface.css')) }}" data-navigate-track>
     <link rel="stylesheet" href="{{ asset('css/theme.css') }}" data-navigate-track>
-    <link rel="stylesheet" href="{{ asset('css/goals.css') }}" data-navigate-track>
+    <link rel="stylesheet" href="{{ asset('css/goals.css') }}?v={{ filemtime(public_path('css/goals.css')) }}" data-navigate-track>
     <link rel="stylesheet" href="{{ asset('css/rich-text.css') }}" data-navigate-track>
     <link rel="stylesheet" href="{{ asset('css/notes.css') }}" data-navigate-track>
     <link rel="stylesheet" href="{{ asset('css/routine.css') }}?v={{ filemtime(public_path('css/routine.css')) }}" data-navigate-track>
