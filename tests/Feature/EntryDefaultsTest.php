@@ -39,7 +39,7 @@ class EntryDefaultsTest extends TestCase
         $this->actingAs($user);
         $category = $workspace->categories()->firstOrFail();
         $component = Livewire::test(EntryForm::class, ['workspaceId' => $workspace->id])
-            ->assertSee('Salvar e lançar outro')
+            ->assertSee('Salvar e cadastrar novo')
             ->set('form.description', 'Salário')->set('form.amount', '1234.56')
             ->set('form.type', 'income')->set('form.date', '2026-10-10')
             ->set('form.category_id', $category->id)->set('form.paid', false)
@@ -88,7 +88,7 @@ class EntryDefaultsTest extends TestCase
         $entry = $workspace->entries()->create(['description' => 'Conta', 'type' => 'expense', 'amount_cents' => 5000, 'date' => '2026-10-22']);
         $this->actingAs($user);
         Livewire::test(EntryForm::class, ['workspaceId' => $workspace->id, 'entryId' => $entry->id])
-            ->assertDontSee('Salvar e lançar outro')->call('saveAndCreateAnother')->assertForbidden();
+            ->assertDontSee('Salvar e cadastrar novo')->call('saveAndCreateAnother')->assertForbidden();
         $this->assertDatabaseCount('entries', 1);
     }
 

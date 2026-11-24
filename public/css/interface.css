@@ -1714,3 +1714,20 @@ textarea:focus {
         display: none;
     }
 }
+
+.create-form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+}
+.create-form-actions.is-compact {
+    margin-top: 6px;
+}
+.create-form-actions.is-compact .button {
+    width: 100%;
+    padding: 7px 6px;
+    font-size: 10px;
+    white-space: normal;
+}

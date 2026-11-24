@@ -29,6 +29,28 @@ class GoalsPlanningTest extends TestCase
         return app(CreateWorkspace::class)->handle($user, 'Pessoal');
     }
 
+    public function test_save_and_create_another_resets_the_goal_form_without_closing_it(): void
+    {
+        $workspace = $this->workspace();
+        $board = Livewire::test(GoalsBoard::class, ['workspaceId' => $workspace->id])
+            ->set('yearFilter', 2026)->call('openCreate');
+        $version = $board->get('formVersion');
+        $board->call('saveGoalAndCreateAnother')->assertHasErrors('form.title')->assertSet('formVersion', $version);
+        $this->assertSame(0, $workspace->goals()->count());
+        $board->set('form.title', 'Primeira meta')->set('form.description', '<p>Detalhes</p>')
+            ->call('saveGoalAndCreateAnother')->assertHasNoErrors()->assertSet('formOpen', true)
+            ->assertSet('editingId', null)->assertSet('form.title', '')->assertSet('form.description', '')
+            ->assertSet('form.year', 2026)->assertSet('form.status', 'not_started')->assertSet('form.priority', 'medium')
+            ->assertSet('formVersion', $version + 1)->assertSee('Você já pode cadastrar a próxima.');
+        $this->assertSame(1, $workspace->goals()->count());
+        $goal = $workspace->goals()->firstOrFail();
+        $this->assertSame('<p>Detalhes</p>', $goal->description);
+        $board->set('form.title', 'Segunda meta')->call('saveGoal')->assertHasNoErrors()->assertSet('formOpen', false);
+        $this->assertSame(2, $workspace->goals()->count());
+        $board->call('openEdit', $goal->id)->assertDontSee('wire:click="saveGoalAndCreateAnother"', false)
+            ->call('saveGoalAndCreateAnother')->assertForbidden();
+    }
+
     private function goal(Workspace $workspace, array $extra = [])
     {
         return app(ManageGoals::class)->save($workspace, $extra + [

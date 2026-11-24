@@ -33,6 +33,22 @@ class RoutineModuleTest extends TestCase
         return Livewire::test(RoutineBoard::class, ['workspaceId' => $workspace->id]);
     }
 
+    public function test_save_and_create_another_activity_clears_the_day_and_restores_focus_only_on_success(): void
+    {
+        $workspace = $this->workspace();
+        $board = $this->board($workspace);
+        $board->call('addTaskAndCreateAnother', 3)->assertHasErrors('titles.3')->assertNotDispatched('routine-task-created');
+        $this->assertSame(0, $workspace->routineActivities()->count());
+        $board->set('titles.3', 'Ler')->call('addTaskAndCreateAnother', 3)->assertHasNoErrors()
+            ->assertSet('titles', [])->assertDispatched('routine-task-created', weekday: 3);
+        $activity = $workspace->routineActivities()->firstOrFail();
+        $this->assertSame(Weekday::Wednesday, $activity->weekday);
+        $board->set('titles.3', 'Caminhar')->call('addTaskAndCreateAnother', 3)->assertHasNoErrors();
+        $this->assertSame(['Ler', 'Caminhar'], $workspace->routineActivities()->where('weekday', 3)->orderBy('position')->pluck('title')->all());
+        $this->board($workspace)->call('navigateWeek', 1)->set('titles.3', 'Proibido')
+            ->call('addTaskAndCreateAnother', 3)->assertForbidden();
+    }
+
     public function test_routine_has_fixed_weekday_columns_and_current_week_navigation(): void
     {
         $workspace = $this->workspace();

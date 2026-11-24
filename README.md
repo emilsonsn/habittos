@@ -220,6 +220,9 @@ Novo lançamento mostra descrição, valor e categoria. O painel “Avançado”
 
 Todos os campos monetários usam `x-money-input`: lançamentos e indicadores do planejamento. A tela apresenta separador de milhar e vírgula decimal, enquanto o estado Livewire permanece decimal com ponto. O componente usa Alpine, suporta colar moeda com R$, preserva centavos e aplica a formatação completa ao sair do campo. O backend continua validando limites e precisão antes de converter para centavos inteiros. Os scripts locais de máscara são carregados antes do Livewire registrar o Alpine.
 
+Os cadastros de lançamentos, metas, notas, pastas e atividades da rotina compartilham `x-create-form-actions` (`resources/views/components/create-form-actions.blade.php`). Novos formulários de cadastro devem reutilizá-lo, informando `save-action`, `another-action`, `editing`, `save-label` e `cancel-action` conforme necessário. O botão “Salvar e cadastrar novo” aparece apenas na criação: valida e grava com as mesmas permissões do salvamento normal e, somente após sucesso, limpa os dados, preserva o contexto da tela e deixa o próximo cadastro pronto com foco no primeiro campo. Erros mantêm o formulário preenchido. Formulários com editor de texto devem renovar sua chave (`formVersion`) para limpar também o estado visual; o backend deve rejeitar a ação de cadastrar outro durante a edição. Na rotina, `show-save=false` e `compact=true` reutilizam o botão abaixo do cadastro direto de cada dia.
+
+
 Execute `npm test` para verificar a máscara, além de `composer test` para os fluxos e regras de persistência.
 
 ## Listas fixas e enums

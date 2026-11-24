@@ -3,6 +3,7 @@
         <div><span class="eyebrow">UM PASSO MAIS PERTO</span><h2 id="goal-dialog-title">{{ $editingId ? ($workspace->allows(auth()->user(), \App\Enums\Permission::GoalsManage) ? 'Editar meta' : 'Detalhes da meta') : 'Nova meta' }}</h2></div>
         <button type="button" class="icon-close" wire:click="closeForm" aria-label="Fechar">×</button>
     </div>
+    @if ($formSuccess)<div class="notice success" role="status">{{ $formSuccess }}</div>@endif
     <form wire:submit="saveGoal" class="form-stack">
         <fieldset class="goal-form-fields" @cannot('goals.manage', $workspace) disabled @endcannot>
             <label>Nome da meta<input wire:model="form.title" maxlength="200" required autofocus x-init="$el.focus()"></label>
@@ -45,8 +46,8 @@
                     <button type="button" class="text-button danger goal-delete-button" wire:click="deleteGoal({{ $editingId }})"
                         data-confirm="A meta será excluída definitivamente. As metas vinculadas serão preservadas, sem o vínculo." data-confirm-title="Excluir meta?" data-confirm-label="Excluir meta" data-confirm-subject="{{ $form['title'] ?? '' }}" wire:loading.attr="disabled">Excluir meta</button>
                 @endif
-                <button type="button" class="button secondary" wire:click="closeForm">Cancelar</button>
-                <button class="button" wire:loading.attr="disabled">{{ $editingId ? 'Salvar alterações' : 'Criar meta' }}</button>
+                <x-create-form-actions save-action="saveGoal" another-action="saveGoalAndCreateAnother"
+                    :editing="$editingId !== null" save-label="Criar meta" cancel-action="closeForm" />
             @else
                 <button type="button" class="button secondary" wire:click="closeForm">Fechar</button>
             @endcan

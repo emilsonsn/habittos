@@ -69,6 +69,8 @@ class GoalsBoard extends Component
     #[Locked]
     public bool $formOpen = false;
 
+    public ?string $formSuccess = null;
+
     #[Locked]
     public ?int $editingId = null;
 
@@ -207,6 +209,7 @@ class GoalsBoard extends Component
 
     private function showForm(): void
     {
+        $this->formSuccess = null;
         $this->resetValidation();
         $this->formVersion++;
         $this->formOpen = true;
@@ -214,12 +217,24 @@ class GoalsBoard extends Component
 
     public function closeForm(): void
     {
-        $this->reset('formOpen', 'editingId', 'form');
+        $this->reset('formOpen', 'editingId', 'form', 'formSuccess');
         $this->resetValidation();
     }
 
     public function saveGoal(): void
     {
+        $this->persistGoal();
+    }
+
+    public function saveGoalAndCreateAnother(): void
+    {
+        abort_if($this->editingId !== null, 403);
+        $this->persistGoal(true);
+    }
+
+    private function persistGoal(bool $createAnother = false): void
+    {
+        $this->formSuccess = null;
         $workspace = $this->workspace();
         Gate::authorize('goals.manage', $workspace);
         abort_unless($this->formOpen, 422);
@@ -246,6 +261,10 @@ class GoalsBoard extends Component
         $this->yearFilter = $goal->year;
         $this->message = $this->editingId ? 'Meta atualizada.' : 'Meta criada.';
         $this->closeForm();
+        if ($createAnother) {
+            $this->openCreate();
+            $this->formSuccess = 'Meta criada. Você já pode cadastrar a próxima.';
+        }
         $this->resetPage();
     }
 

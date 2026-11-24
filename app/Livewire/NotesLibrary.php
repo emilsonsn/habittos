@@ -51,6 +51,8 @@ class NotesLibrary extends Component
 
     public string $message = '';
 
+    public ?string $formSuccess = null;
+
     public function mount(int $workspaceId, string $section = 'dashboard'): void
     {
         $this->workspaceId = $workspaceId;
@@ -109,6 +111,18 @@ class NotesLibrary extends Component
 
     public function saveNote(): void
     {
+        $this->persistNote();
+    }
+
+    public function saveNoteAndCreateAnother(): void
+    {
+        abort_if($this->editingNoteId !== null, 403);
+        $this->persistNote(true);
+    }
+
+    private function persistNote(bool $createAnother = false): void
+    {
+        $this->formSuccess = null;
         $workspace = $this->workspace();
         Gate::authorize('notes.manage', $workspace);
         abort_unless($this->noteOpen, 422);
@@ -122,6 +136,10 @@ class NotesLibrary extends Component
         }
         $this->message = $this->editingNoteId ? 'Nota atualizada.' : 'Nota criada.';
         $this->closeForms();
+        if ($createAnother) {
+            $this->openCreateNote();
+            $this->formSuccess = 'Nota criada. Você já pode cadastrar a próxima.';
+        }
         $this->resetPage();
     }
 
@@ -140,6 +158,18 @@ class NotesLibrary extends Component
 
     public function saveCategory(): void
     {
+        $this->persistCategory();
+    }
+
+    public function saveCategoryAndCreateAnother(): void
+    {
+        abort_if($this->editingCategoryId !== null, 403);
+        $this->persistCategory(true);
+    }
+
+    private function persistCategory(bool $createAnother = false): void
+    {
+        $this->formSuccess = null;
         $workspace = $this->workspace();
         Gate::authorize('notes.manage', $workspace);
         abort_unless($this->categoryOpen, 422);
@@ -153,6 +183,10 @@ class NotesLibrary extends Component
         }
         $this->message = $this->editingCategoryId ? 'Pasta atualizada.' : 'Pasta criada.';
         $this->closeForms();
+        if ($createAnother) {
+            $this->openCategory();
+            $this->formSuccess = 'Pasta criada. Você já pode cadastrar a próxima.';
+        }
     }
 
     private function formErrors(ValidationException $exception, string $prefix): void
@@ -194,7 +228,7 @@ class NotesLibrary extends Component
 
     public function closeForms(): void
     {
-        $this->reset('noteOpen', 'categoryOpen', 'editingNoteId', 'editingCategoryId', 'noteForm', 'categoryForm');
+        $this->reset('noteOpen', 'categoryOpen', 'editingNoteId', 'editingCategoryId', 'noteForm', 'categoryForm', 'formSuccess');
         $this->resetValidation();
     }
 

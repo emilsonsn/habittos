@@ -78,16 +78,30 @@ class RoutineBoard extends Component
 
     public function addTask(int $weekday): void
     {
+        $this->createTask($weekday);
+    }
+
+    public function addTaskAndCreateAnother(int $weekday): void
+    {
+        if ($this->createTask($weekday)) {
+            $this->dispatch('routine-task-created', weekday: $weekday);
+        }
+    }
+
+    private function createTask(int $weekday): bool
+    {
         try {
             app(ManageRoutine::class)->add($this->workspace(), $this->weekStart(), $weekday, (string) ($this->titles[$weekday] ?? ''));
         } catch (ValidationException $exception) {
             $this->addError('titles.'.$weekday, $exception->validator->errors()->first());
 
-            return;
+            return false;
         }
         unset($this->titles[$weekday]);
         $this->resetValidation('titles.'.$weekday);
         $this->message = 'Atividade adicionada à rotina.';
+
+        return true;
     }
 
     public function synchronizePreviousWeek(): void

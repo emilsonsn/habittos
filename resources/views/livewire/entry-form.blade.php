@@ -90,18 +90,7 @@
                 </label>
             </div>
         </details>
-        <div class="form-actions">
-            <button class="button" wire:loading.attr="disabled"><span wire:loading.remove
-                    wire:target="save">{{ $entryId ? 'Salvar alterações' : 'Salvar' }}</span><span
-                    wire:loading wire:target="save">Salvando…</span></button>
-            @if (!$entryId)
-                <button type="button" class="button secondary" wire:click="saveAndCreateAnother"
-                    wire:loading.attr="disabled">
-                    <span wire:loading.remove wire:target="saveAndCreateAnother">Salvar e lançar outro</span>
-                    <span wire:loading wire:target="saveAndCreateAnother">Salvando…</span>
-                </button>
-            @endif
-            <button type="button" class="text-button" wire:click="cancel" wire:loading.attr="disabled">Cancelar</button>
-        </div>
+        <x-create-form-actions class="form-actions" save-action="save" another-action="saveAndCreateAnother" :editing="$entryId !== null"
+            cancel-action="cancel" />
     </form>
 </div>

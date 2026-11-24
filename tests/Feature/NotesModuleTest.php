@@ -36,6 +36,35 @@ class NotesModuleTest extends TestCase
         return app(CreateWorkspace::class)->handle($user, 'Pessoal');
     }
 
+    public function test_save_and_create_another_keeps_notes_and_folders_in_the_current_context(): void
+    {
+        $workspace = $this->workspace();
+        $folder = $this->folder($workspace);
+        $board = Livewire::test(NotesLibrary::class, ['workspaceId' => $workspace->id, 'section' => 'browse'])
+            ->set('categoryId', $folder->id)->call('openCreateNote');
+        $version = $board->get('formVersion');
+        $board->call('saveNoteAndCreateAnother')->assertHasErrors('noteForm.title')->assertSet('formVersion', $version);
+        $board->set('noteForm.title', 'Primeira nota')->set('noteForm.text', '<p>Texto</p>')
+            ->call('saveNoteAndCreateAnother')->assertHasNoErrors()->assertSet('noteOpen', true)
+            ->assertSet('noteForm.title', '')->assertSet('noteForm.text', '')->assertSet('noteForm.category_id', $folder->id)
+            ->assertSet('editingNoteId', null)->assertSet('formVersion', $version + 1);
+        $note = $workspace->notes()->firstOrFail();
+        $this->assertSame('<p>Texto</p>', $note->text);
+        $this->assertSame($folder->id, $note->category_id);
+        $board->set('noteForm.title', 'Segunda nota')->call('saveNote')->assertHasNoErrors()->assertSet('noteOpen', false);
+        $this->assertSame(2, $workspace->notes()->count());
+        $board->call('openNote', $note->id)->assertDontSee('wire:click="saveNoteAndCreateAnother"', false)
+            ->call('saveNoteAndCreateAnother')->assertForbidden();
+        $board = Livewire::test(NotesLibrary::class, ['workspaceId' => $workspace->id, 'section' => 'browse'])
+            ->set('categoryId', $folder->id)->call('openCategory');
+        $board->call('saveCategoryAndCreateAnother')->assertHasErrors('categoryForm.name');
+        $board->set('categoryForm.name', 'Subpasta')->call('saveCategoryAndCreateAnother')->assertHasNoErrors()
+            ->assertSet('categoryOpen', true)->assertSet('categoryForm.name', '')->assertSet('categoryForm.parent_id', $folder->id);
+        $child = $workspace->noteCategories()->where('name', 'Subpasta')->firstOrFail();
+        $this->assertSame($folder->id, $child->parent_id);
+        $board->call('openCategory', $child->id)->call('saveCategoryAndCreateAnother')->assertForbidden();
+    }
+
     private function folder(Workspace $workspace, string $name = 'Projetos', ?int $parentId = null)
     {
         return app(ManageNotes::class)->saveCategory($workspace, ['name' => $name, 'parent_id' => $parentId]);

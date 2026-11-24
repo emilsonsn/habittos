@@ -97,9 +97,12 @@
                             @if ($editable)
                                 <form wire:submit="addTask({{ $day->value }})" class="routine-add">
                                     <label class="sr-only" for="routine-new-{{ $day->value }}">Nova atividade de {{ $day->label() }}</label>
-                                    <input id="routine-new-{{ $day->value }}" type="text" wire:model="titles.{{ $day->value }}" maxlength="200" placeholder="Adicionar atividade…" autocomplete="off" required>
-                                    <button type="submit" aria-label="Adicionar atividade de {{ $day->label() }}" wire:loading.attr="disabled" wire:target="addTask">+</button>
+                                    <input id="routine-new-{{ $day->value }}" type="text" x-data
+                                        @routine-task-created.window="if ($event.detail.weekday === {{ $day->value }}) $nextTick(() => $el.focus())" wire:model="titles.{{ $day->value }}" maxlength="200" placeholder="Adicionar atividade…" autocomplete="off" required>
+                                    <button type="submit" aria-label="Adicionar atividade de {{ $day->label() }}" wire:loading.attr="disabled" wire:target="addTask,addTaskAndCreateAnother">+</button>
                                 </form>
+                                <x-create-form-actions :show-save="false" :compact="true"
+                                    :another-action="'addTaskAndCreateAnother('.$day->value.')'" />
                                 @error('titles.'.$day->value)<p class="field-error" role="alert">{{ $message }}</p>@enderror
                             @endif
                         </div>

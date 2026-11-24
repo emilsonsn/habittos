@@ -119,6 +119,7 @@
             <div class="dialog-content form-stack">
                 <div class="dialog-top"><div><span class="eyebrow">ESPAÇO PARA PENSAR</span><h2 id="note-dialog-title">{{ $editingNoteId ? ($workspace->allows(auth()->user(), \App\Enums\Permission::NotesManage) ? 'Editar nota' : 'Ler nota') : 'Nova nota' }}</h2></div>
                     <button type="button" class="icon-close" wire:click="closeForms" aria-label="Fechar">×</button></div>
+                @if ($formSuccess)<div class="notice success" role="status">{{ $formSuccess }}</div>@endif
                 <form wire:submit="saveNote" class="form-stack">
                     <fieldset class="notes-form-fields" @cannot('notes.manage', $workspace) disabled @endcannot>
                         <label>Título<input wire:model="noteForm.title" maxlength="200" required autofocus x-init="$el.focus()"></label>
@@ -136,8 +137,8 @@
                     <div class="dialog-actions notes-dialog-actions">
                         @can('notes.manage', $workspace)
                             @if ($editingNoteId)<button type="button" class="text-button danger notes-delete" wire:click="deleteNote({{ $editingNoteId }})" data-confirm="O título e o conteúdo desta nota serão excluídos definitivamente para todos os membros do ambiente." data-confirm-title="Excluir nota?" data-confirm-label="Excluir nota" data-confirm-subject="{{ $noteForm['title'] ?? '' }}" wire:loading.attr="disabled">Excluir nota</button>@endif
-                            <button type="button" class="button secondary" wire:click="closeForms">Cancelar</button>
-                            <button class="button" wire:loading.attr="disabled"><span wire:loading.remove wire:target="saveNote">{{ $editingNoteId ? 'Salvar alterações' : 'Criar nota' }}</span><span wire:loading wire:target="saveNote">Salvando…</span></button>
+                            <x-create-form-actions save-action="saveNote" another-action="saveNoteAndCreateAnother"
+                                :editing="$editingNoteId !== null" save-label="Criar nota" cancel-action="closeForms" />
                         @else
                             <button type="button" class="button secondary" wire:click="closeForms">Fechar</button>
                         @endcan
@@ -152,6 +153,7 @@
             <div class="dialog-content form-stack">
                 <div class="dialog-top"><div><span class="eyebrow">CADA COISA NO SEU LUGAR</span><h2 id="note-category-title">{{ $editingCategoryId ? 'Editar pasta' : 'Nova pasta' }}</h2></div>
                     <button type="button" class="icon-close" wire:click="closeForms" aria-label="Fechar">×</button></div>
+                @if ($formSuccess)<div class="notice success" role="status">{{ $formSuccess }}</div>@endif
                 <form wire:submit="saveCategory" class="form-stack">
                     <label>Nome da pasta<input wire:model="categoryForm.name" maxlength="100" required autofocus x-init="$el.focus()"></label>
                     <label>Pasta superior<select wire:model="categoryForm.parent_id"><option value="">Página inicial de notas</option>
@@ -167,8 +169,8 @@
                     <div class="dialog-actions notes-dialog-actions">
                         @if ($editingCategoryId)<button type="button" class="text-button danger notes-delete" wire:click="deleteCategory({{ $editingCategoryId }})"
                             data-confirm="A pasta será excluída. As notas e subpastas serão movidas para a pasta superior e não serão apagadas." data-confirm-title="Excluir pasta?" data-confirm-label="Excluir pasta" data-confirm-subject="{{ $categoryForm['name'] ?? '' }}" wire:loading.attr="disabled">Excluir pasta</button>@endif
-                        <button type="button" class="button secondary" wire:click="closeForms">Cancelar</button>
-                        <button class="button" wire:loading.attr="disabled">{{ $editingCategoryId ? 'Salvar alterações' : 'Criar pasta' }}</button>
+                        <x-create-form-actions save-action="saveCategory" another-action="saveCategoryAndCreateAnother"
+                            :editing="$editingCategoryId !== null" save-label="Criar pasta" cancel-action="closeForms" />
                     </div>
                 </form>
             </div>
