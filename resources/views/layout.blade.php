@@ -38,7 +38,13 @@
             </main>
         @else
         <div class="app-shell">
-            <aside class="sidebar">
+            <aside class="sidebar" x-data="{
+                expanded: false,
+                collapseTimer: null,
+                destroy() { clearTimeout(this.collapseTimer); }
+            }" :class="{ 'is-expanded': expanded }"
+                @mouseenter="clearTimeout(collapseTimer); expanded = true"
+                @mouseleave="collapseTimer = setTimeout(() => { expanded = false; collapseTimer = null; }, 500)">
                 <a wire:navigate class="brand" href="{{ route('home') }}" aria-label="Habittos · Home"><img class="brand-icon"
                         src="{{ asset('imgs/habbitos-icone.svg') }}" width="44" height="44" alt=""><span class="brand-name">habittos<span class="brand-dot">.</span></span></a>
                 <livewire:workspace-switcher :active-id="$activeWorkspace?->id" :module="request()->routeIs('home') ? 'home' : (request()->routeIs('finance.*') ? request()->route()->getName() : (request()->routeIs('settings.*')
